@@ -26,17 +26,15 @@ export default function FormattedTrack({ track }: FormattedTrackProps) {
           previewTrack.preview.pause();
         }
 
-        track.preview.play();
-        setPreviewTrack(track);
+        track.preview.play().then(() => setPreviewTrack(track));
       } else {
+        // need to set the preview track to force a rerender after updating paused
         if (track.preview.paused) {
-          track.preview.play();
+          track.preview.play().then(() => setPreviewTrack({ ...track }));
         } else {
           track.preview.pause();
+          setPreviewTrack({ ...track });
         }
-
-        // need to set the preview track again to force a rerender
-        setPreviewTrack({ ...track });
       }
     }}>
       <Image
