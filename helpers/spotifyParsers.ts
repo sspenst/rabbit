@@ -8,6 +8,7 @@ export interface Artist {
 
 export interface Track {
   artists: Artist[];
+  explicit: boolean;
   features: Record<string, string>;
   genres: string[];
   href: string;
@@ -48,6 +49,7 @@ function parseTrack(track: any, audioFeature: any, saved: boolean): Track {
         name: a.name,
       };
     }),
+    explicit: track.explicit,
     features: features,
     genres: track.album.genres ?? [],
     href: track.external_urls.spotify,

@@ -1,5 +1,6 @@
 import { GetServerSidePropsContext } from 'next';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import FeatureControlComponent, { FeatureControl, FeatureControlValue } from '../components/featureControl';
@@ -91,6 +92,20 @@ export default function App({ code }: AppProps) {
     router.replace('/app', undefined, { shallow: true });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    function exit() {
+      if (previewTrack) {
+        previewTrack.preview.pause();
+      }
+    }
+
+    router.events.on('routeChangeStart', exit);
+
+    return () => {
+      router.events.off('routeChangeStart', exit);
+    };
+  }, [previewTrack, router]);
 
   function logOut() {
     removeTokens();
@@ -208,49 +223,59 @@ export default function App({ code }: AppProps) {
       savingTrackId: savingTrackId,
       setPreviewTrack: setPreviewTrack,
     }}>
-      <div className='sticky top-0 bg-neutral-900'>
-        <div className='flex w-full py-2 px-3 gap-3 items-center'>
-          <button
-            className='bg-green-500 disabled:bg-neutral-500 text-black p-3 text-2xl rounded-full enabled:hover:bg-green-300 transition'
-            disabled={disableGetTracks || !previewTrack}
-            onClick={async () => await getRecommendations()}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-            </svg>
-          </button>
-          <div className='flex gap-3 grow truncate'>
-            {featureControls.map(featureControl => (
-              <FeatureControlComponent
-                featureControl={featureControl}
-                key={featureControl.key}
-                rotateValue={() => setFeatureControls(prevFeatureControls => {
-                  const newFeatureControls = [...prevFeatureControls];
-
-                  const featureControlToRotate = newFeatureControls.find(f => f.key === featureControl.key);
-
-                  if (featureControlToRotate) {
-                    featureControlToRotate.value = (featureControlToRotate.value + 1) % 3;
-                  }
-
-                  return newFeatureControls;
-                })}
-                track={previewTrack}
-              />
-            ))}
+      <div className='flex items-center mx-2 mt-2 gap-2'>
+        <Link href='/'>
+          <Image alt='ss' src='/ss.svg' width={512} height={512} priority={true} className='w-8 h-8 mx-2' />
+        </Link>
+        <span className='grow font-medium text-xl'>
+          Rabbit
+        </span>
+        <Profile user={user} />
+      </div>
+      <div className='sticky top-0 p-2 bg-black'>
+        <div className='bg-neutral-900 rounded-md px-2 pt-2 pb-1 flex flex-col gap-1'>
+          <div className='flex justify-center w-full'>
+            {!previewTrack ?
+              <span className='flex items-center justify-center w-full rounded-md text-sm h-14'>
+                Select a track to begin
+              </span>
+              :
+              <div className='flex items-center w-full hover:bg-neutral-700 transition py-1 pr-4 pl-2 gap-4 rounded-md h-14'>
+                <FormattedTrack track={previewTrack} />
+              </div>
+            }
           </div>
-          <Profile user={user} />
-        </div>
-        <div className='flex justify-center w-full px-2 pb-2'>
-          {!previewTrack ?
-            <span className='flex items-center justify-center w-full border border-neutral-700 rounded-md text-sm h-14'>
-              Select a track to begin
-            </span>
-            :
-            <div className='flex items-center w-full border border-neutral-700 hover:bg-neutral-700 transition py-1 pr-4 pl-2 gap-4 rounded-md h-14'>
-              <FormattedTrack track={previewTrack} />
+          <div className='flex w-full gap-3 px-1 items-center'>
+            <div className='flex gap-1 grow flex-wrap'>
+              {featureControls.map(featureControl => (
+                <FeatureControlComponent
+                  featureControl={featureControl}
+                  key={featureControl.key}
+                  rotateValue={() => setFeatureControls(prevFeatureControls => {
+                    const newFeatureControls = [...prevFeatureControls];
+
+                    const featureControlToRotate = newFeatureControls.find(f => f.key === featureControl.key);
+
+                    if (featureControlToRotate) {
+                      featureControlToRotate.value = (featureControlToRotate.value + 1) % 3;
+                    }
+
+                    return newFeatureControls;
+                  })}
+                  track={previewTrack}
+                />
+              ))}
             </div>
-          }
+            <button
+              className='bg-green-500 disabled:bg-neutral-500 text-black p-3 text-2xl rounded-full enabled:hover:bg-green-300 transition'
+              disabled={disableGetTracks || !previewTrack}
+              onClick={async () => await getRecommendations()}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
       {recommendations.length ?

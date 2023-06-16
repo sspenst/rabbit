@@ -15,7 +15,7 @@ class MyDocument extends Document {
           <link rel='icon' href='/ss.svg' />
           <meta name='description' content='rabbit.sspenst.com' />
         </Head>
-        <body className='bg-neutral-900 text-white'>
+        <body className='bg-black text-white select-none'>
           <Main />
           <NextScript />
         </body>

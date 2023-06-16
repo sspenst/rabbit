@@ -19,7 +19,7 @@ export default function FormattedTrack({ track }: FormattedTrackProps) {
   const { previewTrack, saveTrack, savingTrackId, setPreviewTrack } = useContext(AppContext);
 
   return (
-    <div className='flex gap-4 w-full items-center cursor-pointer truncate select-none' onClick={() => {
+    <div className='flex gap-4 w-full items-center cursor-pointer truncate' onClick={() => {
       if (previewTrack?.preview !== track.preview) {
         // if we are changing tracks
         if (previewTrack) {
@@ -49,7 +49,14 @@ export default function FormattedTrack({ track }: FormattedTrackProps) {
       />
       <div className='grow flex flex-col gap-1 truncate text-left'>
         <span className={classNames('truncate', { 'text-green-500': previewTrack?.preview === track.preview && !track.preview.paused })}>{track.name}</span>
-        <span className='text-neutral-400 text-sm truncate'>{track.artists.map(a => a.name).join(', ')}</span>
+        <span className='flex text-neutral-400 text-sm truncate items-center gap-2'>
+          {track.explicit &&
+            <div className='bg-neutral-400 text-black text-xs rounded-sm w-4 h-4 text-center'>
+              E
+            </div>
+          }
+          {track.artists.map(a => a.name).join(', ')}
+        </span>
       </div>
       <span className='text-neutral-400 ml-4 text-sm'>
         {formatSeconds(track.seconds)}

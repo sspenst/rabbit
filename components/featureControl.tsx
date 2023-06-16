@@ -54,7 +54,7 @@ export default function FeatureControlComponent({ featureControl, rotateValue, t
   return (
     <button
       className={classNames(
-        'flex flex-col items-center p-2 text-xl rounded-2xl enabled:cursor-pointer transition enabled:hover:bg-neutral-800 select-none',
+        'flex flex-col items-center p-2 text-xl rounded-2xl enabled:cursor-pointer transition enabled:hover:bg-neutral-800',
         { 'text-neutral-500 border-neutral-500': featureControl.value === FeatureControlValue.NONE },
         { 'text-green-500 border-green-500': featureControl.value === FeatureControlValue.UP },
         { 'text-red-500 border-red-500': featureControl.value === FeatureControlValue.DOWN },

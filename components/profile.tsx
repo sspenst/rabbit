@@ -11,6 +11,7 @@ interface ProfileProps {
 
 export default function Profile({ user }: ProfileProps) {
   const router = useRouter();
+  const size = 40;
 
   function logOut() {
     removeTokens();
@@ -21,10 +22,14 @@ export default function Profile({ user }: ProfileProps) {
     return (
       <Image
         alt='profile'
-        className='rounded-full select-none'
-        height={48}
+        className='rounded-full'
+        height={size}
         src='user.svg'
-        width={48}
+        style={{
+          minHeight: size,
+          minWidth: size,
+        }}
+        width={size}
       />
     );
   }
@@ -34,10 +39,14 @@ export default function Profile({ user }: ProfileProps) {
       <Menu.Button>
         <Image
           alt={user.name}
-          className='rounded-full select-none'
-          height={48}
+          className='rounded-full hover:scale-105 transition'
+          height={size}
           src={user.image}
-          width={48}
+          style={{
+            minHeight: size,
+            minWidth: size,
+          }}
+          width={size}
         />
       </Menu.Button>
       <Transition
@@ -49,14 +58,11 @@ export default function Profile({ user }: ProfileProps) {
         leaveFrom='transform opacity-100 scale-100'
         leaveTo='transform opacity-0 scale-95'
       >
-        <Menu.Items className='absolute top-16 right-0 m-2 p-1 w-32 origin-top-right rounded-lg shadow-lg border border-neutral-700 bg-neutral-800 flex flex-col items-center select-none'>
+        <Menu.Items className='absolute top-12 right-0 m-2 p-1 w-32 origin-top-right rounded-lg shadow-lg border border-neutral-700 bg-neutral-800 flex flex-col items-center z-10'>
           <Menu.Item>
             <a
-              className='w-full text-center text-neutral-500 hover:text-white truncate p-2 rounded-lg hover:bg-neutral-700 transition'
+              className='w-full text-center text-neutral-300 hover:text-white truncate p-2 rounded-lg hover:bg-neutral-700 transition'
               href={user.href}
-              style={{
-                minWidth: 48,
-              }}
               rel='noreferrer'
               target='_blank'
             >
@@ -65,7 +71,7 @@ export default function Profile({ user }: ProfileProps) {
           </Menu.Item>
           <Menu.Item>
             <button
-              className='w-full text-neutral-500 hover:text-white truncate p-2 rounded-lg hover:bg-neutral-700 transition'
+              className='w-full text-neutral-300 hover:text-white truncate p-2 rounded-lg hover:bg-neutral-700 transition'
               onClick={logOut}
             >
               Logout
