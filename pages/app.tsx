@@ -1,9 +1,10 @@
 import { GetServerSidePropsContext } from 'next';
+import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
-import FeatureControlComponent, { FeatureControl, FeatureControlValue } from '../components/featureControl';
+import FeatureControlComponent, { FeatureControl, FeatureControlState } from '../components/featureControl';
 import FormattedTrack from '../components/formattedTrack';
 import Profile from '../components/profile';
 import { AppContext } from '../contexts/appContext';
@@ -25,11 +26,12 @@ interface AppProps {
 export default function App({ code }: AppProps) {
   const [disableGetTracks, setDisableGetTracks] = useState(false);
   const [featureControls, setFeatureControls] = useState<FeatureControl[]>([
-    { key: 'energy', value: FeatureControlValue.NONE },
-    { key: 'loudness', value: FeatureControlValue.NONE },
-    { key: 'danceability', value: FeatureControlValue.NONE },
-    { key: 'valence', value: FeatureControlValue.NONE },
-    { key: 'tempo', value: FeatureControlValue.NONE },
+    { key: 'energy', state: FeatureControlState.NONE },
+    { key: 'loudness', state: FeatureControlState.NONE },
+    { key: 'instrumentalness', state: FeatureControlState.NONE },
+    { key: 'danceability', state: FeatureControlState.NONE },
+    { key: 'valence', state: FeatureControlState.NONE },
+    { key: 'tempo', state: FeatureControlState.NONE },
   ]);
   const limit = 20;
   const [savingTrackId, setSavingTrackId] = useState<string>();
@@ -122,9 +124,9 @@ export default function App({ code }: AppProps) {
     const features: Record<string, string> = {};
 
     featureControls.forEach(f => {
-      if (f.value === FeatureControlValue.UP) {
+      if (f.state === FeatureControlState.UP) {
         features[`min_${f.key}`] = previewTrack.features[f.key];
-      } else if (f.value === FeatureControlValue.DOWN) {
+      } else if (f.state === FeatureControlState.DOWN) {
         features[`max_${f.key}`] = previewTrack.features[f.key];
       }
     });
@@ -223,11 +225,19 @@ export default function App({ code }: AppProps) {
       savingTrackId: savingTrackId,
       setPreviewTrack: setPreviewTrack,
     }}>
+      {previewTrack && !previewTrack.preview.paused &&
+        <Head>
+          <title>{previewTrack.name} by {previewTrack.artists.map(a => a.name).join(', ')}</title>
+        </Head>
+      }
       <div className='flex items-center mx-2 mt-2 gap-2'>
         <Link href='/'>
-          <Image alt='ss' src='/ss.svg' width={512} height={512} priority={true} className='w-8 h-8 mx-2' />
+          <Image alt='ss' src='/ss.svg' width={512} height={512} priority={true} className='w-8 h-8 mx-2' style={{
+            minHeight: 32,
+            minWidth: 32,
+          }} />
         </Link>
-        <span className='grow font-medium text-xl'>
+        <span className='grow font-medium text-xl truncate'>
           Rabbit
         </span>
         <Profile user={user} />
@@ -251,13 +261,13 @@ export default function App({ code }: AppProps) {
                 <FeatureControlComponent
                   featureControl={featureControl}
                   key={featureControl.key}
-                  rotateValue={() => setFeatureControls(prevFeatureControls => {
+                  rotateState={() => setFeatureControls(prevFeatureControls => {
                     const newFeatureControls = [...prevFeatureControls];
 
                     const featureControlToRotate = newFeatureControls.find(f => f.key === featureControl.key);
 
                     if (featureControlToRotate) {
-                      featureControlToRotate.value = (featureControlToRotate.value + 1) % 3;
+                      featureControlToRotate.state = (featureControlToRotate.state + 1) % 3;
                     }
 
                     return newFeatureControls;

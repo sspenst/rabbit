@@ -21,12 +21,15 @@ export default function FormattedTrack({ track }: FormattedTrackProps) {
   return (
     <div className='flex gap-4 w-full items-center cursor-pointer truncate' onClick={() => {
       if (previewTrack?.preview !== track.preview) {
-        // if we are changing tracks
-        if (previewTrack) {
-          previewTrack.preview.pause();
-        }
+        // we are changing tracks
+        track.preview.play().then(() => {
+          // if we successfully play the track, then we need to pause the current track
+          if (previewTrack) {
+            previewTrack.preview.pause();
+          }
 
-        track.preview.play().then(() => setPreviewTrack(track));
+          setPreviewTrack(track);
+        });
       } else {
         // need to set the preview track to force a rerender after updating paused
         if (track.preview.paused) {
