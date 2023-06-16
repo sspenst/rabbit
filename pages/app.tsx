@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react';
 import FeatureControlComponent, { FeatureControl, FeatureControlValue } from '../components/featureControl';
 import FormattedTrack from '../components/formattedTrack';
 import Profile from '../components/profile';
-import { RabbitContext } from '../contexts/rabbitContext';
+import { AppContext } from '../contexts/appContext';
 import { loadTokens, redirectToAuthCodeFlow, removeTokens, spotifyFetch } from '../helpers/authCodeWithPkce';
 import { parseTracks, parseUser, Track, User } from '../helpers/spotifyParsers';
 
@@ -13,15 +13,15 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   return {
     props: {
       code: context.query.code ?? null,
-    } as RabbitProps,
+    } as AppProps,
   };
 }
 
-interface RabbitProps {
+interface AppProps {
   code: string | undefined;
 }
 
-export default function Rabbit({ code }: RabbitProps) {
+export default function App({ code }: AppProps) {
   const [disableGetTracks, setDisableGetTracks] = useState(false);
   const [featureControls, setFeatureControls] = useState<FeatureControl[]>([
     { key: 'energy', value: FeatureControlValue.NONE },
@@ -88,7 +88,7 @@ export default function Rabbit({ code }: RabbitProps) {
     }
 
     // remove code from the url query for clean aesthetic
-    router.push('/rabbit', undefined, { shallow: true });
+    router.replace('/app', undefined, { shallow: true });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -141,40 +141,6 @@ export default function Rabbit({ code }: RabbitProps) {
     setShowMyTracks(false);
   }
 
-  if (user === null) {
-    return (
-      <div className='flex inset-0 fixed text-center text-lg items-center p-4'>
-        <p className='w-full'>
-          {'An unexpected error occurred! Try '}
-          <button
-            className='text-blue-300'
-            onClick={logOut}
-          >
-            logging out
-          </button>
-          {' or '}
-          <a
-            className='text-blue-300'
-            href='mailto:spencerspenst@gmail.com'
-            rel='noreferrer'
-            target='_blank'
-          >
-            contact me
-          </a>
-          {' if you are still having issues.'}
-        </p>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className='flex inset-0 fixed justify-center items-center'>
-        <Image alt='loading' src='/puff.svg' width='48' height='48' />
-      </div>
-    );
-  }
-
   async function saveTrack(track: Track) {
     setSavingTrackId(track.id);
 
@@ -209,8 +175,42 @@ export default function Rabbit({ code }: RabbitProps) {
     setSavingTrackId(undefined);
   }
 
+  if (user === null) {
+    return (
+      <div className='flex inset-0 fixed text-center items-center p-4'>
+        <p className='w-full'>
+          {'An unexpected error occurred! Try '}
+          <button
+            className='text-blue-300'
+            onClick={logOut}
+          >
+            logging out
+          </button>
+          {' or '}
+          <a
+            className='text-blue-300'
+            href='mailto:spencerspenst@gmail.com'
+            rel='noreferrer'
+            target='_blank'
+          >
+            contact me
+          </a>
+          {' if you are still having issues.'}
+        </p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className='flex inset-0 fixed justify-center items-center'>
+        <Image alt='loading' src='/puff.svg' width='48' height='48' />
+      </div>
+    );
+  }
+
   return (
-    <RabbitContext.Provider value={{
+    <AppContext.Provider value={{
       previewTrack: previewTrack,
       saveTrack: saveTrack,
       savingTrackId: savingTrackId,
@@ -294,6 +294,6 @@ export default function Rabbit({ code }: RabbitProps) {
           </div>
         }
       </div>
-    </RabbitContext.Provider>
+    </AppContext.Provider>
   );
 }
