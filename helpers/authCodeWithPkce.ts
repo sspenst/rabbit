@@ -1,8 +1,8 @@
 const clientId = 'a16d23f0a5e34c73b8719bd006b90464';
 const maxRetries = 5;
 
-function getCurrentUri() {
-  return `${location.protocol}//${location.host}${location.pathname}`;
+function getRedirectUri() {
+  return `${location.protocol}//${location.host}/app`;
 }
 
 // https://developer.spotify.com/documentation/web-api/tutorials/code-pkce-flow
@@ -20,7 +20,7 @@ export async function redirectToAuthCodeFlow() {
     client_id: clientId,
     code_challenge: challenge,
     code_challenge_method: 'S256',
-    redirect_uri: getCurrentUri(),
+    redirect_uri: getRedirectUri(),
     response_type: 'code',
     scope: 'user-library-read user-library-modify',
   })}`;
@@ -70,7 +70,7 @@ export async function loadTokens(code?: string) {
     body.code = code;
     body.code_verifier = verifier;
     body.grant_type = 'authorization_code';
-    body.redirect_uri = getCurrentUri();
+    body.redirect_uri = getRedirectUri();
   } else {
     const refreshToken = localStorage.getItem('refreshToken');
 

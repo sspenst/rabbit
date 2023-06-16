@@ -201,14 +201,6 @@ export default function App({ code }: AppProps) {
     );
   }
 
-  if (!user) {
-    return (
-      <div className='flex inset-0 fixed justify-center items-center'>
-        <Image alt='loading' src='/puff.svg' width='48' height='48' />
-      </div>
-    );
-  }
-
   return (
     <AppContext.Provider value={{
       previewTrack: previewTrack,
@@ -261,39 +253,45 @@ export default function App({ code }: AppProps) {
           }
         </div>
       </div>
-      <div className='flex flex-col items-center text-center w-full px-2 pb-2'>
-        {recommendations.map(track => (
-          <div className='w-full hover:bg-neutral-700 transition py-1 pr-4 pl-2 rounded-md' key={`recommended-track-${track.id}`}>
-            <FormattedTrack track={track} />
-          </div>
-        ))}
-        {showMyTracks &&
-          <div className='flex gap-3 mt-2'>
-            <button
-              className='bg-green-500 disabled:bg-neutral-500 text-black p-3 text-2xl rounded-full enabled:hover:bg-green-300 transition'
-              disabled={disableGetTracks || !myTracksPage}
-              onClick={async () => {
-                await loadMyTracks(myTracksPage - 1);
-              }}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-              </svg>
-            </button>
-            <button
-              className='bg-green-500 disabled:bg-neutral-500 text-black p-3 text-2xl rounded-full enabled:hover:bg-green-300 transition'
-              disabled={disableGetTracks}
-              onClick={async () => {
-                await loadMyTracks(myTracksPage + 1);
-              }}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-              </svg>
-            </button>
-          </div>
-        }
-      </div>
+      {recommendations.length ?
+        <div className='flex flex-col items-center text-center w-full px-2 pb-2'>
+          {recommendations.map(track => (
+            <div className='w-full hover:bg-neutral-700 transition py-1 pr-4 pl-2 rounded-md' key={`recommended-track-${track.id}`}>
+              <FormattedTrack track={track} />
+            </div>
+          ))}
+          {showMyTracks &&
+            <div className='flex gap-3 mt-2'>
+              <button
+                className='bg-green-500 disabled:bg-neutral-500 text-black p-3 text-2xl rounded-full enabled:hover:bg-green-300 transition'
+                disabled={disableGetTracks || !myTracksPage}
+                onClick={async () => {
+                  await loadMyTracks(myTracksPage - 1);
+                }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                </svg>
+              </button>
+              <button
+                className='bg-green-500 disabled:bg-neutral-500 text-black p-3 text-2xl rounded-full enabled:hover:bg-green-300 transition'
+                disabled={disableGetTracks}
+                onClick={async () => {
+                  await loadMyTracks(myTracksPage + 1);
+                }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                </svg>
+              </button>
+            </div>
+          }
+        </div>
+        :
+        <div className='flex justify-center'>
+          <Image alt='loading' src='/puff.svg' width='48' height='48' />
+        </div>
+      }
     </AppContext.Provider>
   );
 }

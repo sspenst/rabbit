@@ -6,7 +6,7 @@ import { removeTokens } from '../helpers/authCodeWithPkce';
 import { User } from '../helpers/spotifyParsers';
 
 interface ProfileProps {
-  user: User;
+  user: User | undefined;
 }
 
 export default function Profile({ user }: ProfileProps) {
@@ -17,17 +17,26 @@ export default function Profile({ user }: ProfileProps) {
     router.push('/');
   }
 
+  if (!user) {
+    return (
+      <Image
+        alt='profile'
+        className='rounded-full select-none'
+        height={48}
+        src='user.svg'
+        width={48}
+      />
+    );
+  }
+
   return (
     <Menu>
       <Menu.Button>
         <Image
           alt={user.name}
-          className='shadow-lg w-12 h-12 rounded-full select-none'
+          className='rounded-full select-none'
           height={48}
           src={user.image}
-          style={{
-            minWidth: '3rem',
-          }}
           width={48}
         />
       </Menu.Button>
@@ -43,7 +52,7 @@ export default function Profile({ user }: ProfileProps) {
         <Menu.Items className='absolute top-16 right-0 m-2 p-1 w-32 origin-top-right rounded-lg shadow-lg border border-neutral-700 bg-neutral-800 flex flex-col items-center select-none'>
           <Menu.Item>
             <a
-              className='w-full text-center truncate p-3 rounded-lg hover:bg-neutral-700 transition'
+              className='w-full text-center text-neutral-500 hover:text-white truncate p-2 rounded-lg hover:bg-neutral-700 transition'
               href={user.href}
               style={{
                 minWidth: 48,
@@ -56,7 +65,7 @@ export default function Profile({ user }: ProfileProps) {
           </Menu.Item>
           <Menu.Item>
             <button
-              className='w-full text-center truncate p-3 rounded-lg hover:bg-neutral-700 transition'
+              className='w-full text-neutral-500 hover:text-white truncate p-2 rounded-lg hover:bg-neutral-700 transition'
               onClick={logOut}
             >
               Logout
