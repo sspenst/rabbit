@@ -19,19 +19,7 @@ export default function Profile({ user }: ProfileProps) {
   }
 
   if (!user) {
-    return (
-      <Image
-        alt='profile'
-        className='rounded-full'
-        height={size}
-        src='user.svg'
-        style={{
-          minHeight: size,
-          minWidth: size,
-        }}
-        width={size}
-      />
-    );
+    return null;
   }
 
   return (

@@ -103,7 +103,7 @@ export function parseUser(user: any): User | null {
   return {
     href: user.external_urls.spotify,
     id: user.id,
-    image: user.images[0]?.url ?? '/user.svg',
+    image: user.images[0]?.url ?? '/avatar_default.png',
     name: user.display_name,
   };
 }

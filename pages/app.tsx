@@ -221,7 +221,7 @@ export default function App() {
           <title>{previewTrack.name} by {previewTrack.artists.map(a => a.name).join(', ')}</title>
         </Head>
       }
-      <div className='flex items-center mx-2 mt-2 gap-2'>
+      <div className='flex items-center mx-2 mt-2 gap-2 h-10'>
         <Link href='/'>
           <Image alt='ss' src='/ss.svg' width={512} height={512} priority={true} className='w-8 h-8 mx-2' style={{
             minHeight: 32,
