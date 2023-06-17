@@ -66,7 +66,7 @@ export default function FormattedTrack({ track }: FormattedTrackProps) {
           </span>
         </span>
       </div>
-      <span className='text-neutral-400 ml-4 text-sm'>
+      <span className='hidden sm:block text-neutral-400 ml-4 text-sm'>
         {formatSeconds(track.seconds)}
       </span>
       <button

@@ -224,14 +224,29 @@ export default function App() {
           <title>{previewTrack.name} by {previewTrack.artists.map(a => a.name).join(', ')}</title>
         </Head>
       }
-      <div className='flex items-center mx-2 mt-2 gap-2 h-10'>
+      <div className='flex items-center mr-2 ml-4 mt-2 gap-4 h-10'>
         <Link href='/'>
-          <Image alt='ss' src='/ss.svg' width={512} height={512} priority={true} className='w-8 h-8 mx-2' style={{
+          <Image alt='ss' src='/ss.svg' width={512} height={512} priority={true} className='w-8 h-8' style={{
             minHeight: 32,
             minWidth: 32,
           }} />
         </Link>
-        <span className='grow font-medium text-2xl truncate'>
+        <a
+          className='w-7 h-7'
+          href='https://open.spotify.com/'
+          rel='noreferrer'
+          style={{
+            minHeight: 28,
+            minWidth: 28,
+          }}
+          target='_blank'
+        >
+          <Image alt='spotify-icon' src='/spotify_icon.png' width={512} height={512} priority={true} className='w-7 h-7' style={{
+            minHeight: 28,
+            minWidth: 28,
+          }} />
+        </a>
+        <span className='grow font-medium text-2xl truncate ml-1'>
           Rabbit
         </span>
         <Profile user={user} />
