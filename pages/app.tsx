@@ -1,4 +1,3 @@
-import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -11,19 +10,7 @@ import { AppContext } from '../contexts/appContext';
 import { loadTokens, redirectToAuthCodeFlow, removeTokens, spotifyFetch } from '../helpers/authCodeWithPkce';
 import { parseTracks, parseUser, Track, User } from '../helpers/spotifyParsers';
 
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-  return {
-    props: {
-      code: context.query.code ?? null,
-    } as AppProps,
-  };
-}
-
-interface AppProps {
-  code: string | undefined;
-}
-
-export default function App({ code }: AppProps) {
+export default function App() {
   const [disableGetTracks, setDisableGetTracks] = useState(false);
   const [featureControls, setFeatureControls] = useState<FeatureControl[]>([
     { key: 'energy', state: FeatureControlState.NONE },
@@ -81,19 +68,23 @@ export default function App({ code }: AppProps) {
       await loadMyTracks(0);
     }
 
+    if (!router.isReady) {
+      return;
+    }
+
     // use existing accessToken if we have it, otherwise normal auth flow
     if (localStorage.getItem('accessToken')) {
       initializePageData();
-    } else if (!code) {
+    } else if (!router.query.code) {
       redirectToAuthCodeFlow();
     } else {
-      loadTokens(code).then(async () => await initializePageData());
+      loadTokens(router.query.code as string).then(async () => await initializePageData());
     }
 
     // remove code from the url query for clean aesthetic
     router.replace('/app', undefined, { shallow: true });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [router.isReady]);
 
   useEffect(() => {
     function exit() {
