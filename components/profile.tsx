@@ -46,7 +46,7 @@ export default function Profile({ user }: ProfileProps) {
         leaveFrom='transform opacity-100 scale-100'
         leaveTo='transform opacity-0 scale-95'
       >
-        <Menu.Items className='absolute top-12 right-0 m-2 p-1 w-32 origin-top-right rounded-lg shadow-lg border border-neutral-700 bg-neutral-800 flex flex-col items-center z-10'>
+        <Menu.Items className='absolute top-12 right-0 m-2 p-1 w-28 origin-top-right rounded-lg shadow-lg border border-neutral-700 bg-neutral-800 flex flex-col items-center z-10'>
           <Menu.Item>
             <a
               className='w-full text-center text-neutral-300 hover:text-white truncate p-2 rounded-lg hover:bg-neutral-700 transition'

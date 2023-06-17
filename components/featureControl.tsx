@@ -9,11 +9,11 @@ export enum FeatureControlState {
 }
 
 export interface FeatureControl {
-  key: string;
+  property: string;
   state: FeatureControlState;
 }
 
-const svgMap: Record<string, JSX.Element> = {
+export const featureControlSvgMap: Record<string, JSX.Element> = {
   'danceability':
   <svg className='w-6 h-6' viewBox='2 2 22 22' fill='none' xmlns='http://www.w3.org/2000/svg'>
     <path d='M4 12H9L12 5L14 18.5L17.5 12H21.5' stroke='currentColor' strokeWidth={1.6} strokeLinecap='round' strokeLinejoin='round' />
@@ -81,10 +81,10 @@ interface FeatureControlComponentProps {
 export default function FeatureControlComponent({ featureControl, rotateState, track }: FeatureControlComponentProps) {
   let value = undefined;
 
-  if (track && featureControl.key in track.features) {
-    value = Number(track.features[featureControl.key]);
+  if (track && featureControl.property in track.features) {
+    value = Number(track.features[featureControl.property]);
 
-    if (featureControl.key === 'tempo') {
+    if (featureControl.property === 'tempo') {
       value = Math.round(10 * value) / 10;
     } else {
       value = Math.round(100 * value) / 100;
@@ -103,7 +103,7 @@ export default function FeatureControlComponent({ featureControl, rotateState, t
       onClick={rotateState}
     >
       <div className='flex gap-2'>
-        {svgMap[featureControl.key]}
+        {featureControlSvgMap[featureControl.property]}
         <FeatureControlStateSvg featureControlState={featureControl.state} />
       </div>
       <span className='text-xs'>{value ?? '-'}</span>

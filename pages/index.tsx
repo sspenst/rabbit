@@ -19,7 +19,7 @@ export default function Index() {
         height: demoHeight * 1.2,
         width: demoWidth * 1.2,
       }}>
-        <Image className='block h-auto w-full' alt='demo' src='demo.png' width={demoWidth} height={demoHeight} />
+        <Image className='block h-auto w-full opacity-60' alt='demo' src='demo.png' width={demoWidth} height={demoHeight} />
       </div>
     </div>
     <div className='absolute flex m-2 h-10 items-center'>
@@ -34,7 +34,7 @@ export default function Index() {
       backgroundImage: 'radial-gradient(black 30%, transparent, transparent)',
     }}>
       <h1 className='text-8xl'>Rabbit</h1>
-      <h2 className='text-3xl'>Discover new songs using Spotify&apos;s audio features</h2>
+      <h2 className='text-3xl'>Discover new tracks using Spotify&apos;s audio features</h2>
       <button className='px-8 py-2 rounded-2xl bg-green-500 hover:bg-green-300 transition text-black text-xl' onClick={() => {
         if (localStorage.getItem('accessToken')) {
           router.push('/app');

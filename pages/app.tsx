@@ -5,6 +5,7 @@ import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import FeatureControlComponent, { FeatureControl, FeatureControlState } from '../components/featureControl';
 import FormattedTrack from '../components/formattedTrack';
+import HelpModal from '../components/helpModal';
 import Profile from '../components/profile';
 import { AppContext } from '../contexts/appContext';
 import { loadTokens, redirectToAuthCodeFlow, removeTokens, spotifyFetch } from '../helpers/authCodeWithPkce';
@@ -13,13 +14,14 @@ import { parseTracks, parseUser, Track, User } from '../helpers/spotifyParsers';
 export default function App() {
   const [disableGetTracks, setDisableGetTracks] = useState(false);
   const [featureControls, setFeatureControls] = useState<FeatureControl[]>([
-    { key: 'energy', state: FeatureControlState.NONE },
-    { key: 'loudness', state: FeatureControlState.NONE },
-    { key: 'instrumentalness', state: FeatureControlState.NONE },
-    { key: 'danceability', state: FeatureControlState.NONE },
-    { key: 'valence', state: FeatureControlState.NONE },
-    { key: 'tempo', state: FeatureControlState.NONE },
+    { property: 'tempo', state: FeatureControlState.NONE },
+    { property: 'loudness', state: FeatureControlState.NONE },
+    { property: 'danceability', state: FeatureControlState.NONE },
+    { property: 'energy', state: FeatureControlState.NONE },
+    { property: 'instrumentalness', state: FeatureControlState.NONE },
+    { property: 'valence', state: FeatureControlState.NONE },
   ]);
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const limit = 20;
   const [savingTrackId, setSavingTrackId] = useState<string>();
   const [myTracksPage, setMyTracksPage] = useState(0);
@@ -116,9 +118,9 @@ export default function App() {
 
     featureControls.forEach(f => {
       if (f.state === FeatureControlState.UP) {
-        features[`min_${f.key}`] = previewTrack.features[f.key];
+        features[`min_${f.property}`] = previewTrack.features[f.property];
       } else if (f.state === FeatureControlState.DOWN) {
-        features[`max_${f.key}`] = previewTrack.features[f.key];
+        features[`max_${f.property}`] = previewTrack.features[f.property];
       }
     });
 
@@ -228,7 +230,7 @@ export default function App() {
             minWidth: 32,
           }} />
         </Link>
-        <span className='grow font-medium text-xl truncate'>
+        <span className='grow font-medium text-2xl truncate'>
           Rabbit
         </span>
         <Profile user={user} />
@@ -251,11 +253,11 @@ export default function App() {
               {featureControls.map(featureControl => (
                 <FeatureControlComponent
                   featureControl={featureControl}
-                  key={featureControl.key}
+                  key={featureControl.property}
                   rotateState={() => setFeatureControls(prevFeatureControls => {
                     const newFeatureControls = [...prevFeatureControls];
 
-                    const featureControlToRotate = newFeatureControls.find(f => f.key === featureControl.key);
+                    const featureControlToRotate = newFeatureControls.find(f => f.property === featureControl.property);
 
                     if (featureControlToRotate) {
                       featureControlToRotate.state = (featureControlToRotate.state + 1) % 3;
@@ -267,13 +269,18 @@ export default function App() {
                 />
               ))}
             </div>
+            <button className='text-neutral-500 hover:bg-neutral-800 rounded-full -mx-1' onClick={() => setIsHelpModalOpen(true)}>
+              <svg className='w-8 h-8' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
+                <path d='M12 17V16.9929M12 14.8571C12 11.6429 15 12.3571 15 9.85714C15 8.27919 13.6568 7 12 7C10.6567 7 9.51961 7.84083 9.13733 9' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' strokeLinejoin='round' />
+              </svg>
+            </button>
             <button
               className='bg-green-500 disabled:bg-neutral-500 text-black p-3 text-2xl rounded-full enabled:hover:bg-green-300 transition'
               disabled={disableGetTracks || !previewTrack}
               onClick={async () => await getRecommendations()}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+              <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+                <path strokeLinecap='round' strokeLinejoin='round' d='M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z' />
               </svg>
             </button>
           </div>
@@ -295,8 +302,8 @@ export default function App() {
                   await loadMyTracks(myTracksPage - 1);
                 }}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+                  <path strokeLinecap='round' strokeLinejoin='round' d='M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18' />
                 </svg>
               </button>
               <button
@@ -306,8 +313,8 @@ export default function App() {
                   await loadMyTracks(myTracksPage + 1);
                 }}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+                  <path strokeLinecap='round' strokeLinejoin='round' d='M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3' />
                 </svg>
               </button>
             </div>
@@ -318,6 +325,7 @@ export default function App() {
           <Image alt='loading' src='/puff.svg' width='48' height='48' />
         </div>
       }
+      <HelpModal isOpen={isHelpModalOpen} onClose={() => setIsHelpModalOpen(false)} />
     </AppContext.Provider>
   );
 }
