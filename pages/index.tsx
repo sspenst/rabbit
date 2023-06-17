@@ -15,7 +15,10 @@ export default function Index() {
       <div className='absolute w-full h-full z-10' style={{
         backgroundImage: 'linear-gradient(to right, transparent 60%, black)',
       }} />
-      <div className='relative top-16 left-8' style={{
+      <div className='absolute w-full h-full z-10' style={{
+        backgroundImage: 'linear-gradient(to bottom, transparent 80%, black)',
+      }} />
+      <div className='relative top-12 left-0' style={{
         height: demoHeight * 1.2,
         width: demoWidth * 1.2,
       }}>
