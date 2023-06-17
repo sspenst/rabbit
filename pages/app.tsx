@@ -246,7 +246,7 @@ export default function App({ code }: AppProps) {
         <div className='bg-neutral-900 rounded-md px-2 pt-2 pb-1 flex flex-col gap-1'>
           <div className='flex justify-center w-full'>
             {!previewTrack ?
-              <span className='flex items-center justify-center w-full rounded-md text-sm h-14'>
+              <span className='flex items-center justify-center w-full rounded-md text-md h-14'>
                 Select a track to begin
               </span>
               :

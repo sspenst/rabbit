@@ -52,13 +52,18 @@ export default function FormattedTrack({ track }: FormattedTrackProps) {
       />
       <div className='grow flex flex-col gap-1 truncate text-left'>
         <span className={classNames('truncate', { 'text-green-500': previewTrack?.preview === track.preview && !track.preview.paused })}>{track.name}</span>
-        <span className='flex text-neutral-400 text-sm truncate items-center gap-2'>
+        <span className='flex text-neutral-400 text-sm items-center gap-2'>
           {track.explicit &&
-            <div className='bg-neutral-400 text-black text-xs rounded-sm w-4 h-4 text-center'>
+            <div className='bg-neutral-400 text-black text-xs rounded-sm w-4 h-4 text-center' style={{
+              minHeight: 16,
+              minWidth: 16,
+            }}>
               E
             </div>
           }
-          {track.artists.map(a => a.name).join(', ')}
+          <span className='truncate'>
+            {track.artists.map(a => a.name).join(', ')}
+          </span>
         </span>
       </div>
       <span className='text-neutral-400 ml-4 text-sm'>
