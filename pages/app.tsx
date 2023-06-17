@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import FeatureControlComponent, { FeatureControl, FeatureControlState } from '../components/featureControl';
+import Footer from '../components/footer';
 import FormattedTrack from '../components/formattedTrack';
 import HelpModal from '../components/helpModal';
 import Profile from '../components/profile';
@@ -325,6 +326,7 @@ export default function App() {
           <Image alt='loading' src='/puff.svg' width='48' height='48' />
         </div>
       }
+      <Footer />
       <HelpModal isOpen={isHelpModalOpen} onClose={() => setIsHelpModalOpen(false)} />
     </AppContext.Provider>
   );

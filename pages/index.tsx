@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import React from 'react';
+import Footer from '../components/footer';
 import { redirectToAuthCodeFlow } from '../helpers/authCodeWithPkce';
 
 export default function Index() {
@@ -26,14 +27,14 @@ export default function Index() {
       </div>
     </div>
     <div className='absolute flex m-2 h-10 items-center'>
-      <a href='https://sspenst.com'>
+      <a href='https://sspenst.com' rel='noreferrer' target='_blank'>
         <Image alt='ss' src='/ss.svg' width={512} height={512} priority={true} className='w-8 h-8 m-2' style={{
           minHeight: 32,
           minWidth: 32,
         }} />
       </a>
     </div>
-    <div className='flex flex-col text-center w-full justify-center font-medium h-screen items-center gap-8 p-20' style={{
+    <div className='flex flex-col text-center w-full justify-center font-medium h-screen items-center gap-8 p-12' style={{
       backgroundImage: 'radial-gradient(black 30%, transparent, transparent)',
     }}>
       <h1 className='text-8xl'>Rabbit</h1>
@@ -46,6 +47,7 @@ export default function Index() {
         }
       }}>Try it</button>
     </div>
+    <Footer />
   </>
   );
 }
