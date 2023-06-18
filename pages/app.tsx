@@ -30,7 +30,7 @@ export default function App() {
   const [previewTrack, setPreviewTrack] = useState<Track>();
   const [recommendations, setRecommendations] = useState<Track[]>([]);
   const router = useRouter();
-  const [showMyTracks, setShowMyTracks] = useState(true);
+  const [showMore, setShowMore] = useState(true);
   const [user, setUser] = useState<User | null>();
 
   async function loadMyTracks(page: number) {
@@ -51,12 +51,17 @@ export default function App() {
     const myTracks = await parseTracks(tracks.items.map((i: any) => i.track));
 
     if (!myTracks.length) {
-      // if there are no tracks, we have probably reached the end of the user's saved tracks
-      // load again from the beginning
-      loadMyTracks(0);
+      setShowMore(false);
     } else {
+      setShowMore(true);
       setMyTracksPage(page);
-      setRecommendations(myTracks);
+      setRecommendations(prevTracks => {
+        if (page !== 0) {
+          return [...prevTracks].concat(myTracks);
+        } else {
+          return myTracks;
+        }
+      });
       setDisableGetTracks(false);
     }
   }
@@ -151,7 +156,7 @@ export default function App() {
 
     setRecommendations(newRecommnedations);
     setDisableGetTracks(false);
-    setShowMyTracks(false);
+    setShowMore(false);
   }
 
   async function saveTrack(track: Track) {
@@ -256,8 +261,10 @@ export default function App() {
         </span>
         <Profile user={user} />
       </div>
-      <div className='sticky top-0 p-2 bg-black'>
-        <div className='bg-neutral-900 rounded-md px-2 pt-2 pb-1 flex flex-col gap-1'>
+      <div className='sticky top-0 p-2 bg-black flex justify-center'>
+        <div className='bg-neutral-900 rounded-md px-2 pt-2 pb-1 flex flex-col gap-1' style={{
+          width: 768,
+        }}>
           <div className='flex justify-center w-full'>
             {!previewTrack ?
               <span className='flex items-center justify-center w-full rounded-md text-md h-14'>
@@ -270,7 +277,7 @@ export default function App() {
             }
           </div>
           <div className='flex w-full gap-3 px-1 items-center'>
-            <div className='flex gap-1 grow flex-wrap'>
+            <div className='flex gap-1 flex-wrap'>
               {featureControls.map(featureControl => (
                 <FeatureControlComponent
                   featureControl={featureControl}
@@ -290,11 +297,14 @@ export default function App() {
                 />
               ))}
             </div>
-            <button className='text-neutral-400 hover:bg-neutral-700 rounded-full -mx-1' onClick={() => setIsHelpModalOpen(true)}>
-              <svg className='w-8 h-8' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
-                <path d='M12 17V16.9929M12 14.8571C12 11.6429 15 12.3571 15 9.85714C15 8.27919 13.6568 7 12 7C10.6567 7 9.51961 7.84083 9.13733 9' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' strokeLinejoin='round' />
-              </svg>
-            </button>
+            <div className='grow flex justify-center items-center'>
+              <button
+                className='text-neutral-400 hover:underline text-sm'
+                onClick={() => setIsHelpModalOpen(true)}
+              >
+                Help
+              </button>
+            </div>
             <button
               className='bg-green-500 disabled:bg-neutral-500 text-black p-3 text-2xl rounded-full enabled:hover:bg-green-300 transition'
               disabled={disableGetTracks || !previewTrack}
@@ -307,45 +317,28 @@ export default function App() {
           </div>
         </div>
       </div>
-      {recommendations.length ?
-        <div className='flex flex-col items-center text-center w-full px-2 pb-2'>
-          {recommendations.map(track => (
-            <div className='w-full hover:bg-neutral-700 transition py-1 pr-4 pl-2 rounded-md' key={`recommended-track-${track.id}`}>
-              <FormattedTrack track={track} />
-            </div>
-          ))}
-          {showMyTracks &&
-            <div className='flex gap-3 mt-2'>
+      <div className='flex justify-center'>
+        {recommendations.length ?
+          <div className='flex flex-col items-center text-center w-full px-2 max-w-3xl'>
+            {recommendations.map(track => (
+              <div className='w-full hover:bg-neutral-700 transition py-1 pr-4 pl-2 rounded-md' key={`recommended-track-${track.id}`}>
+                <FormattedTrack track={track} />
+              </div>
+            ))}
+            {showMore &&
               <button
-                className='bg-green-500 disabled:bg-neutral-500 text-black p-3 text-2xl rounded-full enabled:hover:bg-green-300 transition'
-                disabled={disableGetTracks || !myTracksPage}
-                onClick={async () => {
-                  await loadMyTracks(myTracksPage - 1);
-                }}
-              >
-                <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
-                  <path strokeLinecap='round' strokeLinejoin='round' d='M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18' />
-                </svg>
-              </button>
-              <button
-                className='bg-green-500 disabled:bg-neutral-500 text-black p-3 text-2xl rounded-full enabled:hover:bg-green-300 transition'
+                className='px-8 py-2 rounded-2xl bg-green-500 transition text-black text-xl mt-2 disabled:bg-neutral-500 enabled:hover:bg-green-300 font-medium'
                 disabled={disableGetTracks}
-                onClick={async () => {
-                  await loadMyTracks(myTracksPage + 1);
-                }}
+                onClick={async () => await loadMyTracks(myTracksPage + 1)}
               >
-                <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
-                  <path strokeLinecap='round' strokeLinejoin='round' d='M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3' />
-                </svg>
+                More
               </button>
-            </div>
-          }
-        </div>
-        :
-        <div className='flex justify-center'>
-          <Image alt='loading' src='/puff.svg' width='48' height='48' />
-        </div>
-      }
+            }
+          </div>
+          :
+          <Image alt='loading' className='m-2' src='/puff.svg' width='48' height='48' />
+        }
+      </div>
       <Footer />
       <HelpModal isOpen={isHelpModalOpen} onClose={() => setIsHelpModalOpen(false)} />
     </AppContext.Provider>

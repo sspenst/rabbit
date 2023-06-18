@@ -40,7 +40,7 @@ export default function HelpModal({ isOpen, onClose }: ModalProps) {
               <Dialog.Title as='h3' className='text-xl font-bold text-center'>
                 Help
               </Dialog.Title>
-              <ul className='flex flex-col gap list-decimal pl-5'>
+              <ul className='flex flex-col list-decimal pl-5'>
                 <li>Select a track to listen and view its audio features.</li>
                 <li>Search for related tracks.</li>
                 <li>Use audio features to narrow down your search.</li>
@@ -54,16 +54,18 @@ export default function HelpModal({ isOpen, onClose }: ModalProps) {
               >
                 Audio Features
               </a>
-              <div className='flex flex-col gap-1'>
+              <div className='flex flex-col gap-2'>
                 {Object.keys(featureControlSvgMap).map(key => {
                   return (
                     <div className='flex gap-2 items-center' key={key}>
-                      {featureControlSvgMap[key]}
-                      <span className='italic'>{key[0].toUpperCase() + key.slice(1)}</span>
+                      {featureControlSvgMap[key].svg}
+                      <div className='flex flex-col'>
+                        <span className='italic font-medium'>{key[0].toUpperCase() + key.slice(1)}</span>
+                        <span>{featureControlSvgMap[key].description}</span>
+                      </div>
                     </div>
                   );
                 })}
-
               </div>
               <button
                 className='inline-flex justify-center px-4 py-2 text-sm font-medium border border-transparent rounded-md bg-neutral-800 hover:bg-neutral-600 transition'
