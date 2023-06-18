@@ -109,6 +109,27 @@ export default function App() {
     };
   }, [previewTrack, router]);
 
+  useEffect(() => {
+    function pause(event: KeyboardEvent) {
+      const { code } = event;
+
+      if (code === 'KeyP' && previewTrack) {
+        if (previewTrack.preview.paused) {
+          previewTrack.preview.play().then(() => setPreviewTrack({ ...previewTrack }));
+        } else {
+          previewTrack.preview.pause();
+          setPreviewTrack({ ...previewTrack });
+        }
+      }
+    }
+
+    document.addEventListener('keydown', pause);
+
+    return () => {
+      document.removeEventListener('keydown', pause);
+    };
+  }, [previewTrack]);
+
   function logOut() {
     removeTokens();
     router.push('/');
