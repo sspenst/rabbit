@@ -277,7 +277,7 @@ export default function App() {
             }
           </div>
           <div className='flex w-full gap-3 px-1 items-center'>
-            <div className='flex gap-1 flex-wrap'>
+            <div className='flex gap-1 flex-wrap grow'>
               {featureControls.map(featureControl => (
                 <FeatureControlComponent
                   featureControl={featureControl}
@@ -297,14 +297,6 @@ export default function App() {
                 />
               ))}
             </div>
-            <div className='grow flex justify-center items-center'>
-              <button
-                className='text-neutral-400 hover:underline text-sm'
-                onClick={() => setIsHelpModalOpen(true)}
-              >
-                Help
-              </button>
-            </div>
             <button
               className='bg-green-500 disabled:bg-neutral-500 text-black p-3 text-2xl rounded-full enabled:hover:bg-green-300 transition'
               disabled={disableGetTracks || !previewTrack}
@@ -314,6 +306,14 @@ export default function App() {
                 <path strokeLinecap='round' strokeLinejoin='round' d='M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z' />
               </svg>
             </button>
+            <div className=' flex justify-center items-center'>
+              <button
+                className='text-neutral-400 hover:underline text-sm'
+                onClick={() => setIsHelpModalOpen(true)}
+              >
+                Help
+              </button>
+            </div>
           </div>
         </div>
       </div>

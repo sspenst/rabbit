@@ -1,4 +1,5 @@
 import { Dialog, Transition } from '@headlessui/react';
+import Image from 'next/image';
 import React, { Fragment } from 'react';
 import { featureControlSvgMap } from './featureControl';
 
@@ -40,6 +41,7 @@ export default function HelpModal({ isOpen, onClose }: ModalProps) {
               <Dialog.Title as='h3' className='text-xl font-bold text-center'>
                 Help
               </Dialog.Title>
+              <Image alt='help' src='help.png' height={100} width={612} />
               <ul className='flex flex-col list-decimal pl-5'>
                 <li>Select a track to listen and view its audio features.</li>
                 <li>Search for related tracks.</li>

@@ -11,7 +11,16 @@ export default function App({ Component, pageProps }: AppProps) {
       <Head>
         <title>Rabbit</title>
       </Head>
-      <Toaster position='bottom-center' />
+      <Toaster position='bottom-center' toastOptions={{
+        icon: null,
+        style: {
+          backgroundColor: 'rgb(59 130 246)',
+          borderRadius: '0.75rem',
+          color: 'white',
+          paddingLeft: '20px',
+          paddingRight: '20px',
+        },
+      }} />
       <Component {...pageProps} />
     </main>
   );
