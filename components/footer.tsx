@@ -5,7 +5,7 @@ import SS from './icons/ss';
 
 export default function Footer() {
   return (
-    <div className='flex flex-col gap-6 items-center m-8 text-neutral-500 text-sm'>
+    <div className='flex flex-col gap-6 items-center m-8 text-neutral-500 text-sm text-center'>
       <div className='flex flex-wrap gap-6 items-center justify-center'>
         <a
           className='w-8 h-8 hover:text-neutral-300 transition'
@@ -45,8 +45,26 @@ export default function Footer() {
         </a>
       </div>
       <span>
-      © {(new Date()).getFullYear()} Spencer Spenst
+        © {(new Date()).getFullYear()} Spencer Spenst
       </span>
+      <div className='flex gap-4 flex-wrap justify-center text-xs'>
+        <a
+          className='hover:underline'
+          href='https://docs.google.com/document/d/e/2PACX-1vQB3cuXUU8GNyzvgOMA19_T8xlVjCRqE6xr2M-pxgNC2j8_yfnjfCiDRUSt-N8UAhdiSgxURxU2UJmY/pub'
+          rel='noreferrer'
+          target='_blank'
+        >
+          End User Agreement
+        </a>
+        <a
+          className='hover:underline'
+          href='https://docs.google.com/document/d/e/2PACX-1vRJ0iaCx98PxgXfNEnne3RX2UGvhPk0UG7sdHZipBXG3JEQsWRxuQCP7CnOyryU0EEfkCUCfa4JI28v/pub'
+          rel='noreferrer'
+          target='_blank'
+        >
+          Privacy Policy
+        </a>
+      </div>
     </div>
   );
 }

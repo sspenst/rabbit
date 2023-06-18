@@ -126,6 +126,7 @@ export default function App() {
       }
     });
 
+    // NB: market is inferred from the access token, so we don't need to specify it here
     const recommendations = await spotifyFetch(`https://api.spotify.com/v1/recommendations?${new URLSearchParams({
       limit: String(limit),
       seed_artists: previewTrack.artists.map(a => a.id).slice(0, 5).join(','),

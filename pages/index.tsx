@@ -14,10 +14,10 @@ export default function Index() {
       zIndex: -1,
     }}>
       <div className='absolute w-full h-full z-10' style={{
-        backgroundImage: 'linear-gradient(to right, transparent 60%, black)',
+        backgroundImage: 'linear-gradient(to right, transparent 50%, black)',
       }} />
       <div className='absolute w-full h-full z-10' style={{
-        backgroundImage: 'linear-gradient(to bottom, transparent 80%, black)',
+        backgroundImage: 'linear-gradient(to bottom, transparent 70%, black)',
       }} />
       <div className='relative top-12 left-0' style={{
         height: demoHeight * 1.2,
@@ -49,12 +49,13 @@ export default function Index() {
         }} />
       </a>
     </div>
-    <div className='flex flex-col text-center w-full justify-center font-medium h-screen items-center gap-8 p-12' style={{
-      backgroundImage: 'radial-gradient(black 30%, transparent, transparent)',
+    <div className='flex flex-col text-center w-full justify-center font-medium min-h-screen items-center gap-8 p-12' style={{
+      backgroundImage: 'radial-gradient(black 35%, transparent, transparent)',
     }}>
       <h1 className='text-8xl font-semibold'>Rabbit</h1>
       <Image alt='spotify-logo' src='/spotify_logo.png' width={2362} height={708} priority={true} style={{
         height: 708 / 15,
+        minWidth: 2362 / 15,
         width: 2362 / 15,
       }} />
       <h2 className='text-3xl'>Discover new tracks using Spotify&apos;s audio features</h2>
