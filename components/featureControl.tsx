@@ -23,7 +23,10 @@ export const featureControlSvgMap: Record<string, FeatureControlInfo> = {
   'danceability': {
     description: 'How suitable a track is for dancing.',
     svg:
-    <svg className='w-6 h-6' viewBox='2 2 22 22' fill='none' xmlns='http://www.w3.org/2000/svg'>
+    <svg className='w-6 h-6' viewBox='2 2 22 22' fill='none' xmlns='http://www.w3.org/2000/svg' style={{
+      minHeight: 24,
+      minWidth: 24,
+    }}>
       <path d='M4 12H9L12 5L14 18.5L17.5 12H21.5' stroke='currentColor' strokeWidth={1.6} strokeLinecap='round' strokeLinejoin='round' />
     </svg>,
   },
@@ -31,7 +34,10 @@ export const featureControlSvgMap: Record<string, FeatureControlInfo> = {
   'energy': {
     description: 'Perceptual measure of intensity and activity.',
     svg:
-    <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+    <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6' style={{
+      minHeight: 24,
+      minWidth: 24,
+    }}>
       <path strokeLinecap='round' strokeLinejoin='round' d='M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z' />
     </svg>,
   },
@@ -39,7 +45,10 @@ export const featureControlSvgMap: Record<string, FeatureControlInfo> = {
   'instrumentalness': {
     description: 'Confidence a track contains no vocals.',
     svg:
-    <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 32 32' strokeWidth={1.8} stroke='currentColor' className='w-6 h-6'>
+    <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 32 32' strokeWidth={1.8} stroke='currentColor' className='w-6 h-6' style={{
+      minHeight: 24,
+      minWidth: 24,
+    }}>
       <path d='M20.4,24.8l1.5-3.9c0.4-1.1,1.3-2.1,2.4-2.7l0,0c3.2-1.7,3.7-6.1,1-8.8l-2.3-2.3c-2.7-2.7-7.1-2.2-8.8,1l0,0
     c-0.6,1.1-1.5,1.9-2.7,2.4l-3.9,1.5c-4.6,1.8-5.6,7.8-2,11.4L9,26.8C12.7,30.4,18.6,29.4,20.4,24.8z' />
       <circle cx='18.2' cy='14.3' r='2.9' />
@@ -51,7 +60,10 @@ export const featureControlSvgMap: Record<string, FeatureControlInfo> = {
   'loudness': {
     description: 'Overall loudness of a track in decibels.',
     svg:
-    <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+    <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6' style={{
+      minHeight: 24,
+      minWidth: 24,
+    }}>
       <path strokeLinecap='round' strokeLinejoin='round' d='M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z' />
     </svg>,
   },
@@ -59,7 +71,10 @@ export const featureControlSvgMap: Record<string, FeatureControlInfo> = {
   'tempo': {
     description: 'Overall estimated tempo of a track in beats per minute.',
     svg:
-    <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+    <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6' style={{
+      minHeight: 24,
+      minWidth: 24,
+    }}>
       <path strokeLinecap='round' strokeLinejoin='round' d='M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z' />
     </svg>,
   },
@@ -67,7 +82,10 @@ export const featureControlSvgMap: Record<string, FeatureControlInfo> = {
   'valence': {
     description: 'Musical positiveness conveyed by a track.',
     svg:
-    <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+    <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6' style={{
+      minHeight: 24,
+      minWidth: 24,
+    }}>
       <path strokeLinecap='round' strokeLinejoin='round' d='M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z' />
     </svg>,
   },
