@@ -1,5 +1,6 @@
 import classNames from 'classnames';
 import React from 'react';
+import { Tooltip } from 'react-tooltip';
 import { Track } from '../helpers/spotifyParsers';
 
 export enum FeatureControlState {
@@ -79,6 +80,7 @@ interface FeatureControlComponentProps {
 }
 
 export default function FeatureControlComponent({ featureControl, rotateState, track }: FeatureControlComponentProps) {
+  const id = `feature-control-${featureControl.property}`;
   let value = undefined;
 
   if (track && featureControl.property in track.features) {
@@ -91,7 +93,7 @@ export default function FeatureControlComponent({ featureControl, rotateState, t
     }
   }
 
-  return (
+  return (<>
     <button
       className={classNames(
         'flex flex-col gap-0.5 items-center p-2 text-xl rounded-xl enabled:cursor-pointer transition enabled:hover:bg-neutral-800',
@@ -99,6 +101,8 @@ export default function FeatureControlComponent({ featureControl, rotateState, t
         { 'text-green-500 border-green-500': featureControl.state === FeatureControlState.UP },
         { 'text-red-500 border-red-500': featureControl.state === FeatureControlState.DOWN },
       )}
+      data-tooltip-content={featureControl.property[0].toUpperCase() + featureControl.property.slice(1)}
+      data-tooltip-id={id}
       disabled={!track}
       onClick={rotateState}
     >
@@ -108,5 +112,12 @@ export default function FeatureControlComponent({ featureControl, rotateState, t
       </div>
       <span className='text-xs'>{value ?? '-'}</span>
     </button>
-  );
+    <Tooltip id={id} place='bottom' style={{
+      backgroundColor: '#333333',
+      borderRadius: '0.5rem',
+      fontSize: '0.75rem',
+      lineHeight: '1rem',
+      opacity: 100,
+    }} />
+  </>);
 }

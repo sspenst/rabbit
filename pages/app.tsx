@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
 import FeatureControlComponent, { FeatureControl, FeatureControlState } from '../components/featureControl';
 import Footer from '../components/footer';
 import FormattedTrack from '../components/formattedTrack';
@@ -160,6 +161,9 @@ export default function App() {
     })}`, {
       method: track.saved ? 'DELETE' : 'PUT',
     });
+
+    toast.dismiss();
+    toast.success(`${track.saved ? 'Removed from' : 'Added to'} Liked Songs`);
 
     if (track.id === previewTrack?.id) {
       setPreviewTrack(prevTrack => {
