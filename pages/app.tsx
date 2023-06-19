@@ -60,6 +60,16 @@ export default function App() {
     setIsSearching(false);
   }
 
+  function resetAudioFeatures() {
+    setAudioFeatures(prevAudioFeatures => {
+      const newAudioFeatures = [...prevAudioFeatures];
+
+      newAudioFeatures.forEach(f => f.state = AudioFeatureState.NONE);
+
+      return newAudioFeatures;
+    });
+  }
+
   useEffect(() => {
     async function initializePageData() {
       const user = await spotifyFetch('https://api.spotify.com/v1/me', {
@@ -71,13 +81,7 @@ export default function App() {
       if (router.query.id) {
         await getRecommendations();
       } else {
-        setAudioFeatures(prevAudioFeatures => {
-          const newAudioFeatures = [...prevAudioFeatures];
-
-          newAudioFeatures.forEach(f => f.state = AudioFeatureState.NONE);
-
-          return newAudioFeatures;
-        });
+        resetAudioFeatures();
         setPreviewTrack(null);
         await loadMyTracks(0);
       }
@@ -122,13 +126,7 @@ export default function App() {
 
         // clear the preview track if it is going to be replaced
         if (route.startsWith('/app')) {
-          setAudioFeatures(prevAudioFeatures => {
-            const newAudioFeatures = [...prevAudioFeatures];
-
-            newAudioFeatures.forEach(f => f.state = AudioFeatureState.NONE);
-
-            return newAudioFeatures;
-          });
+          resetAudioFeatures();
           setPreviewTrack(undefined);
         }
       }
@@ -358,7 +356,7 @@ export default function App() {
         <Profile user={user} />
       </div>
       <div className='sticky top-0 p-2 bg-black flex justify-center'>
-        <div className='bg-neutral-900 rounded-md px-2 pt-2 pb-1 flex flex-col gap-1' style={{
+        <div className='bg-neutral-900 rounded-md px-2 pt-2 pb-1 flex flex-col gap-1 max-w-full' style={{
           width: 768,
         }}>
           <div className='flex justify-center w-full'>
@@ -371,6 +369,19 @@ export default function App() {
                 {previewTrack ?
                   <div className='flex items-center w-full hover:bg-neutral-700 transition py-1 pr-4 pl-2 gap-4 rounded-md h-14'>
                     <TrackComponent track={previewTrack} />
+                    <button onClick={() => {
+                      if (router.query.id) {
+                        router.push('/app', undefined, { shallow: true });
+                      } else {
+                        previewTrack.preview.pause();
+                        resetAudioFeatures();
+                        setPreviewTrack(null);
+                      }
+                    }}>
+                      <svg className='text-neutral-500 hover:text-neutral-200 w-6 h-6 -mx-1 cursor-pointer' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor'>
+                        <path strokeLinecap='round' strokeLinejoin='round' d='M6 18L18 6M6 6l12 12' />
+                      </svg>
+                    </button>
                   </div>
                   :
                   <SkeletonTrack />

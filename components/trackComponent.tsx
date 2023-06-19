@@ -82,7 +82,7 @@ export default function TrackComponent({ track }: TrackComponentProps) {
   const { saveTrack, savingTrackId } = useContext(AppContext);
 
   return (
-    <div className='flex gap-4 w-full items-center'>
+    <div className='flex gap-4 grow items-center truncate'>
       <TrackInfo track={track} />
       <button
         className={classNames('disabled:text-green-600', track.saved ?
