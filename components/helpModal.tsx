@@ -55,10 +55,11 @@ export default function HelpModal({ audioFeatures, isOpen, onClose, track }: Mod
                   </div>
                 }
                 <span>2. Search for related tracks</span>
-                <div className='bg-green-500 text-black p-3 text-2xl rounded-full w-fit'>
-                  <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+                <div className='bg-green-500 text-black p-3 rounded-full w-fit flex gap-2 font-medium'>
+                  <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={2} stroke='currentColor' className='w-6 h-6'>
                     <path strokeLinecap='round' strokeLinejoin='round' d='M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z' />
                   </svg>
+                  <span className='hidden md:block pr-1'>Search</span>
                 </div>
                 <span>
                   {'3. Use '}

@@ -59,7 +59,7 @@ export default function Index() {
         width: 2362 / 15,
       }} />
       <h2 className='text-3xl'>Discover new tracks using Spotify&apos;s audio features</h2>
-      <button className='px-8 py-2 rounded-2xl bg-green-500 hover:bg-green-300 transition text-black text-xl' onClick={() => {
+      <button className='px-8 py-2 rounded-full bg-green-500 hover:bg-green-300 transition text-black text-xl' onClick={() => {
         if (localStorage.getItem('accessToken')) {
           router.push('/app');
         } else {

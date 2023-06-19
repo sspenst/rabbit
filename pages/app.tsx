@@ -400,7 +400,7 @@ export default function App() {
               ))}
             </div>
             <button
-              className='bg-green-500 disabled:bg-neutral-500 text-black p-3 text-2xl rounded-full enabled:hover:bg-green-300 transition'
+              className='bg-green-500 disabled:bg-neutral-500 text-black p-3 rounded-full enabled:hover:bg-green-300 transition flex gap-2 font-medium'
               disabled={isSearching || !previewTrack}
               onClick={() => {
                 if (!previewTrack) {
@@ -423,9 +423,10 @@ export default function App() {
                 })}`, undefined, { shallow: true });
               }}
             >
-              <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+              <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={2} stroke='currentColor' className='w-6 h-6'>
                 <path strokeLinecap='round' strokeLinejoin='round' d='M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z' />
               </svg>
+              <span className='hidden md:block mr-1'>Search</span>
             </button>
             <div className='flex justify-center items-center'>
               <button
@@ -448,7 +449,7 @@ export default function App() {
             ))}
             {showMore &&
               <button
-                className='px-8 py-2 rounded-2xl bg-green-500 transition text-black text-xl mt-2 disabled:bg-neutral-500 enabled:hover:bg-green-300 font-medium'
+                className='px-8 py-2 rounded-full bg-green-500 transition text-black text-xl mt-2 disabled:bg-neutral-500 enabled:hover:bg-green-300 font-medium'
                 disabled={isSearching}
                 onClick={async () => await loadMyTracks(myTracksPage.current + 1)}
               >
