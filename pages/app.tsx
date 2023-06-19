@@ -2,19 +2,19 @@ import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import FeatureControlComponent, { FeatureControl, FeatureControlState } from '../components/featureControl';
 import Footer from '../components/footer';
 import FormattedTrack from '../components/formattedTrack';
 import HelpModal from '../components/helpModal';
 import Profile from '../components/profile';
+import SkeletonTrack from '../components/skeletonTrack';
 import { AppContext } from '../contexts/appContext';
 import { loadTokens, redirectToAuthCodeFlow, removeTokens, spotifyFetch } from '../helpers/authCodeWithPkce';
 import { parseTracks, parseUser, Track, User } from '../helpers/spotifyParsers';
 
 export default function App() {
-  const [disableGetTracks, setDisableGetTracks] = useState(false);
   const [featureControls, setFeatureControls] = useState<FeatureControl[]>([
     { property: 'tempo', state: FeatureControlState.NONE },
     { property: 'loudness', state: FeatureControlState.NONE },
@@ -24,17 +24,18 @@ export default function App() {
     { property: 'valence', state: FeatureControlState.NONE },
   ]);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
+  const [isSearching, setIsSearching] = useState(true);
   const limit = 20;
-  const [savingTrackId, setSavingTrackId] = useState<string>();
-  const [myTracksPage, setMyTracksPage] = useState(0);
-  const [previewTrack, setPreviewTrack] = useState<Track>();
+  const myTracksPage = useRef(0);
+  const [previewTrack, setPreviewTrack] = useState<Track | null>();
   const [recommendations, setRecommendations] = useState<Track[]>([]);
   const router = useRouter();
+  const [savingTrackId, setSavingTrackId] = useState<string>();
   const [showMore, setShowMore] = useState(true);
   const [user, setUser] = useState<User | null>();
 
   async function loadMyTracks(page: number) {
-    setDisableGetTracks(true);
+    setIsSearching(true);
 
     const tracks = await spotifyFetch(`https://api.spotify.com/v1/me/tracks?${new URLSearchParams({
       limit: String(limit),
@@ -50,20 +51,13 @@ export default function App() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const myTracks = await parseTracks(tracks.items.map((i: any) => i.track));
 
-    if (!myTracks.length) {
-      setShowMore(false);
-    } else {
-      setShowMore(true);
-      setMyTracksPage(page);
-      setRecommendations(prevTracks => {
-        if (page !== 0) {
-          return [...prevTracks].concat(myTracks);
-        } else {
-          return myTracks;
-        }
-      });
-      setDisableGetTracks(false);
+    if (myTracks.length) {
+      setRecommendations(prevTracks => [...prevTracks].concat(myTracks));
     }
+
+    myTracksPage.current = page;
+    setShowMore(!!myTracks.length);
+    setIsSearching(false);
   }
 
   useEffect(() => {
@@ -74,7 +68,12 @@ export default function App() {
 
       setUser(parseUser(user));
 
-      await loadMyTracks(0);
+      if (router.query.id) {
+        await getRecommendations(router.query.id as string);
+      } else {
+        setPreviewTrack(null);
+        await loadMyTracks(0);
+      }
     }
 
     if (!router.isReady) {
@@ -87,25 +86,49 @@ export default function App() {
     } else if (!router.query.code) {
       redirectToAuthCodeFlow();
     } else {
-      loadTokens(router.query.code as string).then(async () => await initializePageData());
+      loadTokens(router.query.code as string).then(() => {
+        // clean up code query from the url
+        // NB: causes this useEffect to rerun, which initializes the page data
+        router.replace('/app', undefined, { shallow: true });
+      });
     }
-
-    // remove code from the url query for clean aesthetic
-    router.replace('/app', undefined, { shallow: true });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router.isReady]);
+  }, [router]);
 
   useEffect(() => {
-    function exit() {
-      if (previewTrack) {
+    function getRouteId(route: string) {
+      if (!route.includes('?')) {
+        return null;
+      }
+
+      const params = new URLSearchParams(route.split('?')[1]);
+
+      return params.get('id');
+    }
+
+    function pausePreviewTrack(route: string) {
+      setIsSearching(true);
+
+      // if the preview track changes, we must pause the audio
+      if (previewTrack && getRouteId(route) !== previewTrack.id) {
         previewTrack.preview.pause();
+
+        // clear the preview track if it is going to be replaced
+        if (route.startsWith('/app')) {
+          setPreviewTrack(undefined);
+        }
+      }
+
+      // clear the recommendations if they are going to be replaced
+      if (route.startsWith('/app')) {
+        setRecommendations([]);
       }
     }
 
-    router.events.on('routeChangeStart', exit);
+    router.events.on('routeChangeStart', pausePreviewTrack);
 
     return () => {
-      router.events.off('routeChangeStart', exit);
+      router.events.off('routeChangeStart', pausePreviewTrack);
     };
   }, [previewTrack, router]);
 
@@ -135,29 +158,44 @@ export default function App() {
     router.push('/');
   }
 
-  async function getRecommendations() {
-    if (!previewTrack) {
-      return;
-    }
+  async function getRecommendations(id: string) {
+    let track: Track;
 
-    setDisableGetTracks(true);
+    if (previewTrack?.id !== id) {
+      const trackById = await spotifyFetch(`https://api.spotify.com/v1/tracks/${id}`, {
+        method: 'GET',
+      });
+
+      // invalid track id, go back to /app
+      if (!trackById) {
+        router.push('/app', undefined, { shallow: true });
+
+        return;
+      }
+
+      track = (await parseTracks(new Array(trackById)))[0];
+
+      setPreviewTrack(track);
+    } else {
+      track = previewTrack;
+    }
 
     const features: Record<string, string> = {};
 
     featureControls.forEach(f => {
       if (f.state === FeatureControlState.UP) {
-        features[`min_${f.property}`] = previewTrack.features[f.property];
+        features[`min_${f.property}`] = track.features[f.property];
       } else if (f.state === FeatureControlState.DOWN) {
-        features[`max_${f.property}`] = previewTrack.features[f.property];
+        features[`max_${f.property}`] = track.features[f.property];
       }
     });
 
     // NB: market is inferred from the access token, so we don't need to specify it here
+    // maximum of 5 seed values are allowed: use the track id and up to 4 artists
     const recommendations = await spotifyFetch(`https://api.spotify.com/v1/recommendations?${new URLSearchParams({
       limit: String(limit),
-      seed_artists: previewTrack.artists.map(a => a.id).slice(0, 5).join(','),
-      seed_genres: previewTrack.genres.slice(0, 5).join(','),
-      seed_tracks: previewTrack.id,
+      seed_artists: track.artists.map(a => a.id).slice(0, 4).join(','),
+      seed_tracks: track.id,
       ...features,
     })}`, {
       method: 'GET',
@@ -167,16 +205,16 @@ export default function App() {
 
     // we always want previewTrack to be at the start of the recommendation list,
     // but we don't want any duplicates, so remove the track if it exists before unshifting it
-    const index = newRecommnedations.findIndex(t => t.id === previewTrack.id);
+    const index = newRecommnedations.findIndex(t => t.id === track.id);
 
     if (index !== -1) {
       newRecommnedations.splice(index, 1);
     }
 
-    newRecommnedations.unshift({ ...previewTrack });
+    newRecommnedations.unshift({ ...track });
 
     setRecommendations(newRecommnedations);
-    setDisableGetTracks(false);
+    setIsSearching(false);
     setShowMore(false);
   }
 
@@ -287,14 +325,20 @@ export default function App() {
           width: 768,
         }}>
           <div className='flex justify-center w-full'>
-            {!previewTrack ?
+            {previewTrack === null ?
               <span className='flex items-center justify-center w-full rounded-md text-md h-14'>
                 Select a track to begin
               </span>
               :
-              <div className='flex items-center w-full hover:bg-neutral-700 transition py-1 pr-4 pl-2 gap-4 rounded-md h-14'>
-                <FormattedTrack track={previewTrack} />
-              </div>
+              <>
+                {previewTrack ?
+                  <div className='flex items-center w-full hover:bg-neutral-700 transition py-1 pr-4 pl-2 gap-4 rounded-md h-14'>
+                    <FormattedTrack track={previewTrack} />
+                  </div>
+                  :
+                  <SkeletonTrack />
+                }
+              </>
             }
           </div>
           <div className='flex w-full gap-3 px-1 items-center'>
@@ -320,8 +364,14 @@ export default function App() {
             </div>
             <button
               className='bg-green-500 disabled:bg-neutral-500 text-black p-3 text-2xl rounded-full enabled:hover:bg-green-300 transition'
-              disabled={disableGetTracks || !previewTrack}
-              onClick={async () => await getRecommendations()}
+              disabled={isSearching || !previewTrack}
+              onClick={() => {
+                if (!previewTrack) {
+                  return;
+                }
+
+                router.push(`/app?id=${previewTrack.id}`, undefined, { shallow: true });
+              }}
             >
               <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
                 <path strokeLinecap='round' strokeLinejoin='round' d='M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z' />
@@ -349,15 +399,19 @@ export default function App() {
             {showMore &&
               <button
                 className='px-8 py-2 rounded-2xl bg-green-500 transition text-black text-xl mt-2 disabled:bg-neutral-500 enabled:hover:bg-green-300 font-medium'
-                disabled={disableGetTracks}
-                onClick={async () => await loadMyTracks(myTracksPage + 1)}
+                disabled={isSearching}
+                onClick={async () => await loadMyTracks(myTracksPage.current + 1)}
               >
                 More
               </button>
             }
           </div>
           :
-          <Image alt='loading' className='m-2' src='/puff.svg' width='48' height='48' />
+          <div className='flex flex-col w-full max-w-3xl px-2' style={{
+            zIndex: -1,
+          }}>
+            {Array.from({ length: 20 }, (_, index) => <SkeletonTrack key={`skeleton-track-${index}`} />)}
+          </div>
         }
       </div>
       <Footer />

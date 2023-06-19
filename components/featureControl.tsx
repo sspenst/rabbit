@@ -117,7 +117,7 @@ function FeatureControlStateSvg({ featureControlState }: { featureControlState: 
 interface FeatureControlComponentProps {
   featureControl: FeatureControl;
   rotateState: () => void;
-  track: Track | undefined;
+  track: Track | null | undefined;
 }
 
 export default function FeatureControlComponent({ featureControl, rotateState, track }: FeatureControlComponentProps) {

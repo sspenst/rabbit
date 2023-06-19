@@ -2,10 +2,10 @@ import { createContext } from 'react';
 import { Track } from '../helpers/spotifyParsers';
 
 interface AppContextInterface {
-  previewTrack: Track | undefined;
+  previewTrack: Track | null | undefined;
   saveTrack: (track: Track) => void;
   savingTrackId: string | undefined;
-  setPreviewTrack: React.Dispatch<React.SetStateAction<Track | undefined>>;
+  setPreviewTrack: React.Dispatch<React.SetStateAction<Track | null | undefined>>;
 }
 
 export const AppContext = createContext<AppContextInterface>({
