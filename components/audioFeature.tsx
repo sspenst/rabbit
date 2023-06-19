@@ -116,11 +116,12 @@ function AudioFeatureStateSvg({ audioFeatureState }: { audioFeatureState: AudioF
 
 interface AudioFeatureComponentProps {
   audioFeature: AudioFeature;
-  rotateState: () => void;
+  hideTooltip?: boolean;
+  onClick?: () => void;
   track: Track | null | undefined;
 }
 
-export default function AudioFeatureComponent({ audioFeature, rotateState, track }: AudioFeatureComponentProps) {
+export default function AudioFeatureComponent({ audioFeature, hideTooltip, onClick, track }: AudioFeatureComponentProps) {
   const id = `audio-feature-${audioFeature.property}`;
   let value = undefined;
 
@@ -139,7 +140,7 @@ export default function AudioFeatureComponent({ audioFeature, rotateState, track
   return (<>
     <button
       className={classNames(
-        'flex flex-col gap-0.5 items-center p-2 text-xl rounded-xl enabled:cursor-pointer transition enabled:hover:bg-neutral-800',
+        'flex flex-col gap-0.5 items-center p-2 text-xl rounded-md enabled:cursor-pointer transition enabled:hover:bg-neutral-800',
         { 'text-neutral-500 border-neutral-500': audioFeature.state === AudioFeatureState.NONE },
         { 'text-green-500 border-green-500': audioFeature.state === AudioFeatureState.UP },
         { 'text-red-500 border-red-500': audioFeature.state === AudioFeatureState.DOWN },
@@ -147,7 +148,7 @@ export default function AudioFeatureComponent({ audioFeature, rotateState, track
       data-tooltip-content={audioFeature.property[0].toUpperCase() + audioFeature.property.slice(1)}
       data-tooltip-id={id}
       disabled={!track}
-      onClick={rotateState}
+      onClick={onClick}
     >
       <div className='flex gap-2'>
         {audioFeatureSvgMap[audioFeature.property].svg}
@@ -155,12 +156,14 @@ export default function AudioFeatureComponent({ audioFeature, rotateState, track
       </div>
       <span className='text-xs'>{value ?? '-'}</span>
     </button>
-    <Tooltip id={id} place='bottom' style={{
-      backgroundColor: '#333333',
-      borderRadius: '0.5rem',
-      fontSize: '0.75rem',
-      lineHeight: '1rem',
-      opacity: 100,
-    }} />
+    {!hideTooltip &&
+      <Tooltip id={id} place='bottom' style={{
+        backgroundColor: '#333333',
+        borderRadius: '0.5rem',
+        fontSize: '0.75rem',
+        lineHeight: '1rem',
+        opacity: 100,
+      }} />
+    }
   </>);
 }

@@ -6,10 +6,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import AudioFeatureComponent, { AudioFeature, AudioFeatureState } from '../components/audioFeature';
 import Footer from '../components/footer';
-import FormattedTrack from '../components/formattedTrack';
 import HelpModal from '../components/helpModal';
 import Profile from '../components/profile';
 import SkeletonTrack from '../components/skeletonTrack';
+import TrackComponent from '../components/trackComponent';
 import { AppContext } from '../contexts/appContext';
 import { loadTokens, redirectToAuthCodeFlow, removeTokens, spotifyFetch } from '../helpers/authCodeWithPkce';
 import { parseTracks, parseUser, Track, User } from '../helpers/spotifyParsers';
@@ -370,7 +370,7 @@ export default function App() {
               <>
                 {previewTrack ?
                   <div className='flex items-center w-full hover:bg-neutral-700 transition py-1 pr-4 pl-2 gap-4 rounded-md h-14'>
-                    <FormattedTrack track={previewTrack} />
+                    <TrackComponent track={previewTrack} />
                   </div>
                   :
                   <SkeletonTrack />
@@ -384,7 +384,7 @@ export default function App() {
                 <AudioFeatureComponent
                   audioFeature={audioFeature}
                   key={audioFeature.property}
-                  rotateState={() => setAudioFeatures(prevAudioFeatures => {
+                  onClick={() => setAudioFeatures(prevAudioFeatures => {
                     const newAudioFeatures = [...prevAudioFeatures];
 
                     const audioFeatureToRotate = newAudioFeatures.find(f => f.property === audioFeature.property);
@@ -427,7 +427,7 @@ export default function App() {
                 <path strokeLinecap='round' strokeLinejoin='round' d='M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z' />
               </svg>
             </button>
-            <div className=' flex justify-center items-center'>
+            <div className='flex justify-center items-center'>
               <button
                 className='text-neutral-400 hover:underline text-sm'
                 onClick={() => setIsHelpModalOpen(true)}
@@ -443,7 +443,7 @@ export default function App() {
           <div className='flex flex-col items-center text-center w-full px-2 max-w-3xl'>
             {recommendations.map(track => (
               <div className='w-full hover:bg-neutral-700 transition py-1 pr-4 pl-2 rounded-md' key={`recommended-track-${track.id}`}>
-                <FormattedTrack track={track} />
+                <TrackComponent track={track} />
               </div>
             ))}
             {showMore &&
@@ -465,7 +465,12 @@ export default function App() {
         }
       </div>
       <Footer />
-      <HelpModal isOpen={isHelpModalOpen} onClose={() => setIsHelpModalOpen(false)} />
+      <HelpModal
+        audioFeatures={audioFeatures}
+        isOpen={isHelpModalOpen}
+        onClose={() => setIsHelpModalOpen(false)}
+        track={previewTrack ?? recommendations.at(0)}
+      />
     </AppContext.Provider>
   );
 }

@@ -11,67 +11,79 @@ function formatSeconds(seconds: number) {
   return `${m}:${s < 10 ? '0' : ''}${s}`;
 }
 
-interface FormattedTrackProps {
+interface TrackInfoProps {
   track: Track;
 }
 
-export default function FormattedTrack({ track }: FormattedTrackProps) {
-  const { previewTrack, saveTrack, savingTrackId, setPreviewTrack } = useContext(AppContext);
+export function TrackInfo({ track }: TrackInfoProps) {
   const artists = track.artists.map(a => a.name).join(', ');
+  const { previewTrack, setPreviewTrack } = useContext(AppContext);
+
+  return (
+    <button className='flex gap-4 w-full items-center cursor-pointer truncate' onClick={() => {
+      if (previewTrack?.preview !== track.preview) {
+        // we are changing tracks
+        track.preview.play().then(() => {
+          // if we successfully play the track, then we need to pause the current track
+          if (previewTrack) {
+            previewTrack.preview.pause();
+          }
+
+          setPreviewTrack(track);
+        });
+      } else {
+        // need to set the preview track to force a rerender after updating paused
+        if (track.preview.paused) {
+          track.preview.play().then(() => setPreviewTrack({ ...track }));
+        } else {
+          track.preview.pause();
+          setPreviewTrack({ ...track });
+        }
+      }
+    }}>
+      <Image
+        alt={track.name}
+        className='shadow-lg w-12 h-12'
+        height={48}
+        src={track.image}
+        style={{
+          minWidth: '3rem',
+        }}
+        width={48}
+      />
+      <div className='grow flex flex-col gap-1 truncate text-left'>
+        <span className={classNames('truncate', { 'text-green-500': previewTrack?.preview === track.preview && !track.preview.paused })} title={track.name}>{track.name}</span>
+        <span className='flex text-neutral-400 text-sm items-center gap-2'>
+          {track.explicit &&
+            <div className='bg-neutral-400 text-black text-xs rounded-sm w-4 h-4 text-center' style={{
+              minHeight: 16,
+              minWidth: 16,
+            }}>
+              E
+            </div>
+          }
+          <span className='truncate' title={artists}>
+            {artists}
+          </span>
+        </span>
+      </div>
+      <span className='hidden sm:block text-neutral-400 ml-4 text-sm'>
+        {formatSeconds(track.seconds)}
+      </span>
+    </button>
+  );
+}
+
+interface TrackComponentProps {
+  track: Track;
+}
+
+export default function TrackComponent({ track }: TrackComponentProps) {
+  const { saveTrack, savingTrackId } = useContext(AppContext);
 
   return (
     <div className='flex gap-4 w-full items-center'>
-      <button className='flex gap-4 w-full items-center cursor-pointer truncate' onClick={() => {
-        if (previewTrack?.preview !== track.preview) {
-          // we are changing tracks
-          track.preview.play().then(() => {
-            // if we successfully play the track, then we need to pause the current track
-            if (previewTrack) {
-              previewTrack.preview.pause();
-            }
-
-            setPreviewTrack(track);
-          });
-        } else {
-          // need to set the preview track to force a rerender after updating paused
-          if (track.preview.paused) {
-            track.preview.play().then(() => setPreviewTrack({ ...track }));
-          } else {
-            track.preview.pause();
-            setPreviewTrack({ ...track });
-          }
-        }
-      }}>
-        <Image
-          alt={track.name}
-          className='shadow-lg w-12 h-12'
-          height={48}
-          src={track.image}
-          style={{
-            minWidth: '3rem',
-          }}
-          width={48}
-        />
-        <div className='grow flex flex-col gap-1 truncate text-left'>
-          <span className={classNames('truncate', { 'text-green-500': previewTrack?.preview === track.preview && !track.preview.paused })} title={track.name}>{track.name}</span>
-          <span className='flex text-neutral-400 text-sm items-center gap-2'>
-            {track.explicit &&
-              <div className='bg-neutral-400 text-black text-xs rounded-sm w-4 h-4 text-center' style={{
-                minHeight: 16,
-                minWidth: 16,
-              }}>
-                E
-              </div>
-            }
-            <span className='truncate' title={artists}>
-              {artists}
-            </span>
-          </span>
-        </div>
-        <span className='hidden sm:block text-neutral-400 ml-4 text-sm'>
-          {formatSeconds(track.seconds)}
-        </span>
-      </button>
+      <TrackInfo track={track} />
       <button
         className={classNames('disabled:text-green-600', track.saved ?
           'text-green-500 hover:text-green-300' :

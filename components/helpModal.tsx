@@ -1,14 +1,20 @@
 import { Dialog, Transition } from '@headlessui/react';
-import Image from 'next/image';
-import React, { Fragment } from 'react';
-import { audioFeatureSvgMap } from './audioFeature';
+import classNames from 'classnames';
+import React, { Fragment, useState } from 'react';
+import { Track } from '../helpers/spotifyParsers';
+import AudioFeatureComponent, { AudioFeature, audioFeatureSvgMap } from './audioFeature';
+import { TrackInfo } from './trackComponent';
 
 interface ModalProps {
+  audioFeatures: AudioFeature[];
   isOpen: boolean;
   onClose: () => void;
+  track: Track | undefined;
 }
 
-export default function HelpModal({ isOpen, onClose }: ModalProps) {
+export default function HelpModal({ audioFeatures, isOpen, onClose, track }: ModalProps) {
+  const [audioFeatureProperty, setAudioFeatureProperty] = useState('tempo');
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog
@@ -41,36 +47,67 @@ export default function HelpModal({ isOpen, onClose }: ModalProps) {
               <Dialog.Title as='h3' className='text-xl font-bold text-center'>
                 Help
               </Dialog.Title>
-              <Image alt='help' src='help.png' height={100} width={612} />
-              <ul className='flex flex-col list-decimal pl-5'>
-                <li>Select a track to listen and view its audio features.</li>
-                <li>Search for related tracks.</li>
-                <li>Use audio features to narrow down your search.</li>
-                <li>Save tracks you enjoy!</li>
-              </ul>
-              <a
-                className='font-bold text-lg w-fit hover:underline'
-                href='https://developer.spotify.com/documentation/web-api/reference/get-audio-features'
-                rel='noreferrer'
-                target='_blank'
-              >
-                Audio Features
-              </a>
-              <div className='flex flex-col gap-2'>
-                {Object.keys(audioFeatureSvgMap).map(key => {
-                  return (
-                    <div className='flex gap-2 items-center' key={key}>
-                      {audioFeatureSvgMap[key].svg}
-                      <div className='flex flex-col'>
-                        <span className='italic font-medium'>{key[0].toUpperCase() + key.slice(1)}</span>
-                        <span>{audioFeatureSvgMap[key].description}</span>
-                      </div>
+              <div className='flex flex-col gap-4'>
+                <span>1. Select a track to begin</span>
+                {track &&
+                  <div className='flex gap-4 w-full items-center truncate bg-neutral-900 rounded-md pl-2 pr-4 py-1 hover:bg-neutral-700 transition'>
+                    <TrackInfo track={track} />
+                  </div>
+                }
+                <span>2. Search for related tracks</span>
+                <div className='bg-green-500 text-black p-3 text-2xl rounded-full w-fit'>
+                  <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+                    <path strokeLinecap='round' strokeLinejoin='round' d='M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z' />
+                  </svg>
+                </div>
+                <span>
+                  {'3. Use '}
+                  <a
+                    className='w-fit hover:underline mt-3'
+                    href='https://developer.spotify.com/documentation/web-api/reference/get-audio-features'
+                    rel='noreferrer'
+                    target='_blank'
+                  >
+                    Audio Features
+                  </a>
+                  {' to narrow down your search'}
+                </span>
+                <div className='flex gap-1 flex-wrap'>
+                  {audioFeatures.map(audioFeature => (
+                    <div
+                      className={classNames(
+                        'bg-neutral-900 rounded-lg border-2 cursor-pointer',
+                        audioFeature.property === audioFeatureProperty ? 'border-neutral-600' : 'border-black',
+                      )}
+                      key={audioFeature.property}
+                    >
+                      <AudioFeatureComponent
+                        audioFeature={audioFeature}
+                        hideTooltip={true}
+                        onClick={() => setAudioFeatureProperty(audioFeature.property)}
+                        track={track}
+                      />
                     </div>
-                  );
-                })}
+                  ))}
+                </div>
+                <div className='flex gap-2 items-center'>
+                  {audioFeatureSvgMap[audioFeatureProperty].svg}
+                  <div className='flex flex-col'>
+                    <span className='italic font-medium'>
+                      {audioFeatureProperty[0].toUpperCase() + audioFeatureProperty.slice(1)}
+                    </span>
+                    <span className='text-sm'>{audioFeatureSvgMap[audioFeatureProperty].description}</span>
+                  </div>
+                </div>
+                <span>4. Save tracks you enjoy!</span>
+                <div className='text-green-500'>
+                  <svg width='32' height='32' viewBox='0 0 150 150' fill='none' xmlns='http://www.w3.org/2000/svg'>
+                    <path d='M125.784 35.0369C113.039 22.2916 92.9859 21.3682 79.1227 32.8994C79.1062 32.9135 77.318 34.3807 75 34.3807C72.6234 34.3807 70.9266 32.9416 70.8609 32.8853C57.0141 21.3682 36.9609 22.2916 24.2156 35.0369C17.6695 41.583 14.0625 50.2877 14.0625 59.5478C14.0625 68.808 17.6695 77.5127 24.0914 83.9228L64.3078 131.006C66.9844 134.14 70.882 135.938 75 135.938C79.1203 135.938 83.0156 134.14 85.6922 131.009L125.782 84.0611C139.301 70.5447 139.301 48.5533 125.784 35.0369Z' fill='currentColor' />
+                  </svg>
+                </div>
               </div>
               <button
-                className='inline-flex justify-center px-4 py-2 text-sm font-medium border border-transparent rounded-md bg-neutral-800 hover:bg-neutral-600 transition'
+                className='inline-flex justify-center px-4 py-2 mt-2 text-sm font-medium border border-transparent rounded-md bg-neutral-800 hover:bg-neutral-600 transition'
                 onClick={onClose}
                 type='button'
               >
