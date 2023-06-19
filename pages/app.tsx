@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import FeatureControlComponent, { FeatureControl, FeatureControlState } from '../components/featureControl';
+import AudioFeatureComponent, { AudioFeature, AudioFeatureState } from '../components/audioFeature';
 import Footer from '../components/footer';
 import FormattedTrack from '../components/formattedTrack';
 import HelpModal from '../components/helpModal';
@@ -15,13 +15,13 @@ import { loadTokens, redirectToAuthCodeFlow, removeTokens, spotifyFetch } from '
 import { parseTracks, parseUser, Track, User } from '../helpers/spotifyParsers';
 
 export default function App() {
-  const [featureControls, setFeatureControls] = useState<FeatureControl[]>([
-    { property: 'tempo', state: FeatureControlState.NONE },
-    { property: 'loudness', state: FeatureControlState.NONE },
-    { property: 'danceability', state: FeatureControlState.NONE },
-    { property: 'energy', state: FeatureControlState.NONE },
-    { property: 'instrumentalness', state: FeatureControlState.NONE },
-    { property: 'valence', state: FeatureControlState.NONE },
+  const [audioFeatures, setAudioFeatures] = useState<AudioFeature[]>([
+    { property: 'tempo', state: AudioFeatureState.NONE },
+    { property: 'loudness', state: AudioFeatureState.NONE },
+    { property: 'danceability', state: AudioFeatureState.NONE },
+    { property: 'energy', state: AudioFeatureState.NONE },
+    { property: 'instrumentalness', state: AudioFeatureState.NONE },
+    { property: 'valence', state: AudioFeatureState.NONE },
   ]);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(true);
@@ -71,12 +71,12 @@ export default function App() {
       if (router.query.id) {
         await getRecommendations();
       } else {
-        setFeatureControls(prevFeatureControls => {
-          const newFeatureControls = [...prevFeatureControls];
+        setAudioFeatures(prevAudioFeatures => {
+          const newAudioFeatures = [...prevAudioFeatures];
 
-          newFeatureControls.forEach(f => f.state = FeatureControlState.NONE);
+          newAudioFeatures.forEach(f => f.state = AudioFeatureState.NONE);
 
-          return newFeatureControls;
+          return newAudioFeatures;
         });
         setPreviewTrack(null);
         await loadMyTracks(0);
@@ -122,12 +122,12 @@ export default function App() {
 
         // clear the preview track if it is going to be replaced
         if (route.startsWith('/app')) {
-          setFeatureControls(prevFeatureControls => {
-            const newFeatureControls = [...prevFeatureControls];
+          setAudioFeatures(prevAudioFeatures => {
+            const newAudioFeatures = [...prevAudioFeatures];
 
-            newFeatureControls.forEach(f => f.state = FeatureControlState.NONE);
+            newAudioFeatures.forEach(f => f.state = AudioFeatureState.NONE);
 
-            return newFeatureControls;
+            return newAudioFeatures;
           });
           setPreviewTrack(undefined);
         }
@@ -176,24 +176,24 @@ export default function App() {
     function getQueryParamState(property: string) {
       switch (router.query[property]) {
       case 'up':
-        return FeatureControlState.UP;
+        return AudioFeatureState.UP;
       case 'down':
-        return FeatureControlState.DOWN;
+        return AudioFeatureState.DOWN;
       default:
-        return FeatureControlState.NONE;
+        return AudioFeatureState.NONE;
       }
     }
 
-    const newFeatureControls: FeatureControl[] = [];
+    const newAudioFeatures: AudioFeature[] = [];
 
-    for (const featureControl of featureControls) {
-      newFeatureControls.push({
-        property: featureControl.property,
-        state: getQueryParamState(featureControl.property),
+    for (const audioFeature of audioFeatures) {
+      newAudioFeatures.push({
+        property: audioFeature.property,
+        state: getQueryParamState(audioFeature.property),
       });
     }
 
-    setFeatureControls(newFeatureControls);
+    setAudioFeatures(newAudioFeatures);
 
     const id = router.query.id as string;
     let track: Track;
@@ -217,13 +217,13 @@ export default function App() {
       track = previewTrack;
     }
 
-    const features: Record<string, string> = {};
+    const audioFeatureParams: Record<string, string> = {};
 
-    newFeatureControls.forEach(f => {
-      if (f.state === FeatureControlState.UP) {
-        features[`min_${f.property}`] = track.features[f.property];
-      } else if (f.state === FeatureControlState.DOWN) {
-        features[`max_${f.property}`] = track.features[f.property];
+    newAudioFeatures.forEach(f => {
+      if (f.state === AudioFeatureState.UP) {
+        audioFeatureParams[`min_${f.property}`] = track.audioFeatures[f.property];
+      } else if (f.state === AudioFeatureState.DOWN) {
+        audioFeatureParams[`max_${f.property}`] = track.audioFeatures[f.property];
       }
     });
 
@@ -233,7 +233,7 @@ export default function App() {
       limit: String(limit),
       seed_artists: track.artists.map(a => a.id).slice(0, 4).join(','),
       seed_tracks: track.id,
-      ...features,
+      ...audioFeatureParams,
     })}`, {
       method: 'GET',
     });
@@ -380,20 +380,20 @@ export default function App() {
           </div>
           <div className='flex w-full gap-3 px-1 items-center'>
             <div className='flex gap-1 flex-wrap grow'>
-              {featureControls.map(featureControl => (
-                <FeatureControlComponent
-                  featureControl={featureControl}
-                  key={featureControl.property}
-                  rotateState={() => setFeatureControls(prevFeatureControls => {
-                    const newFeatureControls = [...prevFeatureControls];
+              {audioFeatures.map(audioFeature => (
+                <AudioFeatureComponent
+                  audioFeature={audioFeature}
+                  key={audioFeature.property}
+                  rotateState={() => setAudioFeatures(prevAudioFeatures => {
+                    const newAudioFeatures = [...prevAudioFeatures];
 
-                    const featureControlToRotate = newFeatureControls.find(f => f.property === featureControl.property);
+                    const audioFeatureToRotate = newAudioFeatures.find(f => f.property === audioFeature.property);
 
-                    if (featureControlToRotate) {
-                      featureControlToRotate.state = (featureControlToRotate.state + 1) % 3;
+                    if (audioFeatureToRotate) {
+                      audioFeatureToRotate.state = (audioFeatureToRotate.state + 1) % 3;
                     }
 
-                    return newFeatureControls;
+                    return newAudioFeatures;
                   })}
                   track={previewTrack}
                 />
@@ -407,19 +407,19 @@ export default function App() {
                   return;
                 }
 
-                const features: Record<string, string> = {};
+                const audioFeatureParams: Record<string, string> = {};
 
-                featureControls.forEach(f => {
-                  if (f.state === FeatureControlState.UP) {
-                    features[f.property] = 'up';
-                  } else if (f.state === FeatureControlState.DOWN) {
-                    features[f.property] = 'down';
+                audioFeatures.forEach(f => {
+                  if (f.state === AudioFeatureState.UP) {
+                    audioFeatureParams[f.property] = 'up';
+                  } else if (f.state === AudioFeatureState.DOWN) {
+                    audioFeatureParams[f.property] = 'down';
                   }
                 });
 
                 router.push(`/app?${new URLSearchParams({
                   id: previewTrack.id,
-                  ...features,
+                  ...audioFeatureParams,
                 })}`, undefined, { shallow: true });
               }}
             >

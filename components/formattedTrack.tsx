@@ -78,10 +78,7 @@ export default function FormattedTrack({ track }: FormattedTrackProps) {
           'text-neutral-500 hover:text-neutral-300'
         )}
         disabled={savingTrackId === track.id}
-        onClick={e => {
-          e.stopPropagation();
-          saveTrack(track);
-        }}
+        onClick={() => saveTrack(track)}
       >
         {track.saved || savingTrackId === track.id ?
           <svg width='24' height='24' viewBox='0 0 150 150' fill='none' xmlns='http://www.w3.org/2000/svg'>
@@ -96,7 +93,6 @@ export default function FormattedTrack({ track }: FormattedTrackProps) {
       <a
         className='font-bold text-lg w-fit hover:underline text-neutral-500 hover:text-neutral-200'
         href={track.href}
-        onClick={e => e.stopPropagation()}
         rel='noreferrer'
         target='_blank'
       >

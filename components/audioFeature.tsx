@@ -3,23 +3,23 @@ import React from 'react';
 import { Tooltip } from 'react-tooltip';
 import { Track } from '../helpers/spotifyParsers';
 
-export enum FeatureControlState {
+export enum AudioFeatureState {
   NONE,
   UP,
   DOWN,
 }
 
-export interface FeatureControl {
+export interface AudioFeature {
   property: string;
-  state: FeatureControlState;
+  state: AudioFeatureState;
 }
 
-interface FeatureControlInfo {
+interface AudioFeatureInfo {
   description: string;
   svg: JSX.Element;
 }
 
-export const featureControlSvgMap: Record<string, FeatureControlInfo> = {
+export const audioFeatureSvgMap: Record<string, AudioFeatureInfo> = {
   'danceability': {
     description: 'How suitable a track is for dancing.',
     svg:
@@ -91,15 +91,15 @@ export const featureControlSvgMap: Record<string, FeatureControlInfo> = {
   },
 };
 
-function FeatureControlStateSvg({ featureControlState }: { featureControlState: FeatureControlState }) {
-  switch (featureControlState) {
-  case FeatureControlState.UP:
+function AudioFeatureStateSvg({ audioFeatureState }: { audioFeatureState: AudioFeatureState }) {
+  switch (audioFeatureState) {
+  case AudioFeatureState.UP:
     return (
       <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={3} stroke='currentColor' className='w-6 h-6'>
         <path strokeLinecap='round' strokeLinejoin='round' d='M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18' />
       </svg>
     );
-  case FeatureControlState.DOWN:
+  case AudioFeatureState.DOWN:
     return (
       <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={3} stroke='currentColor' className='w-6 h-6'>
         <path strokeLinecap='round' strokeLinejoin='round' d='M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3' />
@@ -114,22 +114,22 @@ function FeatureControlStateSvg({ featureControlState }: { featureControlState: 
   }
 }
 
-interface FeatureControlComponentProps {
-  featureControl: FeatureControl;
+interface AudioFeatureComponentProps {
+  audioFeature: AudioFeature;
   rotateState: () => void;
   track: Track | null | undefined;
 }
 
-export default function FeatureControlComponent({ featureControl, rotateState, track }: FeatureControlComponentProps) {
-  const id = `feature-control-${featureControl.property}`;
+export default function AudioFeatureComponent({ audioFeature, rotateState, track }: AudioFeatureComponentProps) {
+  const id = `audio-feature-${audioFeature.property}`;
   let value = undefined;
 
-  if (track && featureControl.property in track.features) {
-    value = Number(track.features[featureControl.property]);
+  if (track && audioFeature.property in track.audioFeatures) {
+    value = Number(track.audioFeatures[audioFeature.property]);
 
-    if (featureControl.property === 'tempo') {
+    if (audioFeature.property === 'tempo') {
       value = Math.round(value) + ' bpm';
-    } else if (featureControl.property === 'loudness') {
+    } else if (audioFeature.property === 'loudness') {
       value = Math.round(value) + ' dB';
     } else {
       value = Math.round(100 * value) + '%';
@@ -140,18 +140,18 @@ export default function FeatureControlComponent({ featureControl, rotateState, t
     <button
       className={classNames(
         'flex flex-col gap-0.5 items-center p-2 text-xl rounded-xl enabled:cursor-pointer transition enabled:hover:bg-neutral-800',
-        { 'text-neutral-500 border-neutral-500': featureControl.state === FeatureControlState.NONE },
-        { 'text-green-500 border-green-500': featureControl.state === FeatureControlState.UP },
-        { 'text-red-500 border-red-500': featureControl.state === FeatureControlState.DOWN },
+        { 'text-neutral-500 border-neutral-500': audioFeature.state === AudioFeatureState.NONE },
+        { 'text-green-500 border-green-500': audioFeature.state === AudioFeatureState.UP },
+        { 'text-red-500 border-red-500': audioFeature.state === AudioFeatureState.DOWN },
       )}
-      data-tooltip-content={featureControl.property[0].toUpperCase() + featureControl.property.slice(1)}
+      data-tooltip-content={audioFeature.property[0].toUpperCase() + audioFeature.property.slice(1)}
       data-tooltip-id={id}
       disabled={!track}
       onClick={rotateState}
     >
       <div className='flex gap-2'>
-        {featureControlSvgMap[featureControl.property].svg}
-        <FeatureControlStateSvg featureControlState={featureControl.state} />
+        {audioFeatureSvgMap[audioFeature.property].svg}
+        <AudioFeatureStateSvg audioFeatureState={audioFeature.state} />
       </div>
       <span className='text-xs'>{value ?? '-'}</span>
     </button>

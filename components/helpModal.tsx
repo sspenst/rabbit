@@ -1,7 +1,7 @@
 import { Dialog, Transition } from '@headlessui/react';
 import Image from 'next/image';
 import React, { Fragment } from 'react';
-import { featureControlSvgMap } from './featureControl';
+import { audioFeatureSvgMap } from './audioFeature';
 
 interface ModalProps {
   isOpen: boolean;
@@ -57,13 +57,13 @@ export default function HelpModal({ isOpen, onClose }: ModalProps) {
                 Audio Features
               </a>
               <div className='flex flex-col gap-2'>
-                {Object.keys(featureControlSvgMap).map(key => {
+                {Object.keys(audioFeatureSvgMap).map(key => {
                   return (
                     <div className='flex gap-2 items-center' key={key}>
-                      {featureControlSvgMap[key].svg}
+                      {audioFeatureSvgMap[key].svg}
                       <div className='flex flex-col'>
                         <span className='italic font-medium'>{key[0].toUpperCase() + key.slice(1)}</span>
-                        <span>{featureControlSvgMap[key].description}</span>
+                        <span>{audioFeatureSvgMap[key].description}</span>
                       </div>
                     </div>
                   );

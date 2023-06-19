@@ -8,8 +8,8 @@ export interface Artist {
 
 export interface Track {
   artists: Artist[];
+  audioFeatures: Record<string, string>;
   explicit: boolean;
-  features: Record<string, string>;
   href: string;
   id: string;
   image: string;
@@ -21,24 +21,24 @@ export interface Track {
 }
 
 function parseTrack(track: any, audioFeature: any, saved: boolean): Track {
-  const features: Record<string, string> = {};
+  const audioFeatures: Record<string, string> = {};
   const preview = new Audio(track.preview_url);
 
   preview.loop = true;
 
   if (audioFeature) {
-    features.acousticness = audioFeature.acousticness;
-    features.danceability = audioFeature.danceability;
-    features.energy = audioFeature.energy;
-    features.instrumentalness = audioFeature.instrumentalness;
-    features.key = audioFeature.key;
-    features.liveness = audioFeature.liveness;
-    features.loudness = audioFeature.loudness;
-    features.mode = audioFeature.mode;
-    features.speechiness = audioFeature.speechiness;
-    features.tempo = audioFeature.tempo;
-    features.time_signature = audioFeature.time_signature;
-    features.valence = audioFeature.valence;
+    audioFeatures.acousticness = audioFeature.acousticness;
+    audioFeatures.danceability = audioFeature.danceability;
+    audioFeatures.energy = audioFeature.energy;
+    audioFeatures.instrumentalness = audioFeature.instrumentalness;
+    audioFeatures.key = audioFeature.key;
+    audioFeatures.liveness = audioFeature.liveness;
+    audioFeatures.loudness = audioFeature.loudness;
+    audioFeatures.mode = audioFeature.mode;
+    audioFeatures.speechiness = audioFeature.speechiness;
+    audioFeatures.tempo = audioFeature.tempo;
+    audioFeatures.time_signature = audioFeature.time_signature;
+    audioFeatures.valence = audioFeature.valence;
   }
 
   return {
@@ -48,8 +48,8 @@ function parseTrack(track: any, audioFeature: any, saved: boolean): Track {
         name: a.name,
       };
     }),
+    audioFeatures: audioFeatures,
     explicit: track.explicit,
-    features: features,
     href: track.external_urls.spotify,
     id: track.id,
     image: track.album.images[0]?.url ?? '/music.svg',
