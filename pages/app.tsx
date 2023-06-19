@@ -69,8 +69,15 @@ export default function App() {
       setUser(parseUser(user));
 
       if (router.query.id) {
-        await getRecommendations(router.query.id as string);
+        await getRecommendations();
       } else {
+        setFeatureControls(prevFeatureControls => {
+          const newFeatureControls = [...prevFeatureControls];
+
+          newFeatureControls.forEach(f => f.state = FeatureControlState.NONE);
+
+          return newFeatureControls;
+        });
         setPreviewTrack(null);
         await loadMyTracks(0);
       }
@@ -115,6 +122,13 @@ export default function App() {
 
         // clear the preview track if it is going to be replaced
         if (route.startsWith('/app')) {
+          setFeatureControls(prevFeatureControls => {
+            const newFeatureControls = [...prevFeatureControls];
+
+            newFeatureControls.forEach(f => f.state = FeatureControlState.NONE);
+
+            return newFeatureControls;
+          });
           setPreviewTrack(undefined);
         }
       }
@@ -158,7 +172,30 @@ export default function App() {
     router.push('/');
   }
 
-  async function getRecommendations(id: string) {
+  async function getRecommendations() {
+    function getQueryParamState(property: string) {
+      switch (router.query[property]) {
+      case 'up':
+        return FeatureControlState.UP;
+      case 'down':
+        return FeatureControlState.DOWN;
+      default:
+        return FeatureControlState.NONE;
+      }
+    }
+
+    const newFeatureControls: FeatureControl[] = [];
+
+    for (const featureControl of featureControls) {
+      newFeatureControls.push({
+        property: featureControl.property,
+        state: getQueryParamState(featureControl.property),
+      });
+    }
+
+    setFeatureControls(newFeatureControls);
+
+    const id = router.query.id as string;
     let track: Track;
 
     if (previewTrack?.id !== id) {
@@ -182,7 +219,7 @@ export default function App() {
 
     const features: Record<string, string> = {};
 
-    featureControls.forEach(f => {
+    newFeatureControls.forEach(f => {
       if (f.state === FeatureControlState.UP) {
         features[`min_${f.property}`] = track.features[f.property];
       } else if (f.state === FeatureControlState.DOWN) {
@@ -370,7 +407,20 @@ export default function App() {
                   return;
                 }
 
-                router.push(`/app?id=${previewTrack.id}`, undefined, { shallow: true });
+                const features: Record<string, string> = {};
+
+                featureControls.forEach(f => {
+                  if (f.state === FeatureControlState.UP) {
+                    features[f.property] = 'up';
+                  } else if (f.state === FeatureControlState.DOWN) {
+                    features[f.property] = 'down';
+                  }
+                });
+
+                router.push(`/app?${new URLSearchParams({
+                  id: previewTrack.id,
+                  ...features,
+                })}`, undefined, { shallow: true });
               }}
             >
               <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
