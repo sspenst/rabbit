@@ -13,7 +13,7 @@ export function playTrack(
 
     navigator.mediaSession.metadata = new MediaMetadata({
       artist: track.artists.map(a => a.name).join(', '),
-      artwork: [{ src: track.image }],
+      artwork: track.images,
       title: track.name,
     });
 

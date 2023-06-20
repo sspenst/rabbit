@@ -21,6 +21,15 @@ export function TrackInfo({ track }: TrackInfoProps) {
   const artists = track.artists.map(a => a.name).join(', ');
   const { previewTrack, setPreviewTrack } = useContext(AppContext);
 
+  // get smallest image that still looks good (the very smallest is 64x64 and looks a bit blurry)
+  function getImageSrc() {
+    if (track.images.length === 1) {
+      return track.images[0].src;
+    } else {
+      return track.images[track.images.length - 2].src;
+    }
+  }
+
   return (
     <button className='flex gap-4 w-full items-center cursor-pointer truncate' onClick={() => {
       // pause if the track has no preview or is already playing
@@ -34,7 +43,7 @@ export function TrackInfo({ track }: TrackInfoProps) {
         alt={track.name}
         className='shadow-lg w-12 h-12'
         height={48}
-        src={track.image}
+        src={getImageSrc()}
         style={{
           minWidth: '3rem',
         }}

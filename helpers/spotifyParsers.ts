@@ -12,7 +12,8 @@ export interface Track {
   explicit: boolean;
   href: string;
   id: string;
-  image: string;
+  // widest first https://developer.mozilla.org/en-US/docs/Web/API/MediaMetadata/MediaMetadata
+  images: MediaImage[];
   name: string;
   // preview url can be null https://github.com/spotify/web-api/issues/148#issuecomment-313924088
   preview: HTMLAudioElement | null;
@@ -48,6 +49,23 @@ function parseTrack(track: any, audioFeature: any, saved: boolean): Track {
     audioFeatures.valence = audioFeature.valence;
   }
 
+  let images: MediaImage[];
+
+  if (!track.album.images?.length) {
+    images = [{
+      src: '/music.svg',
+      type: 'image/svg+xml',
+    }];
+  } else {
+    images = track.album.images.map((i: any) => {
+      return {
+        size: `${i.width}x${i.height}`,
+        src: i.url,
+        type: 'image/jpeg',
+      };
+    });
+  }
+
   return {
     artists: track.artists.map((a: any) => {
       return {
@@ -59,7 +77,7 @@ function parseTrack(track: any, audioFeature: any, saved: boolean): Track {
     explicit: track.explicit,
     href: track.external_urls.spotify,
     id: track.id,
-    image: track.album.images[0]?.url ?? '/music.svg',
+    images: images,
     name: track.name,
     preview: preview,
     saved: saved,
