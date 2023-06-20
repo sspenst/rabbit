@@ -3,6 +3,7 @@ import Image from 'next/image';
 import React, { useContext } from 'react';
 import { Tooltip } from 'react-tooltip';
 import { AppContext } from '../contexts/appContext';
+import { pauseTrack, playTrack } from '../helpers/audioControls';
 import { Track } from '../helpers/spotifyParsers';
 
 function formatSeconds(seconds: number) {
@@ -22,31 +23,11 @@ export function TrackInfo({ track }: TrackInfoProps) {
 
   return (
     <button className='flex gap-4 w-full items-center cursor-pointer truncate' onClick={() => {
-      if (!track.preview) {
-        previewTrack?.preview?.pause();
-        setPreviewTrack(track);
-
-        return;
-      }
-
-      if (previewTrack?.preview !== track.preview) {
-        // we are changing tracks
-        track.preview.play().then(() => {
-          // if we successfully play the track, then we need to pause the current track
-          if (previewTrack?.preview) {
-            previewTrack.preview.pause();
-          }
-
-          setPreviewTrack(track);
-        });
+      // pause if the track has no preview or is already playing
+      if (!track.preview?.paused) {
+        pauseTrack(track, setPreviewTrack, previewTrack);
       } else {
-        // need to set the preview track to force a rerender after updating paused
-        if (track.preview.paused) {
-          track.preview.play().then(() => setPreviewTrack({ ...track }));
-        } else {
-          track.preview.pause();
-          setPreviewTrack({ ...track });
-        }
+        playTrack(track, setPreviewTrack, previewTrack);
       }
     }}>
       <Image
@@ -67,8 +48,8 @@ export function TrackInfo({ track }: TrackInfoProps) {
             }}>
               <path strokeLinecap='round' strokeLinejoin='round' d='M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z' />
             </svg>
-            <Tooltip id={`warning-${track.id}`} place='bottom' style={{
-              backgroundColor: '#333333',
+            <Tooltip id={`warning-${track.id}`} place='top' style={{
+              backgroundColor: '#666666',
               borderRadius: '0.5rem',
               fontSize: '0.75rem',
               lineHeight: '1rem',

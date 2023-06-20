@@ -165,7 +165,7 @@ export default function AudioFeatureComponent({
     </button>
     {!hideTooltip &&
       <Tooltip id={id} place='bottom' style={{
-        backgroundColor: '#333333',
+        backgroundColor: '#666666',
         borderRadius: '0.5rem',
         fontSize: '0.75rem',
         lineHeight: '1rem',

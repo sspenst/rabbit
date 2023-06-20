@@ -10,6 +10,7 @@ import HelpModal from '../components/helpModal';
 import SkeletonTrack from '../components/skeletonTrack';
 import TrackComponent from '../components/trackComponent';
 import { AppContext } from '../contexts/appContext';
+import { pauseTrack, playTrack } from '../helpers/audioControls';
 import { loadTokens, redirectToAuthCodeFlow, removeTokens, spotifyFetch } from '../helpers/authCodeWithPkce';
 import { parseTracks, parseUser, Track, User } from '../helpers/spotifyParsers';
 
@@ -150,7 +151,7 @@ export default function App() {
     function pausePreviewTrack(route: string) {
       // if the preview track changes, we must pause the audio
       if (previewTrack?.preview && getRouteId(route) !== previewTrack.id) {
-        previewTrack.preview.pause();
+        pauseTrack(previewTrack, setPreviewTrack);
       }
     }
 
@@ -168,10 +169,9 @@ export default function App() {
 
       if (code === 'KeyP' && previewTrack?.preview) {
         if (previewTrack.preview.paused) {
-          previewTrack.preview.play().then(() => setPreviewTrack({ ...previewTrack }));
+          playTrack(previewTrack, setPreviewTrack);
         } else {
-          previewTrack.preview.pause();
-          setPreviewTrack({ ...previewTrack });
+          pauseTrack(previewTrack, setPreviewTrack);
         }
       }
     }
@@ -391,8 +391,8 @@ export default function App() {
                     <TrackComponent track={previewTrack} />
                     <button onClick={async () => {
                       previewTrack.preview?.pause();
-                      resetAudioFeatures();
                       setPreviewTrack(null);
+                      resetAudioFeatures();
 
                       if (router.query.id) {
                         router.push('/app', undefined, { shallow: true });
