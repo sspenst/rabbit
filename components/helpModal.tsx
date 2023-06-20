@@ -67,7 +67,7 @@ export default function HelpModal({ audioFeatures, isOpen, onClose, track }: Mod
                   <span className='hidden md:block pr-1'>Discover</span>
                 </div>
                 <span>
-                  {'3. Narrow down your results with '}
+                  {'3. Refine your search with '}
                   <a
                     className='w-fit hover:underline mt-3'
                     href='https://developer.spotify.com/documentation/web-api/reference/get-audio-features'
@@ -82,7 +82,7 @@ export default function HelpModal({ audioFeatures, isOpen, onClose, track }: Mod
                     <div
                       className={classNames(
                         'bg-neutral-900 rounded-lg border-2 cursor-pointer',
-                        audioFeature.property === audioFeatureProperty ? 'border-neutral-600' : 'border-black',
+                        audioFeature.property === audioFeatureProperty ? 'border-neutral-400' : 'border-black',
                       )}
                       key={audioFeature.property}
                     >
