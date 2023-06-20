@@ -116,12 +116,19 @@ function AudioFeatureStateSvg({ audioFeatureState }: { audioFeatureState: AudioF
 
 interface AudioFeatureComponentProps {
   audioFeature: AudioFeature;
+  disabled: boolean;
   hideTooltip?: boolean;
-  onClick?: () => void;
+  onClick: () => void;
   track: Track | null | undefined;
 }
 
-export default function AudioFeatureComponent({ audioFeature, hideTooltip, onClick, track }: AudioFeatureComponentProps) {
+export default function AudioFeatureComponent({
+  audioFeature,
+  disabled,
+  hideTooltip,
+  onClick,
+  track,
+}: AudioFeatureComponentProps) {
   const id = `audio-feature-${audioFeature.property}`;
   let value = undefined;
 
@@ -147,7 +154,7 @@ export default function AudioFeatureComponent({ audioFeature, hideTooltip, onCli
       )}
       data-tooltip-content={audioFeature.property[0].toUpperCase() + audioFeature.property.slice(1)}
       data-tooltip-id={id}
-      disabled={!track}
+      disabled={disabled}
       onClick={onClick}
     >
       <div className='flex gap-2'>

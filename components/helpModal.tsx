@@ -3,6 +3,7 @@ import classNames from 'classnames';
 import React, { Fragment, useState } from 'react';
 import { Track } from '../helpers/spotifyParsers';
 import AudioFeatureComponent, { AudioFeature, audioFeatureSvgMap } from './audioFeature';
+import SkeletonTrack from './skeletonTrack';
 import { TrackInfo } from './trackComponent';
 
 interface ModalProps {
@@ -49,20 +50,24 @@ export default function HelpModal({ audioFeatures, isOpen, onClose, track }: Mod
               </Dialog.Title>
               <div className='flex flex-col gap-4'>
                 <span>1. Select a track to begin</span>
-                {track &&
+                {track ?
                   <div className='flex gap-4 w-full items-center truncate bg-neutral-900 rounded-md pl-2 pr-4 py-1 hover:bg-neutral-700 transition'>
                     <TrackInfo track={track} />
                   </div>
+                  :
+                  <div className='bg-neutral-900 rounded-md'>
+                    <SkeletonTrack />
+                  </div>
                 }
-                <span>2. Search for related tracks</span>
+                <span>2. Discover related tracks</span>
                 <div className='bg-green-500 text-black p-3 rounded-full w-fit flex gap-2 font-medium'>
                   <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={2} stroke='currentColor' className='w-6 h-6'>
                     <path strokeLinecap='round' strokeLinejoin='round' d='M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z' />
                   </svg>
-                  <span className='hidden md:block pr-1'>Search</span>
+                  <span className='hidden md:block pr-1'>Discover</span>
                 </div>
                 <span>
-                  {'3. Use '}
+                  {'3. Narrow down your results with '}
                   <a
                     className='w-fit hover:underline mt-3'
                     href='https://developer.spotify.com/documentation/web-api/reference/get-audio-features'
@@ -71,7 +76,6 @@ export default function HelpModal({ audioFeatures, isOpen, onClose, track }: Mod
                   >
                     Audio Features
                   </a>
-                  {' to narrow down your search'}
                 </span>
                 <div className='flex gap-1 flex-wrap'>
                   {audioFeatures.map(audioFeature => (
@@ -84,6 +88,7 @@ export default function HelpModal({ audioFeatures, isOpen, onClose, track }: Mod
                     >
                       <AudioFeatureComponent
                         audioFeature={audioFeature}
+                        disabled={false}
                         hideTooltip={true}
                         onClick={() => setAudioFeatureProperty(audioFeature.property)}
                         track={track}

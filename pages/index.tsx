@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import React from 'react';
 import Footer from '../components/footer';
+import Header from '../components/header';
 import { redirectToAuthCodeFlow } from '../helpers/authCodeWithPkce';
 
 export default function Index() {
@@ -26,28 +27,8 @@ export default function Index() {
         <Image className='block h-auto w-full opacity-60' alt='demo' src='demo.png' width={demoWidth} height={demoHeight} />
       </div>
     </div>
-    <div className='absolute flex my-2 mx-4 gap-4 h-10 items-center'>
-      <a href='https://sspenst.com' rel='noreferrer' target='_blank'>
-        <Image alt='ss' src='/ss.svg' width={512} height={512} priority={true} className='w-8 h-8' style={{
-          minHeight: 32,
-          minWidth: 32,
-        }} />
-      </a>
-      <a
-        className='w-7 h-7'
-        href='https://open.spotify.com/'
-        rel='noreferrer'
-        style={{
-          minHeight: 28,
-          minWidth: 28,
-        }}
-        target='_blank'
-      >
-        <Image alt='spotify-icon' src='/spotify_icon.png' width={512} height={512} priority={true} className='w-7 h-7' style={{
-          minHeight: 28,
-          minWidth: 28,
-        }} />
-      </a>
+    <div className='absolute h-12'>
+      <Header />
     </div>
     <div className='flex flex-col text-center w-full justify-center font-medium min-h-screen items-center gap-8 p-12' style={{
       backgroundImage: 'radial-gradient(black 35%, transparent, transparent)',

@@ -25,6 +25,7 @@ function parseTrack(track: any, audioFeature: any, saved: boolean): Track {
   const preview = new Audio(track.preview_url);
 
   preview.loop = true;
+  preview.preload = 'none';
 
   if (audioFeature) {
     audioFeatures.acousticness = audioFeature.acousticness;
@@ -69,6 +70,10 @@ export async function parseTracks(tracks: any): Promise<Track[]> {
   // preview url can be null, but audio is essential here so need to filter these results
   // https://github.com/spotify/web-api/issues/148#issuecomment-313924088
   const filteredTracks = tracks.filter((t: any) => !!t.preview_url);
+
+  if (!filteredTracks.length) {
+    return [];
+  }
 
   const [audioFeatures, saved] = await Promise.all([
     spotifyFetch(`https://api.spotify.com/v1/audio-features?${new URLSearchParams({

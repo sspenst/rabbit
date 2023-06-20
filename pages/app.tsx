@@ -1,13 +1,12 @@
+import { debounce } from 'debounce';
 import Head from 'next/head';
-import Image from 'next/image';
-import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import AudioFeatureComponent, { AudioFeature, AudioFeatureState } from '../components/audioFeature';
 import Footer from '../components/footer';
+import Header from '../components/header';
 import HelpModal from '../components/helpModal';
-import Profile from '../components/profile';
 import SkeletonTrack from '../components/skeletonTrack';
 import TrackComponent from '../components/trackComponent';
 import { AppContext } from '../contexts/appContext';
@@ -25,38 +24,62 @@ export default function App() {
   ]);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(true);
-  const limit = 20;
-  const myTracksPage = useRef(0);
   const [previewTrack, setPreviewTrack] = useState<Track | null>();
-  const [recommendations, setRecommendations] = useState<Track[]>([]);
+  const [results, setResults] = useState<Track[]>();
   const router = useRouter();
   const [savingTrackId, setSavingTrackId] = useState<string>();
+  const [search, setSearch] = useState('');
+  const searchLimit = 20;
+  const searchOffset = useRef(0);
   const [showMore, setShowMore] = useState(true);
   const [user, setUser] = useState<User | null>();
 
-  async function loadMyTracks(page: number) {
+  // get user's tracks or search for tracks with the current searchOffset
+  async function getRawTracks(q: string) {
+    if (!q) {
+      const tracks = await spotifyFetch(`https://api.spotify.com/v1/me/tracks?${new URLSearchParams({
+        limit: String(searchLimit),
+        offset: String(searchOffset.current),
+      })}`, {
+        method: 'GET',
+      });
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return tracks?.items.map((i: any) => i.track);
+    } else {
+      const tracks = await spotifyFetch(`https://api.spotify.com/v1/search?${new URLSearchParams({
+        limit: String(searchLimit),
+        offset: String(searchOffset.current),
+        q: q,
+        type: 'track',
+      })}`, {
+        method: 'GET',
+      });
+
+      return tracks?.tracks.items;
+    }
+  }
+
+  // search for tracks - only used on /app
+  async function searchTracks(q = '', append = false) {
     setIsSearching(true);
 
-    const tracks = await spotifyFetch(`https://api.spotify.com/v1/me/tracks?${new URLSearchParams({
-      limit: String(limit),
-      offset: String(page * limit),
-    })}`, {
-      method: 'GET',
+    if (!append) {
+      searchOffset.current = 0;
+    }
+
+    const tracks = await parseTracks(await getRawTracks(q));
+
+    searchOffset.current += searchLimit;
+
+    setResults(prevTracks => {
+      if (!append || !prevTracks) {
+        return tracks;
+      } else {
+        return [...prevTracks].concat(tracks);
+      }
     });
-
-    if (!tracks) {
-      return;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const myTracks = await parseTracks(tracks.items.map((i: any) => i.track));
-
-    if (myTracks.length) {
-      setRecommendations(prevTracks => [...prevTracks].concat(myTracks));
-    }
-
-    myTracksPage.current = page;
-    setShowMore(!!myTracks.length);
+    setShowMore(!!tracks.length);
     setIsSearching(false);
   }
 
@@ -70,20 +93,26 @@ export default function App() {
     });
   }
 
+  // initialize data when the route changes
   useEffect(() => {
     async function initializePageData() {
-      const user = await spotifyFetch('https://api.spotify.com/v1/me', {
-        method: 'GET',
-      });
+      // initialize user
+      if (user === undefined) {
+        setUser(parseUser(await spotifyFetch('https://api.spotify.com/v1/me', {
+          method: 'GET',
+        })));
+      }
 
-      setUser(parseUser(user));
+      // if the route changes we always need to reset search and get new results
+      setSearch('');
+      setResults(undefined);
 
       if (router.query.id) {
         await getRecommendations();
       } else {
         resetAudioFeatures();
         setPreviewTrack(null);
-        await loadMyTracks(0);
+        await searchTracks();
       }
     }
 
@@ -106,6 +135,7 @@ export default function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
+  // ensure audio is paused when leaving the page
   useEffect(() => {
     function getRouteId(route: string) {
       if (!route.includes('?')) {
@@ -118,22 +148,9 @@ export default function App() {
     }
 
     function pausePreviewTrack(route: string) {
-      setIsSearching(true);
-
       // if the preview track changes, we must pause the audio
       if (previewTrack && getRouteId(route) !== previewTrack.id) {
         previewTrack.preview.pause();
-
-        // clear the preview track if it is going to be replaced
-        if (route.startsWith('/app')) {
-          resetAudioFeatures();
-          setPreviewTrack(undefined);
-        }
-      }
-
-      // clear the recommendations if they are going to be replaced
-      if (route.startsWith('/app')) {
-        setRecommendations([]);
       }
     }
 
@@ -144,6 +161,7 @@ export default function App() {
     };
   }, [previewTrack, router]);
 
+  // pause/play preview track with P
   useEffect(() => {
     function pause(event: KeyboardEvent) {
       const { code } = event;
@@ -171,23 +189,26 @@ export default function App() {
   }
 
   async function getRecommendations() {
-    function getQueryParamState(property: string) {
-      switch (router.query[property]) {
-      case 'up':
-        return AudioFeatureState.UP;
-      case 'down':
-        return AudioFeatureState.DOWN;
-      default:
-        return AudioFeatureState.NONE;
-      }
-    }
-
     const newAudioFeatures: AudioFeature[] = [];
 
     for (const audioFeature of audioFeatures) {
+      let state: AudioFeatureState;
+
+      switch (router.query[audioFeature.property]) {
+      case 'up':
+        state = AudioFeatureState.UP;
+        break;
+      case 'down':
+        state = AudioFeatureState.DOWN;
+        break;
+      default:
+        state = AudioFeatureState.NONE;
+        break;
+      }
+
       newAudioFeatures.push({
         property: audioFeature.property,
-        state: getQueryParamState(audioFeature.property),
+        state: state,
       });
     }
 
@@ -197,6 +218,8 @@ export default function App() {
     let track: Track;
 
     if (previewTrack?.id !== id) {
+      setPreviewTrack(undefined);
+
       const trackById = await spotifyFetch(`https://api.spotify.com/v1/tracks/${id}`, {
         method: 'GET',
       });
@@ -228,7 +251,7 @@ export default function App() {
     // NB: market is inferred from the access token, so we don't need to specify it here
     // maximum of 5 seed values are allowed: use the track id and up to 4 artists
     const recommendations = await spotifyFetch(`https://api.spotify.com/v1/recommendations?${new URLSearchParams({
-      limit: String(limit),
+      limit: String(searchLimit),
       seed_artists: track.artists.map(a => a.id).slice(0, 4).join(','),
       seed_tracks: track.id,
       ...audioFeatureParams,
@@ -236,20 +259,19 @@ export default function App() {
       method: 'GET',
     });
 
-    const newRecommnedations = await parseTracks(recommendations?.tracks);
+    const newRecommendations = await parseTracks(recommendations?.tracks);
 
     // we always want previewTrack to be at the start of the recommendation list,
     // but we don't want any duplicates, so remove the track if it exists before unshifting it
-    const index = newRecommnedations.findIndex(t => t.id === track.id);
+    const index = newRecommendations.findIndex(t => t.id === track.id);
 
     if (index !== -1) {
-      newRecommnedations.splice(index, 1);
+      newRecommendations.splice(index, 1);
     }
 
-    newRecommnedations.unshift({ ...track });
+    newRecommendations.unshift({ ...track });
 
-    setRecommendations(newRecommnedations);
-    setIsSearching(false);
+    setResults(newRecommendations);
     setShowMore(false);
   }
 
@@ -265,34 +287,48 @@ export default function App() {
     toast.dismiss();
     toast.success(`${track.saved ? 'Removed from' : 'Added to'} Liked Songs`);
 
-    if (track.id === previewTrack?.id) {
-      setPreviewTrack(prevTrack => {
-        const newTrack = { ...prevTrack } as Track;
+    setPreviewTrack(prevTrack => {
+      if (track.id !== prevTrack?.id) {
+        return prevTrack;
+      }
 
-        newTrack.saved = !newTrack.saved;
+      const newTrack = { ...prevTrack } as Track;
 
-        return newTrack;
-      });
-    }
+      newTrack.saved = !newTrack.saved;
 
-    const index = recommendations.findIndex(t => t.id === track.id);
+      return newTrack;
+    });
 
-    if (index !== -1) {
-      setRecommendations(prevTracks => {
-        const newTracks = [...prevTracks];
+    setResults(prevTracks => {
+      if (!prevTracks) {
+        return prevTracks;
+      }
 
-        newTracks[index].saved = !newTracks[index].saved;
+      const index = prevTracks.findIndex(t => t.id === track.id);
 
-        return newTracks;
-      });
-    }
+      if (index === -1) {
+        return prevTracks;
+      }
+
+      const newTracks = [...prevTracks];
+
+      newTracks[index].saved = !newTracks[index].saved;
+
+      return newTracks;
+    });
 
     setSavingTrackId(undefined);
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debounceSearch = useCallback(debounce(async (q: string) => {
+    await searchTracks(q);
+  }, 300), []);
+
   if (user === null) {
-    return (
-      <div className='flex inset-0 fixed text-center items-center p-4'>
+    return (<>
+      <Header />
+      <div className='flex text-center items-center px-4 py-20'>
         <p className='w-full'>
           {'An unexpected error occurred! Try '}
           <button
@@ -313,7 +349,8 @@ export default function App() {
           {' if you are still having issues.'}
         </p>
       </div>
-    );
+      <Footer />
+    </>);
   }
 
   return (
@@ -328,54 +365,41 @@ export default function App() {
           <title>{previewTrack.name} by {previewTrack.artists.map(a => a.name).join(', ')}</title>
         </Head>
       }
-      <div className='flex items-center mr-2 ml-4 mt-2 gap-4 h-10'>
-        <Link href='/'>
-          <Image alt='ss' src='/ss.svg' width={512} height={512} priority={true} className='w-8 h-8' style={{
-            minHeight: 32,
-            minWidth: 32,
-          }} />
-        </Link>
-        <a
-          className='w-7 h-7'
-          href='https://open.spotify.com/'
-          rel='noreferrer'
-          style={{
-            minHeight: 28,
-            minWidth: 28,
-          }}
-          target='_blank'
-        >
-          <Image alt='spotify-icon' src='/spotify_icon.png' width={512} height={512} priority={true} className='w-7 h-7' style={{
-            minHeight: 28,
-            minWidth: 28,
-          }} />
-        </a>
-        <span className='grow font-medium text-2xl truncate ml-1'>
-          Rabbit
-        </span>
-        <Profile user={user} />
-      </div>
+      <Header title={'Rabbit'} user={user} />
       <div className='sticky top-0 p-2 bg-black flex justify-center'>
         <div className='bg-neutral-900 rounded-md px-2 pt-2 pb-1 flex flex-col gap-1 max-w-full' style={{
           width: 768,
         }}>
           <div className='flex justify-center w-full'>
             {previewTrack === null ?
-              <span className='flex items-center justify-center w-full rounded-md text-md h-14'>
-                Select a track to begin
-              </span>
+              <input
+                autoFocus
+                className='w-full rounded-md h-14 bg-neutral-900 text-4xl p-2'
+                onChange={e => {
+                  setSearch(e.target.value);
+                  setResults(undefined);
+                  debounceSearch(e.target.value);
+                }}
+                placeholder='Search'
+                type='search'
+                value={search}
+              />
               :
               <>
                 {previewTrack ?
                   <div className='flex items-center w-full hover:bg-neutral-700 transition py-1 pr-4 pl-2 gap-4 rounded-md h-14'>
                     <TrackComponent track={previewTrack} />
-                    <button onClick={() => {
+                    <button onClick={async () => {
+                      previewTrack.preview.pause();
+                      resetAudioFeatures();
+                      setPreviewTrack(null);
+
                       if (router.query.id) {
                         router.push('/app', undefined, { shallow: true });
-                      } else {
-                        previewTrack.preview.pause();
-                        resetAudioFeatures();
-                        setPreviewTrack(null);
+                      } else if (search) {
+                        setSearch('');
+                        setResults(undefined);
+                        await searchTracks();
                       }
                     }}>
                       <svg className='text-neutral-500 hover:text-neutral-200 w-6 h-6 -mx-1 cursor-pointer' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor'>
@@ -394,6 +418,7 @@ export default function App() {
               {audioFeatures.map(audioFeature => (
                 <AudioFeatureComponent
                   audioFeature={audioFeature}
+                  disabled={!previewTrack}
                   key={audioFeature.property}
                   onClick={() => setAudioFeatures(prevAudioFeatures => {
                     const newAudioFeatures = [...prevAudioFeatures];
@@ -412,7 +437,7 @@ export default function App() {
             </div>
             <button
               className='bg-green-500 disabled:bg-neutral-500 text-black p-3 rounded-full enabled:hover:bg-green-300 transition flex gap-2 font-medium'
-              disabled={isSearching || !previewTrack}
+              disabled={!previewTrack || !results}
               onClick={() => {
                 if (!previewTrack) {
                   return;
@@ -437,7 +462,7 @@ export default function App() {
               <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={2} stroke='currentColor' className='w-6 h-6'>
                 <path strokeLinecap='round' strokeLinejoin='round' d='M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z' />
               </svg>
-              <span className='hidden md:block mr-1'>Search</span>
+              <span className='hidden md:block mr-1'>Discover</span>
             </button>
             <div className='flex justify-center items-center'>
               <button
@@ -451,29 +476,34 @@ export default function App() {
         </div>
       </div>
       <div className='flex justify-center'>
-        {recommendations.length ?
-          <div className='flex flex-col items-center text-center w-full px-2 max-w-3xl'>
-            {recommendations.map(track => (
-              <div className='w-full hover:bg-neutral-700 transition py-1 pr-4 pl-2 rounded-md' key={`recommended-track-${track.id}`}>
-                <TrackComponent track={track} />
-              </div>
-            ))}
-            {showMore &&
-              <button
-                className='px-8 py-2 rounded-full bg-green-500 transition text-black text-xl mt-2 disabled:bg-neutral-500 enabled:hover:bg-green-300 font-medium'
-                disabled={isSearching}
-                onClick={async () => await loadMyTracks(myTracksPage.current + 1)}
-              >
-                More
-              </button>
-            }
-          </div>
-          :
+        {results === undefined ?
           <div className='flex flex-col w-full max-w-3xl px-2' style={{
             zIndex: -1,
           }}>
             {Array.from({ length: 20 }, (_, index) => <SkeletonTrack key={`skeleton-track-${index}`} />)}
           </div>
+          :
+          results.length ?
+            <div className='flex flex-col items-center text-center w-full px-2 max-w-3xl'>
+              {results.map(track => (
+                <div className='w-full hover:bg-neutral-700 transition py-1 pr-4 pl-2 rounded-md' key={`track-${track.id}`}>
+                  <TrackComponent track={track} />
+                </div>
+              ))}
+              {showMore &&
+                <button
+                  className='px-8 py-2 rounded-full bg-green-500 transition text-black text-xl mt-2 disabled:bg-neutral-500 enabled:hover:bg-green-300 font-medium'
+                  disabled={isSearching}
+                  onClick={async () => await searchTracks(search, true)}
+                >
+                  More
+                </button>
+              }
+            </div>
+            :
+            <div className='flex h-12 items-center'>
+              No tracks found
+            </div>
         }
       </div>
       <Footer />
@@ -481,7 +511,7 @@ export default function App() {
         audioFeatures={audioFeatures}
         isOpen={isHelpModalOpen}
         onClose={() => setIsHelpModalOpen(false)}
-        track={previewTrack ?? recommendations.at(0)}
+        track={previewTrack ?? results?.at(0)}
       />
     </AppContext.Provider>
   );
