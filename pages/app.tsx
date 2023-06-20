@@ -79,7 +79,7 @@ export default function App() {
         return [...prevTracks].concat(tracks);
       }
     });
-    setShowMore(!!tracks.length);
+    setShowMore(tracks.length === searchLimit);
     setIsSearching(false);
   }
 
@@ -149,7 +149,7 @@ export default function App() {
 
     function pausePreviewTrack(route: string) {
       // if the preview track changes, we must pause the audio
-      if (previewTrack && getRouteId(route) !== previewTrack.id) {
+      if (previewTrack?.preview && getRouteId(route) !== previewTrack.id) {
         previewTrack.preview.pause();
       }
     }
@@ -166,7 +166,7 @@ export default function App() {
     function pause(event: KeyboardEvent) {
       const { code } = event;
 
-      if (code === 'KeyP' && previewTrack) {
+      if (code === 'KeyP' && previewTrack?.preview) {
         if (previewTrack.preview.paused) {
           previewTrack.preview.play().then(() => setPreviewTrack({ ...previewTrack }));
         } else {
@@ -360,7 +360,7 @@ export default function App() {
       savingTrackId: savingTrackId,
       setPreviewTrack: setPreviewTrack,
     }}>
-      {previewTrack && !previewTrack.preview.paused &&
+      {previewTrack?.preview && !previewTrack.preview.paused &&
         <Head>
           <title>{previewTrack.name} by {previewTrack.artists.map(a => a.name).join(', ')}</title>
         </Head>
@@ -390,7 +390,7 @@ export default function App() {
                   <div className='flex items-center w-full hover:bg-neutral-700 transition py-1 pr-4 pl-2 gap-4 rounded-md h-14'>
                     <TrackComponent track={previewTrack} />
                     <button onClick={async () => {
-                      previewTrack.preview.pause();
+                      previewTrack.preview?.pause();
                       resetAudioFeatures();
                       setPreviewTrack(null);
 

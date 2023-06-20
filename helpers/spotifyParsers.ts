@@ -14,7 +14,8 @@ export interface Track {
   id: string;
   image: string;
   name: string;
-  preview: HTMLAudioElement;
+  // preview url can be null https://github.com/spotify/web-api/issues/148#issuecomment-313924088
+  preview: HTMLAudioElement | null;
   saved: boolean;
   seconds: number;
   uri: string;
@@ -22,10 +23,15 @@ export interface Track {
 
 function parseTrack(track: any, audioFeature: any, saved: boolean): Track {
   const audioFeatures: Record<string, string> = {};
-  const preview = new Audio(track.preview_url);
 
-  preview.loop = true;
-  preview.preload = 'none';
+  let preview: HTMLAudioElement | null = null;
+
+  if (track.preview_url) {
+    preview = new Audio(track.preview_url);
+
+    preview.loop = true;
+    preview.preload = 'none';
+  }
 
   if (audioFeature) {
     audioFeatures.acousticness = audioFeature.acousticness;
@@ -63,32 +69,24 @@ function parseTrack(track: any, audioFeature: any, saved: boolean): Track {
 }
 
 export async function parseTracks(tracks: any): Promise<Track[]> {
-  if (!tracks) {
-    return [];
-  }
-
-  // preview url can be null, but audio is essential here so need to filter these results
-  // https://github.com/spotify/web-api/issues/148#issuecomment-313924088
-  const filteredTracks = tracks.filter((t: any) => !!t.preview_url);
-
-  if (!filteredTracks.length) {
+  if (!tracks?.length) {
     return [];
   }
 
   const [audioFeatures, saved] = await Promise.all([
     spotifyFetch(`https://api.spotify.com/v1/audio-features?${new URLSearchParams({
-      ids: filteredTracks.map((f: any) => f.id).join(','),
+      ids: tracks.map((f: any) => f.id).join(','),
     })}`, {
       method: 'GET',
     }),
     spotifyFetch(`https://api.spotify.com/v1/me/tracks/contains?${new URLSearchParams({
-      ids: filteredTracks.map((f: any) => f.id).join(','),
+      ids: tracks.map((f: any) => f.id).join(','),
     })}`, {
       method: 'GET',
     }) as Promise<boolean[] | null>,
   ]);
 
-  return filteredTracks.map((t: any, i: number) => parseTrack(t, audioFeatures?.audio_features[i], saved?.at(i) ?? false));
+  return tracks.map((t: any, i: number) => parseTrack(t, audioFeatures?.audio_features[i], saved?.at(i) ?? false));
 }
 
 export interface User {

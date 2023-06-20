@@ -1,6 +1,7 @@
 import classNames from 'classnames';
 import Image from 'next/image';
 import React, { useContext } from 'react';
+import { Tooltip } from 'react-tooltip';
 import { AppContext } from '../contexts/appContext';
 import { Track } from '../helpers/spotifyParsers';
 
@@ -21,11 +22,18 @@ export function TrackInfo({ track }: TrackInfoProps) {
 
   return (
     <button className='flex gap-4 w-full items-center cursor-pointer truncate' onClick={() => {
+      if (!track.preview) {
+        previewTrack?.preview?.pause();
+        setPreviewTrack(track);
+
+        return;
+      }
+
       if (previewTrack?.preview !== track.preview) {
         // we are changing tracks
         track.preview.play().then(() => {
           // if we successfully play the track, then we need to pause the current track
-          if (previewTrack) {
+          if (previewTrack?.preview) {
             previewTrack.preview.pause();
           }
 
@@ -52,7 +60,31 @@ export function TrackInfo({ track }: TrackInfoProps) {
         width={48}
       />
       <div className='grow flex flex-col gap-1 truncate text-left'>
-        <span className={classNames('truncate', { 'text-green-500': previewTrack?.preview === track.preview && !track.preview.paused })} title={track.name}>{track.name}</span>
+        <div className='flex items-center gap-2'>
+          {!track.preview && <>
+            <svg data-tooltip-content='Only playable on Spotify' data-tooltip-id={`warning-${track.id}`} className='text-yellow-500 w-5 h-5 focus:outline-none' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' style={{
+              minWidth: 20,
+            }}>
+              <path strokeLinecap='round' strokeLinejoin='round' d='M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z' />
+            </svg>
+            <Tooltip id={`warning-${track.id}`} place='bottom' style={{
+              backgroundColor: '#333333',
+              borderRadius: '0.5rem',
+              fontSize: '0.75rem',
+              lineHeight: '1rem',
+              opacity: 100,
+            }} />
+          </>}
+          <span
+            className={classNames(
+              'truncate',
+              { 'text-green-500': track.preview && previewTrack?.preview === track.preview && !track.preview.paused },
+            )}
+            title={track.name}
+          >
+            {track.name}
+          </span>
+        </div>
         <span className='flex text-neutral-400 text-sm items-center gap-2'>
           {track.explicit &&
             <div className='bg-neutral-400 text-black text-xs rounded-sm w-4 h-4 text-center' style={{
