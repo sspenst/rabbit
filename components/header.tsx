@@ -13,7 +13,7 @@ export default function Header({ title, user }: HeaderProps) {
   return (
     <div className='flex items-center mr-2 ml-4 mt-2 gap-4 h-10'>
       <Link href='/'>
-        <Image alt='ss' src='/ss.svg' width={512} height={512} priority={true} className='w-8 h-8' style={{
+        <Image alt='ss' src='/rabbit.svg' width={512} height={512} priority={true} className='w-8 h-8' style={{
           minHeight: 32,
           minWidth: 32,
         }} />

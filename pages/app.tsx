@@ -374,7 +374,7 @@ export default function App() {
             {previewTrack === null ?
               <input
                 autoFocus
-                className='w-full rounded-md h-14 bg-neutral-900 text-4xl p-2'
+                className='w-full rounded-md h-14 bg-neutral-900 text-4xl px-3'
                 onChange={e => {
                   setSearch(e.target.value);
                   setResults(undefined);

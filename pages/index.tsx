@@ -7,8 +7,8 @@ import { redirectToAuthCodeFlow } from '../helpers/authCodeWithPkce';
 
 export default function Index() {
   const router = useRouter();
-  const demoWidth = 2706;
-  const demoHeight = 1560;
+  const demoWidth = 1062;
+  const demoHeight = 1564;
 
   return (<>
     <div className='absolute max-h-screen h-screen max-w-full overflow-hidden' style={{
@@ -21,8 +21,8 @@ export default function Index() {
         backgroundImage: 'linear-gradient(to bottom, transparent 70%, black)',
       }} />
       <div className='relative top-12 left-0' style={{
-        height: demoHeight * 1.2,
-        width: demoWidth * 1.2,
+        height: demoHeight,
+        width: demoWidth,
       }}>
         <Image className='block h-auto w-full opacity-60' alt='demo' src='demo.png' width={demoWidth} height={demoHeight} />
       </div>
