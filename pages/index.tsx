@@ -36,9 +36,8 @@ export default function Index() {
     }}>
       <h1 className='text-8xl font-semibold'>Rabbit</h1>
       <Image alt='spotify logo' src='/spotify_logo.png' width={2362} height={708} priority={true} style={{
-        height: 708 / 15,
-        minWidth: 2362 / 15,
-        width: 2362 / 15,
+        minWidth: 160,
+        width: 160,
       }} />
       <h2 className='text-3xl'>Discover new tracks using Spotify&apos;s audio features</h2>
       <button className='px-8 py-2 rounded-full bg-green-500 hover:bg-green-300 transition text-black text-xl' onClick={() => {
