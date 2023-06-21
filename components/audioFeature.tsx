@@ -147,8 +147,8 @@ export default function AudioFeatureComponent({
   return (<>
     <button
       className={classNames(
-        'flex flex-col gap-0.5 items-center p-2 text-xl rounded-md enabled:cursor-pointer transition enabled:hover:bg-neutral-800',
-        { 'text-neutral-500 border-neutral-500': audioFeature.state === AudioFeatureState.NONE },
+        'flex flex-col gap-0.5 items-center p-2 text-xl rounded-md enabled:cursor-pointer transition enabled:hover:bg-neutral-700',
+        { 'text-neutral-400 border-neutral-500': audioFeature.state === AudioFeatureState.NONE },
         { 'text-green-500 border-green-500': audioFeature.state === AudioFeatureState.UP },
         { 'text-red-500 border-red-500': audioFeature.state === AudioFeatureState.DOWN },
       )}

@@ -5,13 +5,11 @@ import SS from './icons/ss';
 
 export default function Footer() {
   return (
-    <div className='flex flex-col gap-6 items-center m-8 text-neutral-500 text-sm text-center' style={{
-      color: 'rgb(125 125 125)',
-    }}>
+    <div className='flex flex-col gap-6 items-center m-8 text-neutral-400 text-sm text-center'>
       <div className='flex flex-wrap gap-6 items-center justify-center'>
         <a
           aria-label='sspenst home'
-          className='w-8 h-8 hover:text-neutral-200 transition'
+          className='w-8 h-8 hover:text-white transition'
           href='https://sspenst.com'
           rel='noreferrer'
           style={{
@@ -24,7 +22,7 @@ export default function Footer() {
         </a>
         <a
           aria-label='sspenst github'
-          className='w-8 h-8 hover:text-neutral-200 transition'
+          className='w-8 h-8 hover:text-white transition'
           href='https://github.com/sspenst'
           rel='noreferrer'
           style={{
@@ -37,7 +35,7 @@ export default function Footer() {
         </a>
         <a
           aria-label='sspenst linkedin'
-          className='w-8 h-8 hover:text-neutral-200 transition'
+          className='w-8 h-8 hover:text-white transition'
           href='https://linkedin.com/in/sspenst'
           rel='noreferrer'
           style={{
