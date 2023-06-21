@@ -107,6 +107,7 @@ export default function TrackComponent({ track }: TrackComponentProps) {
     <div className='flex gap-4 grow items-center truncate'>
       <TrackInfo track={track} />
       <button
+        aria-label={track.saved ? 'remove from liked songs' : 'add to liked songs'}
         className={classNames('disabled:text-green-600', track.saved ?
           'text-green-500 hover:text-green-300' :
           'text-neutral-500 hover:text-neutral-300'
@@ -125,6 +126,7 @@ export default function TrackComponent({ track }: TrackComponentProps) {
         }
       </button>
       <a
+        aria-label='listen on Spotify'
         className='font-bold text-lg w-fit hover:underline text-neutral-500 hover:text-neutral-200'
         href={track.href}
         rel='noreferrer'

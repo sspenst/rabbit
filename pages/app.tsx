@@ -285,7 +285,7 @@ export default function App() {
     });
 
     toast.dismiss();
-    toast.success(`${track.saved ? 'Removed from' : 'Added to'} Liked Songs`);
+    toast.success(track.saved ? 'Removed from Liked Songs' : 'Added to Liked Songs');
 
     setPreviewTrack(prevTrack => {
       if (track.id !== prevTrack?.id) {
@@ -389,19 +389,22 @@ export default function App() {
                 {previewTrack ?
                   <div className='flex items-center w-full hover:bg-neutral-700 transition py-1 pr-4 pl-2 gap-4 rounded-md h-14'>
                     <TrackComponent track={previewTrack} />
-                    <button onClick={async () => {
-                      previewTrack.preview?.pause();
-                      setPreviewTrack(null);
-                      resetAudioFeatures();
+                    <button
+                      aria-label='clear'
+                      onClick={async () => {
+                        previewTrack.preview?.pause();
+                        setPreviewTrack(null);
+                        resetAudioFeatures();
 
-                      if (router.query.id) {
-                        router.push('/app', undefined, { shallow: true });
-                      } else if (search) {
-                        setSearch('');
-                        setResults(undefined);
-                        await searchTracks();
-                      }
-                    }}>
+                        if (router.query.id) {
+                          router.push('/app', undefined, { shallow: true });
+                        } else if (search) {
+                          setSearch('');
+                          setResults(undefined);
+                          await searchTracks();
+                        }
+                      }}
+                    >
                       <svg className='text-neutral-500 hover:text-neutral-200 w-6 h-6 -mx-1 cursor-pointer' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor'>
                         <path strokeLinecap='round' strokeLinejoin='round' d='M6 18L18 6M6 6l12 12' />
                       </svg>
@@ -436,6 +439,7 @@ export default function App() {
               ))}
             </div>
             <button
+              aria-label='discover'
               className='bg-green-500 disabled:bg-neutral-500 text-black p-3 rounded-full enabled:hover:bg-green-300 transition flex gap-2 font-medium'
               disabled={!previewTrack || !results}
               onClick={() => {

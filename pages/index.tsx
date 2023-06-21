@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import React from 'react';
 import Footer from '../components/footer';
 import Header from '../components/header';
+import ImageWithFallback from '../components/imageWithFallback';
 import { redirectToAuthCodeFlow } from '../helpers/authCodeWithPkce';
 
 export default function Index() {
@@ -24,7 +25,7 @@ export default function Index() {
         height: demoHeight,
         width: demoWidth,
       }}>
-        <Image className='block h-auto w-full opacity-60' alt='demo' src='demo.png' width={demoWidth} height={demoHeight} />
+        <ImageWithFallback className='block h-auto w-full opacity-60' alt='demo' src='demo.avif' fallback='demo.jpg' width={demoWidth} height={demoHeight} />
       </div>
     </div>
     <div className='absolute h-12'>
@@ -34,7 +35,7 @@ export default function Index() {
       backgroundImage: 'radial-gradient(black 35%, transparent, transparent)',
     }}>
       <h1 className='text-8xl font-semibold'>Rabbit</h1>
-      <Image alt='spotify-logo' src='/spotify_logo.png' width={2362} height={708} priority={true} style={{
+      <Image alt='spotify logo' src='/spotify_logo.png' width={2362} height={708} priority={true} style={{
         height: 708 / 15,
         minWidth: 2362 / 15,
         width: 2362 / 15,
