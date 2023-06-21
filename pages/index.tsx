@@ -25,7 +25,7 @@ export default function Index() {
         height: demoHeight,
         width: demoWidth,
       }}>
-        <ImageWithFallback className='block h-auto w-full opacity-60' alt='demo' src='demo.avif' fallback='demo.jpg' width={demoWidth} height={demoHeight} />
+        <ImageWithFallback className='block h-auto w-full opacity-60' alt='demo' src='demo.avif' fallback='demo.jpeg' width={demoWidth} height={demoHeight} />
       </div>
     </div>
     <div className='absolute h-12'>
