@@ -12,7 +12,7 @@ export default function Index() {
   const demoHeight = 1564;
 
   return (<>
-    <div className='absolute max-h-screen h-screen max-w-full overflow-hidden' style={{
+    <div className='absolute max-h-screen h-screen max-w-full overflow-hidden select-none' style={{
       zIndex: -1,
     }}>
       <div className='absolute w-full h-full z-10' style={{
@@ -25,7 +25,7 @@ export default function Index() {
         height: demoHeight,
         width: demoWidth,
       }}>
-        <ImageWithFallback className='block h-auto w-full opacity-60' alt='demo' src='demo.avif' fallback='demo.jpg' width={demoWidth} height={demoHeight} />
+        <ImageWithFallback className='block h-auto w-full opacity-60' alt='Demo' src='demo.avif' fallback='demo.jpg' width={demoWidth} height={demoHeight} />
       </div>
     </div>
     <div className='absolute h-12'>
@@ -35,7 +35,7 @@ export default function Index() {
       backgroundImage: 'radial-gradient(black 35%, transparent, transparent)',
     }}>
       <h1 className='text-8xl font-semibold'>Rabbit</h1>
-      <Image alt='spotify logo' src='/spotify_logo.png' width={2362} height={708} priority={true} style={{
+      <Image alt='Spotify Logo' src='/spotify_logo.png' width={2362} height={708} priority={true} style={{
         minWidth: 160,
         width: 160,
       }} />

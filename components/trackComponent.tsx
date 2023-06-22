@@ -31,7 +31,7 @@ export function TrackInfo({ track }: TrackInfoProps) {
   }
 
   return (
-    <button className='flex gap-4 w-full items-center cursor-pointer truncate' onClick={() => {
+    <button className='flex gap-4 w-full items-center cursor-pointer truncate select-none' onClick={() => {
       // pause if the track has no preview or is already playing
       if (!track.preview?.paused) {
         pauseTrack(track, setPreviewTrack, previewTrack);

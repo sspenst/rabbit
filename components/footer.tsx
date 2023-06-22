@@ -5,7 +5,10 @@ import SS from './icons/ss';
 
 export default function Footer() {
   return (
-    <div className='flex flex-col gap-6 items-center m-8 text-neutral-400 text-sm text-center'>
+    <footer className='flex flex-col gap-6 items-center m-8 text-neutral-400 text-sm text-center'>
+      <div className='w-full h-px' style={{
+        backgroundImage: 'linear-gradient(to right, transparent, rgb(70, 70, 70) 20%, rgb(70, 70, 70) 80%, transparent)',
+      }} />
       <div className='flex flex-wrap gap-6 items-center justify-center'>
         <a
           aria-label='sspenst home'
@@ -68,6 +71,6 @@ export default function Footer() {
           Privacy Policy
         </a>
       </div>
-    </div>
+    </footer>
   );
 }

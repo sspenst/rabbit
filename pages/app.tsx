@@ -245,6 +245,8 @@ export default function App() {
         audioFeatureParams[`min_${f.property}`] = track.audioFeatures[f.property];
       } else if (f.state === AudioFeatureState.DOWN) {
         audioFeatureParams[`max_${f.property}`] = track.audioFeatures[f.property];
+      } else {
+        audioFeatureParams[`target_${f.property}`] = track.audioFeatures[f.property];
       }
     });
 

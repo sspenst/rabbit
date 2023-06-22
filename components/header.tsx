@@ -11,9 +11,9 @@ interface HeaderProps {
 
 export default function Header({ title, user }: HeaderProps) {
   return (
-    <div className='flex items-center mr-2 ml-4 mt-2 gap-4 h-10'>
+    <header className='flex items-center mr-2 ml-4 mt-2 gap-4 h-10'>
       <Link href='/'>
-        <Image alt='rabbit' src='/rabbit.svg' width={512} height={512} priority={true} className='w-8 h-8' style={{
+        <Image alt='Rabbit Home' src='/rabbit.svg' width={512} height={512} priority={true} className='w-8 h-8' style={{
           minHeight: 32,
           minWidth: 32,
         }} />
@@ -28,7 +28,7 @@ export default function Header({ title, user }: HeaderProps) {
         }}
         target='_blank'
       >
-        <Image alt='spotify' src='/spotify_icon.png' width={512} height={512} priority={true} className='w-7 h-7' style={{
+        <Image alt='Spotify Home' src='/spotify_icon.png' width={512} height={512} priority={true} className='w-7 h-7' style={{
           minHeight: 28,
           minWidth: 28,
         }} />
@@ -39,6 +39,6 @@ export default function Header({ title, user }: HeaderProps) {
         </span>
       }
       <Profile user={user} />
-    </div>
+    </header>
   );
 }

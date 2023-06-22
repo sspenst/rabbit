@@ -74,7 +74,7 @@ export default function HelpModal({ audioFeatures, isOpen, onClose, track }: Mod
                     rel='noreferrer'
                     target='_blank'
                   >
-                    Audio Features
+                    audio features
                   </a>
                 </span>
                 <div className='flex gap-1 flex-wrap'>
