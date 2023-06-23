@@ -1,15 +1,18 @@
 {
   "name": "Rabbit",
+  "short_name": "Rabbit",
   "description": "Discover new tracks using Spotify's audio features",
   "icons": [
     {
       "src": "rabbit.png",
       "sizes": "512x512 192x192 96x96 64x64 32x32 24x24 16x16",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ],
   "start_url": ".",
   "display": "fullscreen",
+  "orientation": "portrait",
   "theme_color": "black",
   "background_color": "black"
 }
