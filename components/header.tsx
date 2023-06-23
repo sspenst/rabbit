@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { User } from '../helpers/spotifyParsers';
 import Profile from './profile';
 
@@ -10,34 +10,6 @@ interface HeaderProps {
 }
 
 export default function Header({ title, user }: HeaderProps) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [deferredPrompt, setDeferredPrompt] = useState<any>();
-
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    function handleBeforeInstallPromptEvent(event: any) {
-      event.preventDefault();
-      setDeferredPrompt(event);
-    }
-
-    function handleAppInstalledEvent() {
-      setDeferredPrompt(null);
-    }
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPromptEvent);
-    window.addEventListener('appinstalled', handleAppInstalledEvent);
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPromptEvent);
-      window.removeEventListener('appinstalled', handleAppInstalledEvent);
-    };
-  }, []);
-
-  function installPWA() {
-    deferredPrompt.prompt();
-    setDeferredPrompt(null);
-  }
-
   return (
     <header className='flex justify-between mx-4'>
       <div className='flex items-center mt-2 gap-4 h-10'>
@@ -68,14 +40,7 @@ export default function Header({ title, user }: HeaderProps) {
           </span>
         }
       </div>
-      <div className='flex items-center mt-2 gap-4 h-10'>
-        {deferredPrompt &&
-          <button className='text-neutral-300 hover:text-white transition' onClick={installPWA}>
-            <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
-              <path strokeLinecap='round' strokeLinejoin='round' d='M9 8.25H7.5a2.25 2.25 0 00-2.25 2.25v9a2.25 2.25 0 002.25 2.25h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25H15M9 12l3 3m0 0l3-3m-3 3V2.25' />
-            </svg>
-          </button>
-        }
+      <div className='flex items-center mt-2 -mr-2 gap-4 h-10'>
         <Profile user={user} />
       </div>
     </header>
