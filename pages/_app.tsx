@@ -12,8 +12,7 @@ export default function App({ Component, pageProps }: AppProps) {
   }, []);
 
   return (
-    <main className={''} style={{
-    }}>
+    <main>
       <Head>
         <title>Rabbit</title>
       </Head>

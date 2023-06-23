@@ -28,7 +28,7 @@ export default function Index() {
         <ImageWithFallback className='block h-auto w-full opacity-60' alt='Demo' src='demo.avif' fallback='demo.jpg' width={demoWidth} height={demoHeight} />
       </div>
     </div>
-    <div className='absolute h-12'>
+    <div className='absolute h-12 w-full'>
       <Header />
     </div>
     <div className='flex flex-col text-center w-full justify-center font-medium min-h-screen items-center gap-8 p-12' style={{
