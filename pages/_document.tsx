@@ -13,7 +13,8 @@ class MyDocument extends Document {
       <Html lang='en'>
         <Head>
           <link rel='manifest' href='/manifest.json' />
-          <link rel='icon' href='/rabbit.png' />
+          <link rel='icon' href='/rabbit-48.png' />
+          <link rel='apple-touch-icon' href='rabbit-180.png' />
           <meta name='description' content='Discover new tracks using Spotify&apos;s audio features' />
           <meta name='theme-color' content='black' />
         </Head>

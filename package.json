@@ -12,11 +12,11 @@
     "@headlessui/react": "^1.7.15",
     "classnames": "^2.3.2",
     "debounce": "^1.2.1",
-    "next": "^13.4.6",
+    "next": "^13.4.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.4.1",
-    "react-tooltip": "^5.14.0",
+    "react-tooltip": "^5.15.0",
     "sharp": "^0.32.1"
   },
   "devDependencies": {
@@ -27,7 +27,7 @@
     "@typescript-eslint/eslint-plugin": "^5.60.0",
     "autoprefixer": "^10.4.14",
     "eslint": "^8.43.0",
-    "eslint-config-next": "^13.4.6",
+    "eslint-config-next": "^13.4.7",
     "eslint-plugin-simple-import-sort": "^10.0.0",
     "postcss": "^8.4.24",
     "tailwindcss": "^3.3.2",

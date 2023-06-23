@@ -4,10 +4,28 @@
   "description": "Discover new tracks using Spotify's audio features",
   "icons": [
     {
-      "src": "rabbit.png",
-      "sizes": "512x512 192x192 96x96 64x64 32x32 24x24 16x16",
+      "src": "rabbit-192-maskable.png",
+      "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "rabbit-192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "rabbit-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "rabbit-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "start_url": ".",
