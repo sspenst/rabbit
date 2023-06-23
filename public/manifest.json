@@ -3,7 +3,7 @@
   "description": "Discover new tracks using Spotify's audio features",
   "icons": [
     {
-      "src": "public/rabbit.png",
+      "src": "rabbit.png",
       "sizes": "512x512 192x192 96x96 64x64 32x32 24x24 16x16",
       "type": "image/png"
     }

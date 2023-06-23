@@ -12,7 +12,8 @@ class MyDocument extends Document {
     return (
       <Html lang='en'>
         <Head>
-          <link rel='icon' href='/rabbit.svg' />
+          <link rel='manifest' href='/manifest.json' />
+          <link rel='icon' href='/rabbit.png' />
           <meta name='description' content='rabbit.sspenst.com' />
         </Head>
         <body className='bg-black text-white'>
