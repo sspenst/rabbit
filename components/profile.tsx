@@ -6,7 +6,7 @@ import { removeTokens } from '../helpers/authCodeWithPkce';
 import { User } from '../helpers/spotifyParsers';
 
 interface ProfileProps {
-  user: User | undefined;
+  user: User | null | undefined;
 }
 
 export default function Profile({ user }: ProfileProps) {

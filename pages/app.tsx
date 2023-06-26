@@ -1,18 +1,17 @@
 import { debounce } from 'debounce';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import AudioFeatureComponent, { AudioFeature, AudioFeatureState } from '../components/audioFeature';
-import Footer from '../components/footer';
-import Header from '../components/header';
 import HelpModal from '../components/helpModal';
 import SkeletonTrack from '../components/skeletonTrack';
 import TrackComponent from '../components/trackComponent';
 import { AppContext } from '../contexts/appContext';
+import { MainContext } from '../contexts/mainContext';
 import { pauseTrack, playTrack } from '../helpers/audioControls';
 import { loadTokens, redirectToAuthCodeFlow, removeTokens, spotifyFetch } from '../helpers/authCodeWithPkce';
-import { parseTracks, parseUser, Track, User } from '../helpers/spotifyParsers';
+import { parseTracks, parseUser, Track } from '../helpers/spotifyParsers';
 
 export default function App() {
   const [audioFeatures, setAudioFeatures] = useState<AudioFeature[]>([
@@ -33,7 +32,7 @@ export default function App() {
   const searchLimit = 20;
   const searchOffset = useRef(0);
   const [showMore, setShowMore] = useState(true);
-  const [user, setUser] = useState<User | null>();
+  const { user, setUser } = useContext(MainContext);
 
   // get user's tracks or search for tracks with the current searchOffset
   async function getRawTracks(q: string) {
@@ -328,11 +327,27 @@ export default function App() {
   }, 300), []);
 
   if (user === null) {
-    return (<>
-      <Header />
-      <div className='flex text-center items-center px-4 py-20'>
-        <p className='w-full'>
-          {'An unexpected error occurred! Try '}
+    return (
+      <div className='flex flex-col text-center justify-center p-8 gap-8' style={{
+        minHeight: 'inherit'
+      }}>
+        <div className='text-xl font-medium'>
+          Error fetching user information
+        </div>
+        <div>
+          {'Rabbit is currently in '}
+          <a
+            className='text-blue-300 hover:text-blue-100 transition'
+            href='https://developer.spotify.com/documentation/web-api/concepts/quota-modes'
+            rel='noreferrer'
+            target='_blank'
+          >
+            development mode
+          </a>
+          {'. Check back soon for the full release!'}
+        </div>
+        <div>
+          {'If you are still having issues, try '}
           <button
             className='text-blue-300'
             onClick={logOut}
@@ -348,11 +363,10 @@ export default function App() {
           >
             contact me
           </a>
-          {' if you are still having issues.'}
-        </p>
+          {'.'}
+        </div>
       </div>
-      <Footer />
-    </>);
+    );
   }
 
   return (
@@ -367,8 +381,7 @@ export default function App() {
           <title>{previewTrack.name} by {previewTrack.artists.map(a => a.name).join(', ')}</title>
         </Head>
       }
-      <Header title={'Rabbit'} user={user} />
-      <div className='sticky top-0 p-2 bg-black flex justify-center'>
+      <div className='sm:sticky top-0 p-2 bg-black flex justify-center'>
         <div className='bg-neutral-900 rounded-md px-2 pt-2 pb-1 flex flex-col gap-1 max-w-full' style={{
           width: 768,
         }}>
@@ -481,7 +494,7 @@ export default function App() {
           </div>
         </div>
       </div>
-      <div className='flex justify-center'>
+      <div className='flex justify-center mb-4'>
         {results === undefined ?
           <div className='flex flex-col w-full max-w-3xl px-2' style={{
             zIndex: -1,
@@ -512,7 +525,6 @@ export default function App() {
             </div>
         }
       </div>
-      <Footer />
       <HelpModal
         audioFeatures={audioFeatures}
         isOpen={isHelpModalOpen}

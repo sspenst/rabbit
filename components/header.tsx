@@ -1,15 +1,12 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import React from 'react';
-import { User } from '../helpers/spotifyParsers';
+import React, { useContext } from 'react';
+import { MainContext } from '../contexts/mainContext';
 import Profile from './profile';
 
-interface HeaderProps {
-  title?: string;
-  user?: User;
-}
+export default function Header() {
+  const { user } = useContext(MainContext);
 
-export default function Header({ title, user }: HeaderProps) {
   return (
     <header className='flex justify-between mx-4'>
       <div className='flex items-center mt-2 gap-4 h-10'>
@@ -34,11 +31,9 @@ export default function Header({ title, user }: HeaderProps) {
             minWidth: 28,
           }} />
         </a>
-        {title &&
-          <span className='grow font-medium text-2xl truncate ml-1'>
-            {title}
-          </span>
-        }
+        <span className='grow font-medium text-2xl truncate ml-1'>
+          Rabbit
+        </span>
       </div>
       <div className='flex items-center mt-2 -mr-2 gap-4 h-10'>
         <Profile user={user} />

@@ -128,7 +128,7 @@ export async function spotifyFetch(input: RequestInfo | URL, init?: RequestInit 
   } else if (res.status === 403) {
     // could be that the scopes have updated since originally being authenticated
     // or that the user doesn't have access to the app in dev mode
-    // for now, silently ignore both
+    return null;
   } else if (res.status === 429) {
     if (attempt < maxRetries) {
       await new Promise(resolve => setTimeout(resolve, (2 ** attempt) * 1000));

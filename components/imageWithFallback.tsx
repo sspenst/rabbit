@@ -6,8 +6,7 @@ interface ImageWithFallbackProps extends ImageProps {
 }
 
 export default function ImageWithFallback({ alt, fallback, src, ...props }: ImageWithFallbackProps) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [error, setError] = useState<any>(null);
+  const [error, setError] = useState<React.SyntheticEvent<HTMLImageElement, Event> | null>(null);
 
   useEffect(() => {
     setError(null);

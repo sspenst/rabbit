@@ -5,7 +5,7 @@ import SS from './icons/ss';
 
 export default function Footer() {
   return (
-    <footer className='flex flex-col gap-6 items-center m-8 text-neutral-400 text-sm text-center'>
+    <footer className='flex flex-col gap-6 items-center mx-8 mb-8 text-neutral-400 text-sm text-center'>
       <div className='w-full h-px' style={{
         backgroundImage: 'linear-gradient(to right, transparent, rgb(70, 70, 70) 20%, rgb(70, 70, 70) 80%, transparent)',
       }} />

@@ -1,8 +1,6 @@
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import React from 'react';
-import Footer from '../components/footer';
-import Header from '../components/header';
 import ImageWithFallback from '../components/imageWithFallback';
 import { redirectToAuthCodeFlow } from '../helpers/authCodeWithPkce';
 
@@ -12,7 +10,8 @@ export default function Index() {
   const demoHeight = 1564;
 
   return (<>
-    <div className='absolute max-h-screen h-screen max-w-full overflow-hidden select-none' style={{
+    <div className='absolute h-0 w-full overflow-hidden select-none' style={{
+      minHeight: 'inherit',
       zIndex: -1,
     }}>
       <div className='absolute w-full h-full z-10' style={{
@@ -21,18 +20,16 @@ export default function Index() {
       <div className='absolute w-full h-full z-10' style={{
         backgroundImage: 'linear-gradient(to bottom, transparent 70%, black)',
       }} />
-      <div className='relative top-12 left-0' style={{
+      <div style={{
         height: demoHeight,
         width: demoWidth,
       }}>
-        <ImageWithFallback className='block h-auto w-full opacity-60' alt='Demo' src='demo.avif' fallback='demo.jpg' width={demoWidth} height={demoHeight} />
+        <ImageWithFallback className='opacity-70' alt='Demo' src='demo.avif' fallback='demo.jpg' width={demoWidth} height={demoHeight} priority />
       </div>
     </div>
-    <div className='absolute h-12 w-full'>
-      <Header />
-    </div>
-    <div className='flex flex-col text-center w-full justify-center font-medium min-h-screen items-center gap-8 p-12' style={{
+    <div className='flex flex-col text-center w-full justify-center font-medium items-center gap-8 p-12' style={{
       backgroundImage: 'radial-gradient(black 35%, transparent, transparent)',
+      minHeight: 'inherit',
     }}>
       <h1 className='text-8xl font-semibold'>Rabbit</h1>
       <Image alt='Spotify Logo' src='/spotify_logo.png' width={2362} height={708} priority={true} style={{
@@ -48,7 +45,6 @@ export default function Index() {
         }
       }}>Try it</button>
     </div>
-    <Footer />
   </>
   );
 }

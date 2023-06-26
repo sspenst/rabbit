@@ -1,10 +1,16 @@
 import '../styles/global.css';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
+import Footer from '../components/footer';
+import Header from '../components/header';
+import { MainContext } from '../contexts/mainContext';
+import { User } from '../helpers/spotifyParsers';
 
 export default function App({ Component, pageProps }: AppProps) {
+  const [user, setUser] = useState<User | null>();
+
   useEffect(() => {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/service-worker.js');
@@ -12,7 +18,10 @@ export default function App({ Component, pageProps }: AppProps) {
   }, []);
 
   return (
-    <main>
+    <MainContext.Provider value={{
+      setUser: setUser,
+      user: user,
+    }}>
       <Head>
         <title>Rabbit</title>
       </Head>
@@ -26,7 +35,13 @@ export default function App({ Component, pageProps }: AppProps) {
           paddingRight: '20px',
         },
       }} />
-      <Component {...pageProps} />
-    </main>
+      <Header />
+      <main style={{
+        minHeight: 'calc(100 * 1svh - 48px)',
+      }}>
+        <Component {...pageProps} />
+      </main>
+      <Footer />
+    </MainContext.Provider>
   );
 }
