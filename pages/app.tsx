@@ -10,7 +10,7 @@ import TrackComponent from '../components/trackComponent';
 import { AppContext } from '../contexts/appContext';
 import { MainContext } from '../contexts/mainContext';
 import { pauseTrack, playTrack } from '../helpers/audioControls';
-import { loadTokens, redirectToAuthCodeFlow, removeTokens, spotifyFetch } from '../helpers/authCodeWithPkce';
+import { loadTokens, redirectToAuthCodeFlow, spotifyFetch } from '../helpers/authCodeWithPkce';
 import { parseTracks, parseUser, Track } from '../helpers/spotifyParsers';
 
 export default function App() {
@@ -24,6 +24,7 @@ export default function App() {
   ]);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(true);
+  const { logOut, setUser, user } = useContext(MainContext);
   const [previewTrack, setPreviewTrack] = useState<Track | null>();
   const [results, setResults] = useState<Track[]>();
   const router = useRouter();
@@ -32,7 +33,6 @@ export default function App() {
   const searchLimit = 20;
   const searchOffset = useRef(0);
   const [showMore, setShowMore] = useState(true);
-  const { user, setUser } = useContext(MainContext);
 
   // get user's tracks or search for tracks with the current searchOffset
   async function getRawTracks(q: string) {
@@ -181,11 +181,6 @@ export default function App() {
       document.removeEventListener('keydown', pause);
     };
   }, [previewTrack]);
-
-  function logOut() {
-    removeTokens();
-    router.push('/');
-  }
 
   async function getRecommendations() {
     const newAudioFeatures: AudioFeature[] = [];

@@ -1,12 +1,9 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useContext } from 'react';
-import { MainContext } from '../contexts/mainContext';
+import React from 'react';
 import Profile from './profile';
 
 export default function Header() {
-  const { user } = useContext(MainContext);
-
   return (
     <header className='flex justify-between mx-4'>
       <div className='flex items-center mt-2 gap-4 h-10'>
@@ -36,7 +33,7 @@ export default function Header() {
         </span>
       </div>
       <div className='flex items-center mt-2 -mr-2 gap-4 h-10'>
-        <Profile user={user} />
+        <Profile />
       </div>
     </header>
   );

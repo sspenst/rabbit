@@ -1,22 +1,11 @@
 import { Menu, Transition } from '@headlessui/react';
 import Image from 'next/image';
-import { useRouter } from 'next/router';
-import React, { Fragment } from 'react';
-import { removeTokens } from '../helpers/authCodeWithPkce';
-import { User } from '../helpers/spotifyParsers';
+import React, { Fragment, useContext } from 'react';
+import { MainContext } from '../contexts/mainContext';
 
-interface ProfileProps {
-  user: User | null | undefined;
-}
-
-export default function Profile({ user }: ProfileProps) {
-  const router = useRouter();
+export default function Profile() {
+  const { logOut, user } = useContext(MainContext);
   const size = 40;
-
-  function logOut() {
-    removeTokens();
-    router.push('/');
-  }
 
   if (!user) {
     return null;
