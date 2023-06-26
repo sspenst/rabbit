@@ -28,7 +28,7 @@ export default function Index() {
       </div>
     </div>
     <div className='flex flex-col text-center w-full justify-center font-medium items-center gap-8 p-12' style={{
-      backgroundImage: 'radial-gradient(black 35%, transparent, transparent)',
+      backgroundImage: 'radial-gradient(black 25%, transparent)',
       minHeight: 'inherit',
     }}>
       <h1 className='text-8xl font-semibold'>Rabbit</h1>
