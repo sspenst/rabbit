@@ -15,7 +15,6 @@ class MyDocument extends Document {
           <link rel='manifest' href='/manifest.json' />
           <link rel='icon' href='/rabbit-48.png' />
           <link rel='apple-touch-icon' href='rabbit-180.png' />
-          <meta name='description' content='Discover new tracks using Spotify&apos;s audio features' />
           <meta name='theme-color' content='black' />
         </Head>
         <body className='bg-black text-white'>

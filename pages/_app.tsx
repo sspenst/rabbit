@@ -34,6 +34,7 @@ export default function App({ Component, pageProps }: AppProps) {
     }}>
       <Head>
         <title>Rabbit</title>
+        <meta name='description' content='Discover new tracks using Spotify&apos;s audio features' />
       </Head>
       <Toaster position='bottom-center' toastOptions={{
         icon: null,
