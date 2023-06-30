@@ -147,10 +147,10 @@ export default function AudioFeatureComponent({
   return (<>
     <button
       className={classNames(
-        'flex flex-col gap-0.5 items-center p-2 text-xl rounded-md enabled:cursor-pointer transition enabled:hover:bg-neutral-700',
-        { 'text-neutral-400 border-neutral-500': audioFeature.state === AudioFeatureState.NONE },
-        { 'text-green-500 border-green-500': audioFeature.state === AudioFeatureState.UP },
-        { 'text-red-500 border-red-500': audioFeature.state === AudioFeatureState.DOWN },
+        'flex flex-col gap-0.5 items-center p-2 text-xl rounded-md enabled:cursor-pointer transition-[background-color] enabled:hover:bg-neutral-300 enabled:hover:dark:bg-neutral-700',
+        { 'text-neutral-600 dark:text-neutral-400': audioFeature.state === AudioFeatureState.NONE },
+        { 'text-green-500': audioFeature.state === AudioFeatureState.UP },
+        { 'text-red-500': audioFeature.state === AudioFeatureState.DOWN },
       )}
       data-tooltip-content={audioFeature.property[0].toUpperCase() + audioFeature.property.slice(1)}
       data-tooltip-id={id}

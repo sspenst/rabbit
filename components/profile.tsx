@@ -11,12 +11,14 @@ export default function Profile() {
     return null;
   }
 
+  const menuItemClassName = 'w-full text-center truncate p-2 rounded-lg hover:bg-neutral-300 hover:dark:bg-neutral-700 transition';
+
   return (
     <Menu>
       <Menu.Button>
         <Image
           alt={user.name}
-          className='rounded-full hover:scale-105 transition'
+          className='rounded-full hover:opacity-80 transition'
           height={size}
           src={user.image}
           style={{
@@ -35,10 +37,10 @@ export default function Profile() {
         leaveFrom='transform opacity-100 scale-100'
         leaveTo='transform opacity-0 scale-95'
       >
-        <Menu.Items className='absolute top-12 right-0 m-2 p-1 w-28 origin-top-right rounded-lg shadow-lg border border-neutral-700 bg-neutral-800 flex flex-col items-center z-10'>
+        <Menu.Items className='absolute top-12 right-0 m-2 p-1 w-28 origin-top-right rounded-lg shadow-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-900 flex flex-col items-center z-10'>
           <Menu.Item>
             <a
-              className='w-full text-center text-neutral-300 hover:text-white truncate p-2 rounded-lg hover:bg-neutral-700 transition'
+              className={menuItemClassName}
               href={user.href}
               rel='noreferrer'
               target='_blank'
@@ -48,7 +50,7 @@ export default function Profile() {
           </Menu.Item>
           <Menu.Item>
             <button
-              className='w-full text-neutral-300 hover:text-white truncate p-2 rounded-lg hover:bg-neutral-700 transition'
+              className={menuItemClassName}
               onClick={logOut}
             >
               Logout

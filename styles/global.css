@@ -2,6 +2,34 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  color-scheme: dark;
+.footer-gradient {
+  background-image: linear-gradient(to right, transparent, rgb(185, 185, 185) 20%, rgb(185, 185, 185) 80%, transparent);
+}
+
+.dark .footer-gradient {
+  background-image: linear-gradient(to right, transparent, rgb(70, 70, 70) 20%, rgb(70, 70, 70) 80%, transparent);
+}
+
+.demo-right-gradient {
+  background-image: linear-gradient(to right, transparent 70%, white);
+}
+
+.dark .demo-right-gradient {
+  background-image: linear-gradient(to right, transparent 70%, black);
+}
+
+.demo-bottom-gradient {
+  background-image: linear-gradient(to bottom, transparent 70%, white);
+}
+
+.dark .demo-bottom-gradient {
+  background-image: linear-gradient(to bottom, transparent 70%, black);
+}
+
+.demo-radial-gradient {
+  background-image: radial-gradient(white 25%, transparent);
+}
+
+.dark .demo-radial-gradient {
+  background-image: radial-gradient(black 25%, transparent);
 }

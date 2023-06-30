@@ -17,7 +17,7 @@ class MyDocument extends Document {
           <link rel='apple-touch-icon' href='rabbit-180.png' />
           <meta name='theme-color' content='black' />
         </Head>
-        <body className='bg-black text-white'>
+        <body className='bg-white dark:bg-black text-black dark:text-white'>
           <Main />
           <NextScript />
         </body>

@@ -332,7 +332,7 @@ export default function App() {
         <div>
           {'Rabbit is currently in '}
           <a
-            className='text-blue-300 hover:text-blue-100 transition'
+            className='text-blue-500 hover:text-blue-300 transition'
             href='https://developer.spotify.com/documentation/web-api/concepts/quota-modes'
             rel='noreferrer'
             target='_blank'
@@ -344,14 +344,14 @@ export default function App() {
         <div>
           {'If you are still having issues, try '}
           <button
-            className='text-blue-300'
+            className='text-blue-500 hover:text-blue-300 transition'
             onClick={logOut}
           >
             logging out
           </button>
           {' or '}
           <a
-            className='text-blue-300'
+            className='text-blue-500 hover:text-blue-300 transition'
             href='mailto:spencerspenst@gmail.com'
             rel='noreferrer'
             target='_blank'
@@ -376,15 +376,15 @@ export default function App() {
           <title>{previewTrack.name} by {previewTrack.artists.map(a => a.name).join(', ')}</title>
         </Head>
       }
-      <div className='sm:sticky top-0 p-2 bg-black flex justify-center'>
-        <div className='bg-neutral-900 rounded-md px-2 pt-2 pb-1 flex flex-col gap-1 max-w-full' style={{
+      <div className='sm:sticky top-0 p-2 bg-white dark:bg-black flex justify-center'>
+        <div className='bg-neutral-100 dark:bg-neutral-900 rounded-md px-2 pt-2 pb-1 flex flex-col gap-1 max-w-full' style={{
           width: 768,
         }}>
           <div className='flex justify-center w-full'>
             {previewTrack === null ?
               <input
                 autoFocus
-                className='w-full rounded-md h-14 bg-neutral-900 text-4xl px-3'
+                className='w-full rounded-md h-14 bg-neutral-100 dark:bg-neutral-900 text-4xl px-3'
                 onChange={e => {
                   setSearch(e.target.value);
                   setResults(undefined);
@@ -397,7 +397,7 @@ export default function App() {
               :
               <>
                 {previewTrack ?
-                  <div className='flex items-center w-full hover:bg-neutral-700 transition py-1 pr-4 pl-2 gap-4 rounded-md h-14'>
+                  <div className='flex items-center w-full hover:bg-neutral-300 hover:dark:bg-neutral-700 transition-[background-color] py-1 pr-4 pl-2 gap-4 rounded-md h-14'>
                     <TrackComponent track={previewTrack} />
                     <button
                       aria-label='clear'
@@ -415,7 +415,7 @@ export default function App() {
                         }
                       }}
                     >
-                      <svg className='text-neutral-500 hover:text-neutral-200 w-6 h-6 -mx-1 cursor-pointer' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor'>
+                      <svg className='text-neutral-500 hover:text-black hover:dark:text-white w-6 h-6 -mx-1 cursor-pointer' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor'>
                         <path strokeLinecap='round' strokeLinejoin='round' d='M6 18L18 6M6 6l12 12' />
                       </svg>
                     </button>
@@ -450,7 +450,7 @@ export default function App() {
             </div>
             <button
               aria-label='discover'
-              className='bg-green-500 disabled:bg-neutral-500 text-black p-3 rounded-full enabled:hover:bg-green-300 transition flex gap-2 font-medium'
+              className='bg-green-500 disabled:bg-neutral-500 disabled:opacity-40 text-black p-3 rounded-full enabled:hover:bg-green-300 transition flex gap-2 font-medium'
               disabled={!previewTrack || !results}
               onClick={() => {
                 if (!previewTrack) {
@@ -480,7 +480,7 @@ export default function App() {
             </button>
             <div className='flex justify-center items-center'>
               <button
-                className='text-neutral-400 hover:underline text-sm'
+                className='text-neutral-600 dark:text-neutral-400 hover:underline text-sm'
                 onClick={() => setIsHelpModalOpen(true)}
               >
                 Help
@@ -500,13 +500,13 @@ export default function App() {
           results.length ?
             <div className='flex flex-col items-center text-center w-full px-2 max-w-3xl'>
               {results.map(track => (
-                <div className='w-full hover:bg-neutral-700 transition py-1 pr-4 pl-2 rounded-md' key={`track-${track.id}`}>
+                <div className='w-full hover:bg-neutral-300 hover:dark:bg-neutral-700 transition-[background-color] py-1 pr-4 pl-2 rounded-md' key={`track-${track.id}`}>
                   <TrackComponent track={track} />
                 </div>
               ))}
               {showMore &&
                 <button
-                  className='px-8 py-2 rounded-full bg-green-500 transition text-black text-xl mt-2 disabled:bg-neutral-500 enabled:hover:bg-green-300 font-medium'
+                  className='px-8 py-2 rounded-full bg-green-500 transition dark:text-black text-xl mt-2 disabled:bg-neutral-500 disabled:opacity-40 enabled:hover:bg-green-300 font-medium'
                   disabled={isSearching}
                   onClick={async () => await searchTracks(search, true)}
                 >

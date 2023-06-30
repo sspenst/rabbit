@@ -41,7 +41,7 @@ export function TrackInfo({ track }: TrackInfoProps) {
     }}>
       <Image
         alt={track.name}
-        className='shadow-lg w-12 h-12'
+        className='w-12 h-12'
         height={48}
         src={getImageSrc()}
         style={{
@@ -75,9 +75,9 @@ export function TrackInfo({ track }: TrackInfoProps) {
             {track.name}
           </span>
         </div>
-        <span className='flex text-neutral-400 text-sm items-center gap-2'>
+        <span className='flex text-neutral-600 dark:text-neutral-400 text-sm items-center gap-2'>
           {track.explicit &&
-            <div className='bg-neutral-400 text-black text-xs rounded-sm w-4 h-4 text-center' style={{
+            <div className='bg-neutral-600 dark:bg-neutral-400 text-white dark:text-black text-xs rounded-sm w-4 h-4 text-center' style={{
               minHeight: 16,
               minWidth: 16,
             }}>
@@ -89,7 +89,7 @@ export function TrackInfo({ track }: TrackInfoProps) {
           </span>
         </span>
       </div>
-      <span className='hidden sm:block text-neutral-400 ml-4 text-sm'>
+      <span className='hidden sm:block text-neutral-600 dark:text-neutral-400 ml-4 text-sm'>
         {formatSeconds(track.seconds)}
       </span>
     </button>
@@ -110,7 +110,7 @@ export default function TrackComponent({ track }: TrackComponentProps) {
         aria-label={track.saved ? 'remove from liked songs' : 'add to liked songs'}
         className={classNames('disabled:text-green-600', track.saved ?
           'text-green-500 hover:text-green-300' :
-          'text-neutral-500 hover:text-neutral-300'
+          'text-neutral-500 hover:text-black hover:dark:text-white'
         )}
         disabled={savingTrackId === track.id}
         onClick={() => saveTrack(track)}
@@ -127,7 +127,7 @@ export default function TrackComponent({ track }: TrackComponentProps) {
       </button>
       <a
         aria-label='listen on Spotify'
-        className='font-bold text-lg w-fit hover:underline text-neutral-500 hover:text-neutral-200'
+        className='font-bold text-lg w-fit hover:underline text-neutral-500 hover:text-black hover:dark:text-white'
         href={track.href}
         rel='noreferrer'
         target='_blank'

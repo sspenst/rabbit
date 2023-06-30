@@ -44,14 +44,14 @@ export default function HelpModal({ audioFeatures, isOpen, onClose, track }: Mod
             leaveFrom='opacity-100 scale-100'
             leaveTo='opacity-0 scale-95'
           >
-            <Dialog.Panel className='w-full max-w-fit px-6 py-4 my-8 overflow-hidden text-left align-middle transition-all transform shadow-xl rounded-xl border border-neutral-700 flex flex-col gap-4 bg-black'>
+            <Dialog.Panel className='w-full max-w-fit px-6 py-4 my-8 overflow-hidden text-left align-middle transition-all transform shadow-xl rounded-xl border border-neutral-300 dark:border-neutral-700 flex flex-col gap-4 bg-white dark:bg-black'>
               <Dialog.Title as='h3' className='text-xl font-bold text-center'>
                 Help
               </Dialog.Title>
               <div className='flex flex-col gap-4'>
                 <span>1. Select a track to begin</span>
                 {track ?
-                  <div className='flex gap-4 w-full items-center truncate bg-neutral-900 rounded-md pl-2 pr-4 py-1 hover:bg-neutral-700 transition'>
+                  <div className='flex gap-4 w-full items-center truncate bg-neutral-100 dark:bg-neutral-900 rounded-md pl-2 pr-4 py-1 hover:bg-neutral-300 hover:dark:bg-neutral-700 transition'>
                     <TrackInfo track={track} />
                   </div>
                   :
@@ -81,8 +81,8 @@ export default function HelpModal({ audioFeatures, isOpen, onClose, track }: Mod
                   {audioFeatures.map(audioFeature => (
                     <div
                       className={classNames(
-                        'bg-neutral-900 rounded-lg border-2 cursor-pointer',
-                        audioFeature.property === audioFeatureProperty ? 'border-neutral-400' : 'border-black',
+                        'bg-neutral-100 dark:bg-neutral-900 rounded-lg border-2 cursor-pointer',
+                        audioFeature.property === audioFeatureProperty ? 'border-neutral-600 dark:border-neutral-400' : 'border-white dark:border-black',
                       )}
                       key={audioFeature.property}
                     >
@@ -113,7 +113,7 @@ export default function HelpModal({ audioFeatures, isOpen, onClose, track }: Mod
                 </div>
               </div>
               <button
-                className='inline-flex justify-center px-4 py-2 mt-2 text-sm font-medium border border-transparent rounded-md bg-neutral-800 hover:bg-neutral-600 transition'
+                className='inline-flex justify-center px-4 py-2 mt-2 text-sm font-medium border border-transparent rounded-md bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-400 hover:dark:bg-neutral-600 transition'
                 onClick={onClose}
                 type='button'
               >
