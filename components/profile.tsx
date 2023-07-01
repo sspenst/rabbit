@@ -17,10 +17,10 @@ export default function Profile() {
     <Menu>
       <Menu.Button>
         <Image
-          alt={user.name}
+          alt={user.display_name}
           className='rounded-full hover:opacity-80 transition'
           height={size}
-          src={user.image}
+          src={user.images[0]?.url ?? '/avatar_default.png'}
           style={{
             minHeight: size,
             minWidth: size,
@@ -41,7 +41,7 @@ export default function Profile() {
           <Menu.Item>
             <a
               className={menuItemClassName}
-              href={user.href}
+              href={user.external_urls.spotify}
               rel='noreferrer'
               target='_blank'
             >

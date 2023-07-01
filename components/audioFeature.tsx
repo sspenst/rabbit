@@ -1,7 +1,8 @@
+import { AudioFeatures } from '@spotify/web-api-ts-sdk/dist/mjs/types';
 import classNames from 'classnames';
 import React from 'react';
 import { Tooltip } from 'react-tooltip';
-import { Track } from '../helpers/spotifyParsers';
+import { EnrichedTrack } from '../helpers/enrichTrack';
 
 export enum AudioFeatureState {
   NONE,
@@ -119,7 +120,7 @@ interface AudioFeatureComponentProps {
   disabled: boolean;
   hideTooltip?: boolean;
   onClick: () => void;
-  track: Track | null | undefined;
+  track: EnrichedTrack | null | undefined;
 }
 
 export default function AudioFeatureComponent({
@@ -133,7 +134,7 @@ export default function AudioFeatureComponent({
   let value = undefined;
 
   if (track && audioFeature.property in track.audioFeatures) {
-    value = Number(track.audioFeatures[audioFeature.property]);
+    value = track.audioFeatures[audioFeature.property as keyof AudioFeatures] as number;
 
     if (audioFeature.property === 'tempo') {
       value = Math.round(value) + ' bpm';

@@ -1,4 +1,5 @@
 import '../styles/global.css';
+import { User } from '@spotify/web-api-ts-sdk/dist/mjs/types';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -8,8 +9,6 @@ import { Toaster } from 'react-hot-toast';
 import Footer from '../components/footer';
 import Header from '../components/header';
 import { MainContext } from '../contexts/mainContext';
-import { removeTokens } from '../helpers/authCodeWithPkce';
-import { User } from '../helpers/spotifyParsers';
 
 export default function App({ Component, pageProps }: AppProps) {
   const [mounted, setMounted] = useState(false);
@@ -17,7 +16,8 @@ export default function App({ Component, pageProps }: AppProps) {
   const [user, setUser] = useState<User | null>();
 
   function logOut() {
-    removeTokens();
+    // TODO: use spotify api to log out
+    // https://github.com/spotify/spotify-web-api-ts-sdk/issues/8
     setUser(null);
     router.push('/');
   }

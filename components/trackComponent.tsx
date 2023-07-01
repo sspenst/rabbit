@@ -4,9 +4,10 @@ import React, { useContext } from 'react';
 import { Tooltip } from 'react-tooltip';
 import { AppContext } from '../contexts/appContext';
 import { pauseTrack, playTrack } from '../helpers/audioControls';
-import { Track } from '../helpers/spotifyParsers';
+import { EnrichedTrack } from '../helpers/enrichTrack';
 
-function formatSeconds(seconds: number) {
+function formatDurationMs(ms: number) {
+  const seconds = Math.round(ms / 1000);
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
 
@@ -14,19 +15,21 @@ function formatSeconds(seconds: number) {
 }
 
 interface TrackInfoProps {
-  track: Track;
+  track: EnrichedTrack;
 }
 
 export function TrackInfo({ track }: TrackInfoProps) {
   const artists = track.artists.map(a => a.name).join(', ');
   const { previewTrack, setPreviewTrack } = useContext(AppContext);
 
-  // get smallest image that still looks good (the very smallest is 64x64 which looks blurry at 48x48)
   function getImageSrc() {
-    if (track.images.length === 1) {
-      return track.images[0].src;
+    if (!track.album.images?.length) {
+      return '/music.svg';
     } else {
-      return track.images[track.images.length - 2].src;
+      // get second smallest image if available (the very smallest is 64x64 which looks blurry at 48x48)
+      const index = Math.max(track.album.images.length - 2, 0);
+
+      return track.album.images[index].url;
     }
   }
 
@@ -90,14 +93,14 @@ export function TrackInfo({ track }: TrackInfoProps) {
         </span>
       </div>
       <span className='hidden sm:block text-neutral-600 dark:text-neutral-400 ml-4 text-sm'>
-        {formatSeconds(track.seconds)}
+        {formatDurationMs(track.duration_ms)}
       </span>
     </button>
   );
 }
 
 interface TrackComponentProps {
-  track: Track;
+  track: EnrichedTrack;
 }
 
 export default function TrackComponent({ track }: TrackComponentProps) {
@@ -128,7 +131,7 @@ export default function TrackComponent({ track }: TrackComponentProps) {
       <a
         aria-label='listen on Spotify'
         className='font-bold text-lg w-fit hover:underline text-neutral-500 hover:text-black hover:dark:text-white'
-        href={track.href}
+        href={track.external_urls.spotify}
         rel='noreferrer'
         target='_blank'
       >

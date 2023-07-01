@@ -1,7 +1,7 @@
 import { Dialog, Transition } from '@headlessui/react';
 import classNames from 'classnames';
 import React, { Fragment, useState } from 'react';
-import { Track } from '../helpers/spotifyParsers';
+import { EnrichedTrack } from '../helpers/enrichTrack';
 import AudioFeatureComponent, { AudioFeature, audioFeatureSvgMap } from './audioFeature';
 import SkeletonTrack from './skeletonTrack';
 import { TrackInfo } from './trackComponent';
@@ -10,7 +10,7 @@ interface ModalProps {
   audioFeatures: AudioFeature[];
   isOpen: boolean;
   onClose: () => void;
-  track: Track | undefined;
+  track: EnrichedTrack | undefined;
 }
 
 export default function HelpModal({ audioFeatures, isOpen, onClose, track }: ModalProps) {

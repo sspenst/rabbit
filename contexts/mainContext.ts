@@ -1,5 +1,5 @@
+import { User } from '@spotify/web-api-ts-sdk/dist/mjs/types';
 import { createContext } from 'react';
-import { User } from '../helpers/spotifyParsers';
 
 interface MainContextInterface {
   logOut: () => void;

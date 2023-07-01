@@ -1,3 +1,5 @@
+import { RecommendationsRequest } from '@spotify/web-api-ts-sdk/dist/mjs/endpoints/RecommendationsEndpoints';
+import { AudioFeatures, TrackWithAlbum } from '@spotify/web-api-ts-sdk/dist/mjs/types';
 import { debounce } from 'debounce';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -10,8 +12,8 @@ import TrackComponent from '../components/trackComponent';
 import { AppContext } from '../contexts/appContext';
 import { MainContext } from '../contexts/mainContext';
 import { pauseTrack, playTrack } from '../helpers/audioControls';
-import { loadTokens, redirectToAuthCodeFlow, spotifyFetch } from '../helpers/authCodeWithPkce';
-import { parseTracks, parseUser, Track } from '../helpers/spotifyParsers';
+import { EnrichedTrack, enrichTracks } from '../helpers/enrichTrack';
+import useSpotifyApi from '../helpers/useSpotifyApi';
 
 export default function App() {
   const [audioFeatures, setAudioFeatures] = useState<AudioFeature[]>([
@@ -25,38 +27,30 @@ export default function App() {
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(true);
   const { logOut, setUser, user } = useContext(MainContext);
-  const [previewTrack, setPreviewTrack] = useState<Track | null>();
-  const [results, setResults] = useState<Track[]>();
+  const [previewTrack, setPreviewTrack] = useState<EnrichedTrack | null>();
+  const [results, setResults] = useState<EnrichedTrack[]>();
   const router = useRouter();
   const [savingTrackId, setSavingTrackId] = useState<string>();
   const [search, setSearch] = useState('');
   const searchLimit = 20;
   const searchOffset = useRef(0);
   const [showMore, setShowMore] = useState(true);
+  const spotifyApi = useSpotifyApi();
 
   // get user's tracks or search for tracks with the current searchOffset
   async function getRawTracks(q: string) {
+    if (!spotifyApi) {
+      return null;
+    }
+
     if (!q) {
-      const tracks = await spotifyFetch(`https://api.spotify.com/v1/me/tracks?${new URLSearchParams({
-        limit: String(searchLimit),
-        offset: String(searchOffset.current),
-      })}`, {
-        method: 'GET',
-      });
+      const tracks = await spotifyApi.currentUser.tracks.savedTracks(searchLimit, searchOffset.current);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return tracks?.items.map((i: any) => i.track);
+      return tracks?.items.map(i => i.track) as TrackWithAlbum[];
     } else {
-      const tracks = await spotifyFetch(`https://api.spotify.com/v1/search?${new URLSearchParams({
-        limit: String(searchLimit),
-        offset: String(searchOffset.current),
-        q: q,
-        type: 'track',
-      })}`, {
-        method: 'GET',
-      });
+      const tracks = await spotifyApi.search(q, ['track'], undefined, searchLimit, searchOffset.current);
 
-      return tracks?.tracks.items;
+      return tracks?.tracks.items as TrackWithAlbum[];
     }
   }
 
@@ -68,7 +62,7 @@ export default function App() {
       searchOffset.current = 0;
     }
 
-    const tracks = await parseTracks(await getRawTracks(q));
+    const tracks = await enrichTracks(await getRawTracks(q), spotifyApi);
 
     searchOffset.current += searchLimit;
 
@@ -93,47 +87,30 @@ export default function App() {
     });
   }
 
-  // initialize data when the route changes
+  // if the route changes we always need to initialize the page
   useEffect(() => {
-    async function initializePageData() {
-      // initialize user
-      if (user === undefined) {
-        setUser(parseUser(await spotifyFetch('https://api.spotify.com/v1/me', {
-          method: 'GET',
-        })));
-      }
-
-      // if the route changes we always need to reset search and get new results
-      setSearch('');
-      setResults(undefined);
-
-      if (router.query.id) {
-        await getRecommendations();
-      } else {
-        resetAudioFeatures();
-        setPreviewTrack(null);
-        await searchTracks();
-      }
-    }
-
-    if (!router.isReady) {
+    // avoid flashing empty page when query id is passed in
+    if (!spotifyApi || !router.isReady) {
       return;
     }
 
-    // use existing accessToken if we have it, otherwise normal auth flow
-    if (localStorage.getItem('accessToken')) {
-      initializePageData();
-    } else if (!router.query.code) {
-      redirectToAuthCodeFlow();
+    if (user === undefined) {
+      spotifyApi.currentUser.profile().then(user => setUser(user));
+    }
+
+    // reset search and get new results
+    setSearch('');
+    setResults(undefined);
+
+    if (router.query.id) {
+      getRecommendations();
     } else {
-      loadTokens(router.query.code as string).then(() => {
-        // clean up code query from the url
-        // NB: causes this useEffect to rerun, which initializes the page data
-        router.replace('/app', undefined, { shallow: true });
-      });
+      resetAudioFeatures();
+      setPreviewTrack(null);
+      searchTracks();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router]);
+  }, [router, spotifyApi]);
 
   // ensure audio is paused when leaving the page
   useEffect(() => {
@@ -209,14 +186,12 @@ export default function App() {
     setAudioFeatures(newAudioFeatures);
 
     const id = router.query.id as string;
-    let track: Track;
+    let track: EnrichedTrack;
 
     if (previewTrack?.id !== id) {
       setPreviewTrack(undefined);
 
-      const trackById = await spotifyFetch(`https://api.spotify.com/v1/tracks/${id}`, {
-        method: 'GET',
-      });
+      const trackById = await spotifyApi?.tracks.get(id);
 
       // invalid track id, go back to /app
       if (!trackById) {
@@ -225,37 +200,37 @@ export default function App() {
         return;
       }
 
-      track = (await parseTracks(new Array(trackById)))[0];
+      track = (await enrichTracks([trackById], spotifyApi))[0];
 
       setPreviewTrack(track);
     } else {
       track = previewTrack;
     }
 
-    const audioFeatureParams: Record<string, string> = {};
+    const audioFeatureParams: Record<string, number> = {};
 
     newAudioFeatures.forEach(f => {
+      const value = track.audioFeatures[f.property as keyof AudioFeatures] as number;
+
       if (f.state === AudioFeatureState.UP) {
-        audioFeatureParams[`min_${f.property}`] = track.audioFeatures[f.property];
+        audioFeatureParams[`min_${f.property}`] = value;
       } else if (f.state === AudioFeatureState.DOWN) {
-        audioFeatureParams[`max_${f.property}`] = track.audioFeatures[f.property];
+        audioFeatureParams[`max_${f.property}`] = value;
       } else {
-        audioFeatureParams[`target_${f.property}`] = track.audioFeatures[f.property];
+        audioFeatureParams[`target_${f.property}`] = value;
       }
     });
 
     // NB: market is inferred from the access token, so we don't need to specify it here
     // maximum of 5 seed values are allowed: use the track id and up to 4 artists
-    const recommendations = await spotifyFetch(`https://api.spotify.com/v1/recommendations?${new URLSearchParams({
-      limit: String(searchLimit),
-      seed_artists: track.artists.map(a => a.id).slice(0, 4).join(','),
-      seed_tracks: track.id,
+    const recommendations = await spotifyApi?.recommendations.get({
+      limit: searchLimit,
+      seed_artists: track.artists.map(a => a.id).slice(0, 4),
+      seed_tracks: [track.id],
       ...audioFeatureParams,
-    })}`, {
-      method: 'GET',
-    });
+    } as RecommendationsRequest);
 
-    const newRecommendations = await parseTracks(recommendations?.tracks);
+    const newRecommendations = await enrichTracks(recommendations?.tracks as TrackWithAlbum[] | undefined, spotifyApi);
 
     // we always want previewTrack to be at the start of the recommendation list,
     // but we don't want any duplicates, so remove the track if it exists before unshifting it
@@ -271,14 +246,14 @@ export default function App() {
     setShowMore(false);
   }
 
-  async function saveTrack(track: Track) {
+  async function saveTrack(track: EnrichedTrack) {
     setSavingTrackId(track.id);
 
-    await spotifyFetch(`https://api.spotify.com/v1/me/tracks?${new URLSearchParams({
-      ids: track.id,
-    })}`, {
-      method: track.saved ? 'DELETE' : 'PUT',
-    });
+    if (track.saved) {
+      await spotifyApi?.currentUser.tracks.removeSavedTracks([track.id]);
+    } else {
+      await spotifyApi?.currentUser.tracks.saveTracks([track.id]);
+    }
 
     toast.dismiss();
     toast.success(track.saved ? 'Removed from Liked Songs' : 'Added to Liked Songs');
@@ -288,7 +263,7 @@ export default function App() {
         return prevTrack;
       }
 
-      const newTrack = { ...prevTrack } as Track;
+      const newTrack = { ...prevTrack } as EnrichedTrack;
 
       newTrack.saved = !newTrack.saved;
 
