@@ -126,8 +126,6 @@ export async function spotifyFetch(input: RequestInfo | URL, init?: RequestInit 
   if (res.status === 401) {
     await redirectToAuthCodeFlow();
   } else if (res.status === 403) {
-    // could be that the scopes have updated since originally being authenticated
-    // or that the user doesn't have access to the app in dev mode
     return null;
   } else if (res.status === 429) {
     if (attempt < maxRetries) {

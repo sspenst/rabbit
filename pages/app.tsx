@@ -330,25 +330,25 @@ export default function App() {
           Error fetching user information
         </div>
         <div>
-          {'Rabbit is currently in '}
-          <a
-            className='text-blue-500 hover:text-blue-300 transition'
-            href='https://developer.spotify.com/documentation/web-api/concepts/quota-modes'
-            rel='noreferrer'
-            target='_blank'
-          >
-            development mode
-          </a>
-          {'. Check back soon for the full release!'}
-        </div>
-        <div>
-          {'If you are still having issues, try '}
+          {'Try '}
           <button
             className='text-blue-500 hover:text-blue-300 transition'
             onClick={logOut}
           >
             logging out
           </button>
+          {' to resolve the issue.'}
+        </div>
+        <div>
+          {'If you are still seeing this error, you can '}
+          <a
+            className='text-blue-500 hover:text-blue-300 transition'
+            href='https://github.com/sspenst/rabbit/issues/new'
+            rel='noreferrer'
+            target='_blank'
+          >
+            report an issue
+          </a>
           {' or '}
           <a
             className='text-blue-500 hover:text-blue-300 transition'
