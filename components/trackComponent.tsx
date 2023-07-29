@@ -4,9 +4,10 @@ import React, { useContext } from 'react';
 import { Tooltip } from 'react-tooltip';
 import { AppContext } from '../contexts/appContext';
 import { pauseTrack, playTrack } from '../helpers/audioControls';
-import { Track } from '../helpers/spotifyParsers';
+import { EnrichedTrack } from '../helpers/enrichTrack';
 
-function formatSeconds(seconds: number) {
+function formatDurationMs(ms: number) {
+  const seconds = Math.round(ms / 1000);
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
 
@@ -14,19 +15,21 @@ function formatSeconds(seconds: number) {
 }
 
 interface TrackInfoProps {
-  track: Track;
+  track: EnrichedTrack;
 }
 
 export function TrackInfo({ track }: TrackInfoProps) {
   const artists = track.artists.map(a => a.name).join(', ');
   const { previewTrack, setPreviewTrack } = useContext(AppContext);
 
-  // get smallest image that still looks good (the very smallest is 64x64 which looks blurry at 48x48)
   function getImageSrc() {
-    if (track.images.length === 1) {
-      return track.images[0].src;
+    if (!track.album.images?.length) {
+      return '/music.svg';
     } else {
-      return track.images[track.images.length - 2].src;
+      // get second smallest image if available (the very smallest is 64x64 which looks blurry at 48x48)
+      const index = Math.max(track.album.images.length - 2, 0);
+
+      return track.album.images[index].url;
     }
   }
 
@@ -57,13 +60,17 @@ export function TrackInfo({ track }: TrackInfoProps) {
             }}>
               <path strokeLinecap='round' strokeLinejoin='round' d='M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z' />
             </svg>
-            <Tooltip id={`warning-${track.id}`} place='top' style={{
-              backgroundColor: '#666666',
-              borderRadius: '0.5rem',
-              fontSize: '0.75rem',
-              lineHeight: '1rem',
-              opacity: 100,
-            }} />
+            <Tooltip
+              id={`warning-${track.id}`}
+              opacity={1}
+              place='top'
+              style={{
+                backgroundColor: '#666666',
+                borderRadius: '0.5rem',
+                fontSize: '0.75rem',
+                lineHeight: '1rem',
+              }}
+            />
           </>}
           <span
             className={classNames(
@@ -90,14 +97,14 @@ export function TrackInfo({ track }: TrackInfoProps) {
         </span>
       </div>
       <span className='hidden sm:block text-neutral-600 dark:text-neutral-400 ml-4 text-sm'>
-        {formatSeconds(track.seconds)}
+        {formatDurationMs(track.duration_ms)}
       </span>
     </button>
   );
 }
 
 interface TrackComponentProps {
-  track: Track;
+  track: EnrichedTrack;
 }
 
 export default function TrackComponent({ track }: TrackComponentProps) {
@@ -128,7 +135,7 @@ export default function TrackComponent({ track }: TrackComponentProps) {
       <a
         aria-label='listen on Spotify'
         className='font-bold text-lg w-fit hover:underline text-neutral-500 hover:text-black hover:dark:text-white'
-        href={track.href}
+        href={track.external_urls.spotify}
         rel='noreferrer'
         target='_blank'
       >

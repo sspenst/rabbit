@@ -1,11 +1,11 @@
 import { createContext } from 'react';
-import { Track } from '../helpers/spotifyParsers';
+import { EnrichedTrack } from '../helpers/enrichTrack';
 
 interface AppContextInterface {
-  previewTrack: Track | null | undefined;
-  saveTrack: (track: Track) => void;
+  previewTrack: EnrichedTrack | null | undefined;
+  saveTrack: (track: EnrichedTrack) => void;
   savingTrackId: string | undefined;
-  setPreviewTrack: React.Dispatch<React.SetStateAction<Track | null | undefined>>;
+  setPreviewTrack: React.Dispatch<React.SetStateAction<EnrichedTrack | null | undefined>>;
 }
 
 export const AppContext = createContext<AppContextInterface>({

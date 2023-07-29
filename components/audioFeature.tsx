@@ -1,7 +1,8 @@
+import { AudioFeatures } from '@spotify/web-api-ts-sdk';
 import classNames from 'classnames';
 import React from 'react';
 import { Tooltip } from 'react-tooltip';
-import { Track } from '../helpers/spotifyParsers';
+import { EnrichedTrack } from '../helpers/enrichTrack';
 
 export enum AudioFeatureState {
   NONE,
@@ -119,7 +120,7 @@ interface AudioFeatureComponentProps {
   disabled: boolean;
   hideTooltip?: boolean;
   onClick: () => void;
-  track: Track | null | undefined;
+  track: EnrichedTrack | null | undefined;
 }
 
 export default function AudioFeatureComponent({
@@ -130,17 +131,21 @@ export default function AudioFeatureComponent({
   track,
 }: AudioFeatureComponentProps) {
   const id = `audio-feature-${audioFeature.property}`;
-  let value = undefined;
+  let valueStr: string | undefined = undefined;
 
-  if (track && audioFeature.property in track.audioFeatures) {
-    value = Number(track.audioFeatures[audioFeature.property]);
-
-    if (audioFeature.property === 'tempo') {
-      value = Math.round(value) + ' bpm';
-    } else if (audioFeature.property === 'loudness') {
-      value = Math.round(value) + ' dB';
+  if (track) {
+    if (!track.audioFeatures) {
+      valueStr = '?';
     } else {
-      value = Math.round(100 * value) + '%';
+      const value = track.audioFeatures[audioFeature.property as keyof AudioFeatures] as number;
+
+      if (audioFeature.property === 'tempo') {
+        valueStr = Math.round(value) + ' bpm';
+      } else if (audioFeature.property === 'loudness') {
+        valueStr = Math.round(value) + ' dB';
+      } else {
+        valueStr = Math.round(100 * value) + '%';
+      }
     }
   }
 
@@ -161,16 +166,20 @@ export default function AudioFeatureComponent({
         {audioFeatureSvgMap[audioFeature.property].svg}
         <AudioFeatureStateSvg audioFeatureState={audioFeature.state} />
       </div>
-      <span className='text-xs'>{value ?? '-'}</span>
+      <span className='text-xs'>{valueStr ?? '-'}</span>
     </button>
     {!hideTooltip &&
-      <Tooltip id={id} place='bottom' style={{
-        backgroundColor: '#666666',
-        borderRadius: '0.5rem',
-        fontSize: '0.75rem',
-        lineHeight: '1rem',
-        opacity: 100,
-      }} />
+      <Tooltip
+        id={id}
+        opacity={1}
+        place='bottom'
+        style={{
+          backgroundColor: '#666666',
+          borderRadius: '0.5rem',
+          fontSize: '0.75rem',
+          lineHeight: '1rem',
+        }}
+      />
     }
   </>);
 }

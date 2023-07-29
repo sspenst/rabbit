@@ -1,17 +1,15 @@
 import Image from 'next/image';
-import { useRouter } from 'next/router';
+import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import React, { useContext } from 'react';
 import ImageWithFallback from '../components/imageWithFallback';
 import { MainContext } from '../contexts/mainContext';
-import { redirectToAuthCodeFlow } from '../helpers/authCodeWithPkce';
 
 export default function Index() {
   const demoHeight = 1568;
   const demoWidth = 1058;
   const { mounted } = useContext(MainContext);
   const { resolvedTheme } = useTheme();
-  const router = useRouter();
 
   return (<>
     <div className='absolute h-0 w-full overflow-hidden select-none' style={{
@@ -48,13 +46,9 @@ export default function Index() {
         }} />
       }
       <h2 className='text-3xl'>Discover new tracks using Spotify&apos;s audio features</h2>
-      <button className='px-8 py-2 rounded-full bg-green-500 hover:bg-green-300 transition text-black text-xl' onClick={() => {
-        if (localStorage.getItem('accessToken')) {
-          router.push('/app');
-        } else {
-          redirectToAuthCodeFlow();
-        }
-      }}>Try it</button>
+      <Link className='px-8 py-2 rounded-full bg-green-500 hover:bg-green-300 transition text-black text-xl' href='/app'>
+        Try it
+      </Link>
     </div>
   </>
   );

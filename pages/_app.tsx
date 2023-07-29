@@ -1,4 +1,5 @@
 import '../styles/global.css';
+import { SpotifyApi, User } from '@spotify/web-api-ts-sdk';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -8,18 +9,19 @@ import { Toaster } from 'react-hot-toast';
 import Footer from '../components/footer';
 import Header from '../components/header';
 import { MainContext } from '../contexts/mainContext';
-import { removeTokens } from '../helpers/authCodeWithPkce';
-import { User } from '../helpers/spotifyParsers';
 
 export default function App({ Component, pageProps }: AppProps) {
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
-  const [user, setUser] = useState<User | null>();
+  const [spotifyApi, setSpotifyApi] = useState<SpotifyApi | null>();
+  const [user, setUser] = useState<User>();
 
   function logOut() {
-    removeTokens();
-    setUser(null);
-    router.push('/');
+    router.push('/').then(() => {
+      spotifyApi?.logOut();
+      setSpotifyApi(undefined);
+      setUser(undefined);
+    });
   }
 
   useEffect(() => {
@@ -35,7 +37,9 @@ export default function App({ Component, pageProps }: AppProps) {
       <MainContext.Provider value={{
         logOut: logOut,
         mounted: mounted,
+        setSpotifyApi: setSpotifyApi,
         setUser: setUser,
+        spotifyApi: spotifyApi,
         user: user,
       }}>
         <Head>
