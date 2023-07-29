@@ -169,13 +169,17 @@ export default function AudioFeatureComponent({
       <span className='text-xs'>{valueStr ?? '-'}</span>
     </button>
     {!hideTooltip &&
-      <Tooltip id={id} place='bottom' style={{
-        backgroundColor: '#666666',
-        borderRadius: '0.5rem',
-        fontSize: '0.75rem',
-        lineHeight: '1rem',
-        opacity: 100,
-      }} />
+      <Tooltip
+        id={id}
+        opacity={1}
+        place='bottom'
+        style={{
+          backgroundColor: '#666666',
+          borderRadius: '0.5rem',
+          fontSize: '0.75rem',
+          lineHeight: '1rem',
+        }}
+      />
     }
   </>);
 }

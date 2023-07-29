@@ -17,10 +17,10 @@ export default function App({ Component, pageProps }: AppProps) {
   const [user, setUser] = useState<User>();
 
   function logOut() {
-    spotifyApi?.logOut();
-    setUser(undefined);
     router.push('/').then(() => {
+      spotifyApi?.logOut();
       setSpotifyApi(undefined);
+      setUser(undefined);
     });
   }
 
