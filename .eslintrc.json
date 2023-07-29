@@ -7,7 +7,8 @@
     "eslint:recommended",
     "next/core-web-vitals",
     "plugin:react/recommended",
-    "plugin:@typescript-eslint/recommended"
+    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/stylistic-type-checked"
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
@@ -15,6 +16,7 @@
       "jsx": true
     },
     "ecmaVersion": "latest",
+    "project": true,
     "sourceType": "module"
   },
   "plugins": [
