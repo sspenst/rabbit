@@ -1,5 +1,5 @@
 import '../styles/global.css';
-import { User } from '@spotify/web-api-ts-sdk/dist/mjs/types';
+import { SpotifyApi, User } from '@spotify/web-api-ts-sdk';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -13,12 +13,12 @@ import { MainContext } from '../contexts/mainContext';
 export default function App({ Component, pageProps }: AppProps) {
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
-  const [user, setUser] = useState<User | null>();
+  const [spotifyApi, setSpotifyApi] = useState<SpotifyApi | null>();
+  const [user, setUser] = useState<User>();
 
   function logOut() {
-    // TODO: use spotify api to log out
-    // https://github.com/spotify/spotify-web-api-ts-sdk/issues/8
-    setUser(null);
+    spotifyApi?.logOut();
+    setUser(undefined);
     router.push('/');
   }
 
@@ -35,7 +35,9 @@ export default function App({ Component, pageProps }: AppProps) {
       <MainContext.Provider value={{
         logOut: logOut,
         mounted: mounted,
+        setSpotifyApi: setSpotifyApi,
         setUser: setUser,
+        spotifyApi: spotifyApi,
         user: user,
       }}>
         <Head>

@@ -1,5 +1,5 @@
+import { AudioFeatures, SpotifyApi, Track } from '@spotify/web-api-ts-sdk';
 import { RecommendationsRequest } from '@spotify/web-api-ts-sdk/dist/mjs/endpoints/RecommendationsEndpoints';
-import { AudioFeatures, TrackWithAlbum } from '@spotify/web-api-ts-sdk/dist/mjs/types';
 import { debounce } from 'debounce';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -13,7 +13,6 @@ import { AppContext } from '../contexts/appContext';
 import { MainContext } from '../contexts/mainContext';
 import { pauseTrack, playTrack } from '../helpers/audioControls';
 import { EnrichedTrack, enrichTracks } from '../helpers/enrichTrack';
-import useSpotifyApi from '../helpers/useSpotifyApi';
 
 export default function App() {
   const [audioFeatures, setAudioFeatures] = useState<AudioFeature[]>([
@@ -26,7 +25,7 @@ export default function App() {
   ]);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(true);
-  const { logOut, setUser, user } = useContext(MainContext);
+  const { logOut, setSpotifyApi, setUser, spotifyApi, user } = useContext(MainContext);
   const [previewTrack, setPreviewTrack] = useState<EnrichedTrack | null>();
   const [results, setResults] = useState<EnrichedTrack[]>();
   const router = useRouter();
@@ -35,7 +34,6 @@ export default function App() {
   const searchLimit = 20;
   const searchOffset = useRef(0);
   const [showMore, setShowMore] = useState(true);
-  const spotifyApi = useSpotifyApi();
 
   // get user's tracks or search for tracks with the current searchOffset
   async function getRawTracks(q: string) {
@@ -46,11 +44,11 @@ export default function App() {
     if (!q) {
       const tracks = await spotifyApi.currentUser.tracks.savedTracks(searchLimit, searchOffset.current);
 
-      return tracks?.items.map(i => i.track) as TrackWithAlbum[];
+      return tracks?.items.map(i => i.track) as Track[];
     } else {
       const tracks = await spotifyApi.search(q, ['track'], undefined, searchLimit, searchOffset.current);
 
-      return tracks?.tracks.items as TrackWithAlbum[];
+      return tracks?.tracks.items as Track[];
     }
   }
 
@@ -90,7 +88,26 @@ export default function App() {
   // if the route changes we always need to initialize the page
   useEffect(() => {
     // avoid flashing empty page when query id is passed in
-    if (!spotifyApi || !router.isReady) {
+    if (!router.isReady) {
+      return;
+    }
+
+    if (spotifyApi === undefined) {
+      const clientId = 'a16d23f0a5e34c73b8719bd006b90464';
+      const redirectUri = `${location.protocol}//${location.host}/app`;
+      const scopes = ['user-library-read', 'user-library-modify'];
+      const api = SpotifyApi.withUserAuthorization(clientId, redirectUri, scopes);
+
+      api.authenticate().then(
+        () => setSpotifyApi(api),
+        () => setSpotifyApi(null),
+      );
+
+      return;
+    }
+
+    // an error occurred authenticating the spotify api
+    if (spotifyApi === null) {
       return;
     }
 
@@ -230,7 +247,7 @@ export default function App() {
       ...audioFeatureParams,
     } as RecommendationsRequest);
 
-    const newRecommendations = await enrichTracks(recommendations?.tracks as TrackWithAlbum[] | undefined, spotifyApi);
+    const newRecommendations = await enrichTracks(recommendations?.tracks as Track[] | undefined, spotifyApi);
 
     // we always want previewTrack to be at the start of the recommendation list,
     // but we don't want any duplicates, so remove the track if it exists before unshifting it
@@ -296,7 +313,7 @@ export default function App() {
     await searchTracks(q);
   }, 300), []);
 
-  if (user === null) {
+  if (spotifyApi === null) {
     return (
       <div className='flex flex-col text-center justify-center p-8 gap-8' style={{
         minHeight: 'inherit'
@@ -312,7 +329,7 @@ export default function App() {
           >
             logging out
           </button>
-          {' to resolve the issue.'}
+          {' or refreshing to resolve the issue.'}
         </div>
         <div>
           {'If you are still seeing this error, you can '}
