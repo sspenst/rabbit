@@ -99,7 +99,12 @@ export default function App() {
       const api = SpotifyApi.withUserAuthorization(clientId, redirectUri, scopes);
 
       api.authenticate().then(
-        () => setSpotifyApi(api),
+        async () => {
+          const accessToken = await api.getAccessToken();
+
+          // don't set the spotify api until we have confirmed we are actually logged in
+          setSpotifyApi(accessToken ? api : undefined);
+        },
         () => setSpotifyApi(null),
       );
 

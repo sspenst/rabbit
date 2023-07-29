@@ -19,7 +19,9 @@ export default function App({ Component, pageProps }: AppProps) {
   function logOut() {
     spotifyApi?.logOut();
     setUser(undefined);
-    router.push('/');
+    router.push('/').then(() => {
+      setSpotifyApi(undefined);
+    });
   }
 
   useEffect(() => {
