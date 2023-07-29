@@ -227,14 +227,16 @@ export default function App() {
     const audioFeatureParams: Record<string, number> = {};
 
     newAudioFeatures.forEach(f => {
-      const value = track.audioFeatures[f.property as keyof AudioFeatures] as number;
+      if (track.audioFeatures) {
+        const value = track.audioFeatures[f.property as keyof AudioFeatures] as number;
 
-      if (f.state === AudioFeatureState.UP) {
-        audioFeatureParams[`min_${f.property}`] = value;
-      } else if (f.state === AudioFeatureState.DOWN) {
-        audioFeatureParams[`max_${f.property}`] = value;
-      } else {
-        audioFeatureParams[`target_${f.property}`] = value;
+        if (f.state === AudioFeatureState.UP) {
+          audioFeatureParams[`min_${f.property}`] = value;
+        } else if (f.state === AudioFeatureState.DOWN) {
+          audioFeatureParams[`max_${f.property}`] = value;
+        } else {
+          audioFeatureParams[`target_${f.property}`] = value;
+        }
       }
     });
 

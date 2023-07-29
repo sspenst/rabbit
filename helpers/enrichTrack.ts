@@ -1,12 +1,12 @@
 import { AudioFeatures, SpotifyApi, Track } from '@spotify/web-api-ts-sdk';
 
 export interface EnrichedTrack extends Track {
-  audioFeatures: AudioFeatures;
+  audioFeatures: AudioFeatures | null;
   preview: HTMLAudioElement | null;
   saved: boolean;
 }
 
-function enrichTrack(track: Track, audioFeatures: AudioFeatures, saved: boolean) {
+function enrichTrack(track: Track, audioFeatures: AudioFeatures | null, saved: boolean) {
   let preview: HTMLAudioElement | null = null;
 
   if (track.preview_url) {
@@ -29,7 +29,7 @@ export async function enrichTracks(tracks: Track[] | null | undefined, spotifyAp
   }
 
   const [audioFeatures, saved] = await Promise.all([
-    spotifyApi.tracks.audioFeatures(tracks.map(t => t.id)),
+    spotifyApi.tracks.audioFeatures(tracks.map(t => t.id)) as Promise<(AudioFeatures | null)[]>,
     spotifyApi.currentUser.tracks.hasSavedTracks(tracks.map(t => t.id)) as Promise<boolean[] | null>,
   ]);
 

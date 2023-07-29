@@ -131,17 +131,21 @@ export default function AudioFeatureComponent({
   track,
 }: AudioFeatureComponentProps) {
   const id = `audio-feature-${audioFeature.property}`;
-  let value = undefined;
+  let valueStr: string | undefined = undefined;
 
-  if (track && audioFeature.property in track.audioFeatures) {
-    value = track.audioFeatures[audioFeature.property as keyof AudioFeatures] as number;
-
-    if (audioFeature.property === 'tempo') {
-      value = Math.round(value) + ' bpm';
-    } else if (audioFeature.property === 'loudness') {
-      value = Math.round(value) + ' dB';
+  if (track) {
+    if (!track.audioFeatures) {
+      valueStr = '?';
     } else {
-      value = Math.round(100 * value) + '%';
+      const value = track.audioFeatures[audioFeature.property as keyof AudioFeatures] as number;
+
+      if (audioFeature.property === 'tempo') {
+        valueStr = Math.round(value) + ' bpm';
+      } else if (audioFeature.property === 'loudness') {
+        valueStr = Math.round(value) + ' dB';
+      } else {
+        valueStr = Math.round(100 * value) + '%';
+      }
     }
   }
 
@@ -162,7 +166,7 @@ export default function AudioFeatureComponent({
         {audioFeatureSvgMap[audioFeature.property].svg}
         <AudioFeatureStateSvg audioFeatureState={audioFeature.state} />
       </div>
-      <span className='text-xs'>{value ?? '-'}</span>
+      <span className='text-xs'>{valueStr ?? '-'}</span>
     </button>
     {!hideTooltip &&
       <Tooltip id={id} place='bottom' style={{
