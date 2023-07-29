@@ -182,6 +182,7 @@ export default function App() {
   }, [previewTrack]);
 
   async function getRecommendations() {
+    // ensure audio features are initialized (if arriving via direct link)
     const newAudioFeatures: AudioFeature[] = [];
 
     for (const audioFeature of audioFeatures) {
@@ -434,7 +435,6 @@ export default function App() {
                   key={audioFeature.property}
                   onClick={() => setAudioFeatures(prevAudioFeatures => {
                     const newAudioFeatures = [...prevAudioFeatures];
-
                     const audioFeatureToRotate = newAudioFeatures.find(f => f.property === audioFeature.property);
 
                     if (audioFeatureToRotate) {
