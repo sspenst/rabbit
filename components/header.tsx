@@ -13,10 +13,15 @@ export default function Header() {
   return (
     <header className='flex justify-between mx-4'>
       <div className='flex items-center mt-2 gap-4 h-10'>
-        <Link className='w-8 h-8' href='/' style={{
-          minHeight: 32,
-          minWidth: 32,
-        }}>
+        <Link
+          aria-label='Rabbit Home'
+          className='w-8 h-8'
+          href='/'
+          style={{
+            minHeight: 32,
+            minWidth: 32,
+          }}
+        >
           <Rabbit />
         </Link>
         <a
