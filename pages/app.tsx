@@ -319,7 +319,7 @@ export default function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const debounceSearch = useCallback(debounce(async (q: string) => {
     await searchTracks(q);
-  }, 300), []);
+  }, 300), [spotifyApi]);
 
   if (spotifyApi === null) {
     return (
