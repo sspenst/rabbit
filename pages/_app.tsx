@@ -33,11 +33,11 @@ export default function App({ Component, pageProps }: AppProps) {
   }, []);
 
   useEffect(() => {
-    function setFaviconHref(e: MediaQueryList | MediaQueryListEvent) {
+    function setFaviconHref(darkMediaQuery: MediaQueryList | MediaQueryListEvent) {
       const favicon = document.getElementById('favicon') as HTMLLinkElement | null;
 
       if (favicon) {
-        favicon.href = e.matches ? '/favicon-white.png' : 'favicon.png';
+        favicon.href = darkMediaQuery.matches ? '/favicon-dark.png' : 'favicon.png';
       }
     }
 
