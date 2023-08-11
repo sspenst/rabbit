@@ -32,6 +32,24 @@ export default function App({ Component, pageProps }: AppProps) {
     setMounted(true);
   }, []);
 
+  useEffect(() => {
+    function setFaviconHref(e: MediaQueryList | MediaQueryListEvent) {
+      const favicon = document.getElementById('favicon') as HTMLLinkElement | null;
+
+      if (favicon) {
+        favicon.href = e.matches ? '/favicon-white.png' : 'favicon.png';
+      }
+    }
+
+    const darkMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+    setFaviconHref(darkMediaQuery);
+
+    darkMediaQuery.addEventListener('change', setFaviconHref);
+
+    return () => darkMediaQuery.removeEventListener('change', setFaviconHref);
+  }, []);
+
   return (
     <ThemeProvider attribute='class'>
       <MainContext.Provider value={{
