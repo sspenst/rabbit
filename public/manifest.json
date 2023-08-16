@@ -28,8 +28,7 @@
       "purpose": "maskable"
     }
   ],
-  "start_url": "https://rabbit.sspenst.com",
-  "scope": "https://rabbit.sspenst.com",
+  "start_url": ".",
   "display": "standalone",
   "orientation": "any",
   "theme_color": "#000000",
