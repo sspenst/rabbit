@@ -25,29 +25,7 @@ export default function App({ Component, pageProps }: AppProps) {
   }
 
   useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/service-worker.js');
-    }
-
     setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    function setFaviconHref(darkMediaQuery: MediaQueryList | MediaQueryListEvent) {
-      const favicon = document.getElementById('favicon') as HTMLLinkElement | null;
-
-      if (favicon) {
-        favicon.href = darkMediaQuery.matches ? '/favicon-dark.png' : 'favicon.png';
-      }
-    }
-
-    const darkMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
-    setFaviconHref(darkMediaQuery);
-
-    darkMediaQuery.addEventListener('change', setFaviconHref);
-
-    return () => darkMediaQuery.removeEventListener('change', setFaviconHref);
   }, []);
 
   return (
