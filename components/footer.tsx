@@ -5,7 +5,7 @@ export default function Footer() {
   return (
     <footer className='flex flex-col items-center gap-6 mb-8 mx-8 text-neutral-600 dark:text-neutral-400 text-sm text-center'>
       <div className='w-full h-px footer-gradient' />
-      <div className='flex flex-wrap gap-10 items-center justify-center'>
+      <div className='flex flex-wrap gap-x-10 gap-y-6 items-center justify-center'>
         <div className='flex flex-wrap gap-6 items-center justify-center'>
           <a
             aria-label='sspenst home'
@@ -21,7 +21,7 @@ export default function Footer() {
             <SS />
           </a>
           <span>
-            © 2023 Spencer Spenst
+            © 2024 Spencer Spenst
           </span>
         </div>
         <a
