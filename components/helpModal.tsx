@@ -6,14 +6,14 @@ import AudioFeatureComponent, { AudioFeature, audioFeatureSvgMap } from './audio
 import SkeletonTrack from './skeletonTrack';
 import { TrackInfo } from './trackComponent';
 
-interface ModalProps {
+interface HelpModalProps {
   audioFeatures: AudioFeature[];
   isOpen: boolean;
   onClose: () => void;
   track: EnrichedTrack | undefined;
 }
 
-export default function HelpModal({ audioFeatures, isOpen, onClose, track }: ModalProps) {
+export default function HelpModal({ audioFeatures, isOpen, onClose, track }: HelpModalProps) {
   const [audioFeatureProperty, setAudioFeatureProperty] = useState('tempo');
 
   return (

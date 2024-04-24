@@ -1,10 +1,11 @@
 import classNames from 'classnames';
 import Image from 'next/image';
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { Tooltip } from 'react-tooltip';
 import { AppContext } from '../contexts/appContext';
 import { pauseTrack, playTrack } from '../helpers/audioControls';
 import { EnrichedTrack } from '../helpers/enrichTrack';
+import ImageModal from './imageModal';
 
 function formatDurationMs(ms: number) {
   const seconds = Math.round(ms / 1000);
@@ -20,6 +21,7 @@ interface TrackInfoProps {
 
 export function TrackInfo({ track }: TrackInfoProps) {
   const artists = track.artists.map(a => a.name).join(', ');
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const { previewTrack, setPreviewTrack } = useContext(AppContext);
 
   function getImageSrc() {
@@ -33,7 +35,14 @@ export function TrackInfo({ track }: TrackInfoProps) {
     }
   }
 
-  return (
+  const imageSrc = getImageSrc();
+
+  return (<>
+    <ImageModal
+      isOpen={isImageModalOpen}
+      onClose={() => setIsImageModalOpen(false)}
+      src={imageSrc}
+    />
     <button className='flex gap-4 w-full items-center cursor-pointer truncate select-none' onClick={() => {
       // pause if the track has no preview or is already playing
       if (!track.preview?.paused) {
@@ -46,6 +55,10 @@ export function TrackInfo({ track }: TrackInfoProps) {
         alt={track.name}
         className='w-12 h-12'
         height={48}
+        onClick={e => {
+          e.stopPropagation();
+          setIsImageModalOpen(true);
+        }}
         src={getImageSrc()}
         style={{
           minWidth: '3rem',
@@ -100,7 +113,7 @@ export function TrackInfo({ track }: TrackInfoProps) {
         {formatDurationMs(track.duration_ms)}
       </span>
     </button>
-  );
+  </>);
 }
 
 interface TrackComponentProps {
