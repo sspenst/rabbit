@@ -84,7 +84,7 @@ export function TrackInfo({ track }: TrackInfoProps) {
         </div>
         <span className='flex text-neutral-600 dark:text-neutral-400 text-sm items-center gap-2'>
           {track.explicit &&
-            <div className='bg-neutral-600 dark:bg-neutral-400 text-white dark:text-black text-xs rounded-sm w-4 h-4 text-center' style={{
+            <div className='bg-neutral-600 dark:bg-neutral-400 text-white dark:text-black text-[10px] rounded-sm w-4 h-4 flex items-center justify-center' style={{
               minHeight: 16,
               minWidth: 16,
             }}>

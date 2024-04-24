@@ -1,6 +1,6 @@
 import { AudioFeatures, SpotifyApi, Track } from '@spotify/web-api-ts-sdk';
 import { RecommendationsRequest } from '@spotify/web-api-ts-sdk/dist/mjs/endpoints/RecommendationsEndpoints';
-import { debounce } from 'debounce';
+import debounce from 'debounce';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
