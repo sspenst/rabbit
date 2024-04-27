@@ -1,6 +1,6 @@
 import { Dialog, Transition } from '@headlessui/react';
-import React, { Fragment } from 'react';
 import Image from 'next/image';
+import React, { Fragment } from 'react';
 
 interface ImageModalProps {
   isOpen: boolean;

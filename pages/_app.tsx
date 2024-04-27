@@ -29,7 +29,7 @@ export default function App({ Component, pageProps }: AppProps) {
   }, []);
 
   return (
-    <ThemeProvider attribute='class'>
+    <ThemeProvider attribute='class' enableSystem>
       <MainContext.Provider value={{
         logOut: logOut,
         mounted: mounted,
