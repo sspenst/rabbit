@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import React from 'react';
 import SS from './icons/ss';
 
@@ -24,22 +25,18 @@ export default function Footer() {
             © 2024 Spencer Spenst
           </span>
         </div>
-        <a
+        <Link
           className='hover:text-black hover:dark:text-white transition'
-          href='https://docs.google.com/document/d/e/2PACX-1vQB3cuXUU8GNyzvgOMA19_T8xlVjCRqE6xr2M-pxgNC2j8_yfnjfCiDRUSt-N8UAhdiSgxURxU2UJmY/pub'
-          rel='noreferrer'
-          target='_blank'
+          href='/end-user-agreement'
         >
           End User Agreement
-        </a>
-        <a
+        </Link>
+        <Link
           className='hover:text-black hover:dark:text-white transition'
-          href='https://docs.google.com/document/d/e/2PACX-1vRJ0iaCx98PxgXfNEnne3RX2UGvhPk0UG7sdHZipBXG3JEQsWRxuQCP7CnOyryU0EEfkCUCfa4JI28v/pub'
-          rel='noreferrer'
-          target='_blank'
+          href='/privacy-policy'
         >
           Privacy Policy
-        </a>
+        </Link>
       </div>
     </footer>
   );

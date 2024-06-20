@@ -54,7 +54,7 @@ export default function App({ Component, pageProps }: AppProps) {
         }} />
         <Header />
         <main style={{
-          minHeight: 'calc(100svh - 48px)',
+          minHeight: router.pathname === '/' ? 'calc(100svh - 48px)' : undefined,
         }}>
           <Component {...pageProps} />
         </main>
