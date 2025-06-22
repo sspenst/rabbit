@@ -72,7 +72,9 @@ export default function App() {
         return [...prevTracks].concat(tracks);
       }
     });
-    setShowMore(tracks.length === searchLimit);
+
+    // until we get no more tracks, we want to show the "more" button
+    setShowMore(tracks.length !== 0);
     setIsSearching(false);
   }
 
