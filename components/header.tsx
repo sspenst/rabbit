@@ -2,12 +2,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import React, { useContext, useEffect } from 'react';
+import { LifebuoyIcon } from '@heroicons/react/24/outline';
 import { MainContext } from '../contexts/mainContext';
 import Rabbit from './icons/rabbit';
 import Profile from './profile';
 
 export default function Header() {
-  const { mounted } = useContext(MainContext);
+  const { mounted, setIsHelpModalOpen } = useContext(MainContext);
   const { resolvedTheme, setTheme, systemTheme } = useTheme();
 
   // switch back to system theme if it's the same as the resolved theme
@@ -19,38 +20,25 @@ export default function Header() {
 
   return (
     <header className='flex justify-between mx-4'>
-      <div className='flex items-center mt-2 gap-4 h-10'>
+      <div className='flex items-center mt-2 gap-3 h-10'>
         <Link
           aria-label='Rabbit Home'
-          className='w-8 h-8'
+          className='flex items-center gap-3 hover:opacity-50 transition-opacity'
           href='/'
-          style={{
-            minHeight: 32,
-            minWidth: 32,
-          }}
         >
-          <Rabbit />
+          <div
+            className='w-8 h-8'
+            style={{
+              minHeight: 32,
+              minWidth: 32,
+            }}
+          >
+            <Rabbit />
+          </div>
+          <span className='font-medium text-2xl truncate ml-1'>
+            Rabbit
+          </span>
         </Link>
-        <a
-          className='w-7 h-7'
-          href='https://open.spotify.com/'
-          rel='noreferrer'
-          style={{
-            minHeight: 28,
-            minWidth: 28,
-          }}
-          target='_blank'
-        >
-          {!mounted ? null :
-            <Image alt='Spotify Home' src={resolvedTheme === 'dark' ? '/Spotify_Icon_RGB_White.png' : '/Spotify_Icon_RGB_Black.png'} width={512} height={512} priority className='w-7 h-7' style={{
-              minHeight: 28,
-              minWidth: 28,
-            }} />
-          }
-        </a>
-        <span className='grow font-medium text-2xl truncate ml-1'>
-          Rabbit
-        </span>
       </div>
       <div className='flex items-center mt-2 gap-4 h-10'>
         {!mounted ? <div className='w-6' /> : resolvedTheme === 'dark' ?
@@ -74,6 +62,30 @@ export default function Header() {
             </svg>
           </button>
         }
+        <button
+          aria-label='Help'
+          className='hover:text-neutral-400 transition'
+          onClick={() => setIsHelpModalOpen(true)}
+        >
+          <LifebuoyIcon className='w-6 h-6' />
+        </button>
+        <a
+          className='w-7 h-7'
+          href='https://open.spotify.com/'
+          rel='noreferrer'
+          style={{
+            minHeight: 28,
+            minWidth: 28,
+          }}
+          target='_blank'
+        >
+          {!mounted ? null :
+            <Image alt='Spotify Home' src={resolvedTheme === 'dark' ? '/Spotify_Icon_RGB_White.png' : '/Spotify_Icon_RGB_Black.png'} width={512} height={512} priority className='w-7 h-7' style={{
+              minHeight: 28,
+              minWidth: 28,
+            }} />
+          }
+        </a>
         <Profile />
       </div>
     </header>

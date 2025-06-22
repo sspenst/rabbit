@@ -22,7 +22,7 @@ export default function Footer() {
             <SS />
           </a>
           <span>
-            © 2024 Spencer Spenst
+            © 2025 Spencer Spenst
           </span>
         </div>
         <Link

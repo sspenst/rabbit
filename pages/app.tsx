@@ -13,7 +13,6 @@ import { AppContext } from '../contexts/appContext';
 import { MainContext } from '../contexts/mainContext';
 import { pauseTrack, playTrack } from '../helpers/audioControls';
 import { EnrichedTrack, enrichTracks } from '../helpers/enrichTrack';
-import { LifebuoyIcon } from '@heroicons/react/24/outline';
 
 export default function App() {
   const [audioFeatures, setAudioFeatures] = useState<AudioFeature[]>([
@@ -24,9 +23,8 @@ export default function App() {
     { property: 'instrumentalness', state: AudioFeatureState.NONE },
     { property: 'valence', state: AudioFeatureState.NONE },
   ]);
-  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(true);
-  const { logOut, setSpotifyApi, setUser, spotifyApi, user } = useContext(MainContext);
+  const { isHelpModalOpen, logOut, setIsHelpModalOpen, setSpotifyApi, setUser, spotifyApi, user } = useContext(MainContext);
   const [previewTrack, setPreviewTrack] = useState<EnrichedTrack | null>();
   const [results, setResults] = useState<EnrichedTrack[]>();
   const router = useRouter();
@@ -449,14 +447,6 @@ export default function App() {
                   track={previewTrack}
                 />
               ))}
-            </div>
-            <div className='flex justify-center items-center'>
-              <button
-                className='text-neutral-500 hover:text-black dark:hover:text-white hover:underline text-sm'
-                onClick={() => setIsHelpModalOpen(true)}
-              >
-                <LifebuoyIcon className='w-6 h-6' />
-              </button>
             </div>
             <button
               aria-label='discover'

@@ -15,7 +15,7 @@ export default function Profile() {
 
   return (
     <Menu>
-      <MenuButton className='inline-flex items-center gap-2 rounded-md text-sm font-medium max-w-full'>
+      <MenuButton className='inline-flex items-center gap-2 rounded-md font-medium max-w-full'>
         <Image
           alt={user.display_name}
           className='rounded-full hover:opacity-80 transition'
@@ -30,7 +30,7 @@ export default function Profile() {
       </MenuButton>
       <MenuItems
         anchor='bottom end'
-        className='w-28 origin-top-right rounded-xl border border-neutral-200 bg-white p-1 mt-1 text-sm/6 transition duration-100 ease-out [--anchor-gap:var(--spacing-1)] focus:outline-hidden data-closed:scale-95 data-closed:opacity-0'
+        className='w-28 origin-top-right rounded-xl border border-neutral-200 bg-white p-1 mt-1 text-sm transition duration-100 ease-out [--anchor-gap:var(--spacing-1)] focus:outline-hidden data-closed:scale-95 data-closed:opacity-0'
         modal={false}
         transition
       >

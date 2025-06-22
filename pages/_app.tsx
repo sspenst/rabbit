@@ -11,6 +11,7 @@ import Header from '../components/header';
 import { MainContext } from '../contexts/mainContext';
 
 export default function App({ Component, pageProps }: AppProps) {
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const [spotifyApi, setSpotifyApi] = useState<SpotifyApi | null>();
@@ -31,8 +32,10 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <ThemeProvider attribute='class' enableSystem>
       <MainContext.Provider value={{
+        isHelpModalOpen: isHelpModalOpen,
         logOut: logOut,
         mounted: mounted,
+        setIsHelpModalOpen: setIsHelpModalOpen,
         setSpotifyApi: setSpotifyApi,
         setUser: setUser,
         spotifyApi: spotifyApi,
