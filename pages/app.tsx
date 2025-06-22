@@ -166,7 +166,9 @@ export default function App() {
     function pause(event: KeyboardEvent) {
       const { code } = event;
 
-      if (code === 'KeyP' && previewTrack?.preview) {
+      if (code === 'Space' && previewTrack?.preview) {
+        event.preventDefault();
+
         if (previewTrack.preview.paused) {
           playTrack(previewTrack, setPreviewTrack);
         } else {
