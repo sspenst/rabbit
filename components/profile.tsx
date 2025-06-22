@@ -1,6 +1,6 @@
-import { Menu, Transition } from '@headlessui/react';
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import Image from 'next/image';
-import React, { Fragment, useContext } from 'react';
+import React, { useContext } from 'react';
 import { MainContext } from '../contexts/mainContext';
 
 export default function Profile() {
@@ -11,11 +11,11 @@ export default function Profile() {
     return null;
   }
 
-  const menuItemClassName = 'w-full text-center truncate p-2 rounded-lg hover:bg-neutral-300 dark:hover:bg-neutral-700 transition';
+  const menuItemClassName = 'block w-full text-center truncate p-2 rounded-lg hover:bg-neutral-300 dark:hover:bg-neutral-700 transition';
 
   return (
     <Menu>
-      <Menu.Button>
+      <MenuButton className='inline-flex items-center gap-2 rounded-md text-sm font-medium max-w-full'>
         <Image
           alt={user.display_name}
           className='rounded-full hover:opacity-80 transition'
@@ -27,37 +27,32 @@ export default function Profile() {
           }}
           width={size}
         />
-      </Menu.Button>
-      <Transition
-        as={Fragment}
-        enter='transition ease-out duration-100'
-        enterFrom='transform opacity-0 scale-95'
-        enterTo='transform opacity-100 scale-100'
-        leave='transition ease-in duration-75'
-        leaveFrom='transform opacity-100 scale-100'
-        leaveTo='transform opacity-0 scale-95'
+      </MenuButton>
+      <MenuItems
+        anchor='bottom end'
+        className='w-28 origin-top-right rounded-xl border border-neutral-200 bg-white p-1 mt-1 text-sm/6 transition duration-100 ease-out [--anchor-gap:var(--spacing-1)] focus:outline-hidden data-closed:scale-95 data-closed:opacity-0'
+        modal={false}
+        transition
       >
-        <Menu.Items className='absolute top-12 right-0 m-2 p-1 w-28 origin-top-right rounded-xl shadow-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-900 flex flex-col items-center z-10'>
-          <Menu.Item>
-            <a
-              className={menuItemClassName}
-              href={user.external_urls.spotify}
-              rel='noreferrer'
-              target='_blank'
-            >
-              Profile
-            </a>
-          </Menu.Item>
-          <Menu.Item>
-            <button
-              className={menuItemClassName}
-              onClick={logOut}
-            >
-              Logout
-            </button>
-          </Menu.Item>
-        </Menu.Items>
-      </Transition>
+        <MenuItem>
+          <a
+            className={menuItemClassName}
+            href={user.external_urls.spotify}
+            rel='noreferrer'
+            target='_blank'
+          >
+            Profile
+          </a>
+        </MenuItem>
+        <MenuItem>
+          <button
+            className={menuItemClassName}
+            onClick={logOut}
+          >
+            Logout
+          </button>
+        </MenuItem>
+      </MenuItems>
     </Menu>
   );
 }

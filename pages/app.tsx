@@ -13,6 +13,7 @@ import { AppContext } from '../contexts/appContext';
 import { MainContext } from '../contexts/mainContext';
 import { pauseTrack, playTrack } from '../helpers/audioControls';
 import { EnrichedTrack, enrichTracks } from '../helpers/enrichTrack';
+import { LifebuoyIcon } from '@heroicons/react/24/outline';
 
 export default function App() {
   const [audioFeatures, setAudioFeatures] = useState<AudioFeature[]>([
@@ -447,6 +448,14 @@ export default function App() {
                 />
               ))}
             </div>
+            <div className='flex justify-center items-center'>
+              <button
+                className='text-neutral-500 hover:text-black dark:hover:text-white hover:underline text-sm'
+                onClick={() => setIsHelpModalOpen(true)}
+              >
+                <LifebuoyIcon className='w-6 h-6' />
+              </button>
+            </div>
             <button
               aria-label='discover'
               className='bg-green-500 disabled:bg-neutral-500 disabled:opacity-40 text-black p-3 rounded-full enabled:hover:bg-green-300 transition flex gap-2 font-medium'
@@ -477,14 +486,6 @@ export default function App() {
               </svg>
               <span className='hidden md:block mr-1'>Discover</span>
             </button>
-            <div className='flex justify-center items-center'>
-              <button
-                className='text-neutral-600 dark:text-neutral-400 hover:underline text-sm'
-                onClick={() => setIsHelpModalOpen(true)}
-              >
-                Help
-              </button>
-            </div>
           </div>
         </div>
       </div>

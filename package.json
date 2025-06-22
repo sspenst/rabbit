@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@headlessui/react": "^2.2.4",
+    "@heroicons/react": "^2.2.0",
     "@sentry/nextjs": "^9.30.0",
     "@spotify/web-api-ts-sdk": "^1.2.0",
     "classnames": "^2.5.1",
