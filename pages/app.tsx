@@ -397,7 +397,7 @@ export default function App() {
               :
               <>
                 {previewTrack ?
-                  <div className='flex items-center w-full hover:bg-neutral-300 hover:dark:bg-neutral-700 transition-[background-color] py-1 pr-4 pl-2 gap-4 rounded-md h-14'>
+                  <div className='flex items-center w-full hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-[background-color] py-1 pr-4 pl-2 gap-4 rounded-md h-14'>
                     <TrackComponent track={previewTrack} />
                     <button
                       aria-label='clear'
@@ -415,7 +415,7 @@ export default function App() {
                         }
                       }}
                     >
-                      <svg className='text-neutral-500 hover:text-black hover:dark:text-white w-6 h-6 -mx-1 cursor-pointer' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor'>
+                      <svg className='text-neutral-500 hover:text-black dark:hover:text-white w-6 h-6 -mx-1 cursor-pointer' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor'>
                         <path strokeLinecap='round' strokeLinejoin='round' d='M6 18L18 6M6 6l12 12' />
                       </svg>
                     </button>
@@ -499,7 +499,7 @@ export default function App() {
           results.length ?
             <div className='flex flex-col items-center text-center w-full px-2 max-w-3xl'>
               {results.map(track => (
-                <div className='w-full hover:bg-neutral-300 hover:dark:bg-neutral-700 transition-[background-color] py-1 pr-4 pl-2 rounded-md' key={`track-${track.id}`}>
+                <div className='w-full hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-[background-color] py-1 pr-4 pl-2 rounded-md' key={`track-${track.id}`}>
                   <TrackComponent track={track} />
                 </div>
               ))}

@@ -20,7 +20,7 @@ export default function HelpModal({ audioFeatures, isOpen, onClose, track }: Hel
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog
         as='div'
-        className='fixed inset-0 z-20 overflow-y-auto backdrop-blur-sm'
+        className='fixed inset-0 z-20 overflow-y-auto backdrop-blur-xs'
         onClose={onClose}
       >
         <Transition.Child
@@ -51,7 +51,7 @@ export default function HelpModal({ audioFeatures, isOpen, onClose, track }: Hel
               <div className='flex flex-col gap-4'>
                 <span>1. Select a track to begin</span>
                 {track ?
-                  <div className='flex gap-4 w-full items-center truncate bg-neutral-100 dark:bg-neutral-900 rounded-md pl-2 pr-4 py-1 hover:bg-neutral-300 hover:dark:bg-neutral-700 transition'>
+                  <div className='flex gap-4 w-full items-center truncate bg-neutral-100 dark:bg-neutral-900 rounded-md pl-2 pr-4 py-1 hover:bg-neutral-300 dark:hover:bg-neutral-700 transition'>
                     <TrackInfo track={track} />
                   </div>
                   :
@@ -113,7 +113,7 @@ export default function HelpModal({ audioFeatures, isOpen, onClose, track }: Hel
                 </button>
               </div>
               <button
-                className='inline-flex justify-center px-4 py-2 mt-2 text-sm font-medium border border-transparent rounded-md bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-400 hover:dark:bg-neutral-600 transition'
+                className='inline-flex justify-center px-4 py-2 mt-2 text-sm font-medium border border-transparent rounded-md bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-400 dark:hover:bg-neutral-600 transition'
                 onClick={onClose}
                 type='button'
               >

@@ -13,7 +13,7 @@ export default function ImageModal({ isOpen, onClose, src }: ImageModalProps) {
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog
         as='div'
-        className='fixed inset-0 z-20 overflow-y-auto backdrop-blur-sm'
+        className='fixed inset-0 z-20 overflow-y-auto backdrop-blur-xs'
         onClose={onClose}
       >
         <Transition.Child

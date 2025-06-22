@@ -3,7 +3,7 @@ import React from 'react';
 export default function EndUserAgreement() {
   return (
     <div className='my-16 flex justify-center'>
-      <div className='w-full max-w-screen-md flex flex-col gap-8'>
+      <div className='w-full max-w-(--breakpoint-md) flex flex-col gap-8'>
         <h1 className='font-medium text-3xl'>End User Agreement</h1>
         <p>
         This End User Agreement (&apos;Agreement&apos;) is a legally binding contract between you (&apos;End User&apos; or &apos;you&apos;) and Rabbit regarding your use of the Spotify Platform, Spotify Service, and Spotify Content (collectively referred to as the &apos;Spotify Services&apos;). By accessing or using the Spotify Services, you agree to be bound by the terms and conditions set forth in this Agreement.

@@ -11,7 +11,7 @@ export default function Profile() {
     return null;
   }
 
-  const menuItemClassName = 'w-full text-center truncate p-2 rounded-lg hover:bg-neutral-300 hover:dark:bg-neutral-700 transition';
+  const menuItemClassName = 'w-full text-center truncate p-2 rounded-lg hover:bg-neutral-300 dark:hover:bg-neutral-700 transition';
 
   return (
     <Menu>

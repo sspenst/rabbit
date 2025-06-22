@@ -10,7 +10,7 @@ export default function Footer() {
         <div className='flex flex-wrap gap-6 items-center justify-center'>
           <a
             aria-label='sspenst home'
-            className='w-8 h-8 hover:text-black hover:dark:text-white transition'
+            className='w-8 h-8 hover:text-black dark:hover:text-white transition'
             href='https://sspenst.com'
             rel='noreferrer'
             style={{
@@ -26,13 +26,13 @@ export default function Footer() {
           </span>
         </div>
         <Link
-          className='hover:text-black hover:dark:text-white transition'
+          className='hover:text-black dark:hover:text-white transition'
           href='/end-user-agreement'
         >
           End User Agreement
         </Link>
         <Link
-          className='hover:text-black hover:dark:text-white transition'
+          className='hover:text-black dark:hover:text-white transition'
           href='/privacy-policy'
         >
           Privacy Policy

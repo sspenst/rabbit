@@ -3,7 +3,7 @@ import React from 'react';
 export default function EndUserAgreement() {
   return (
     <div className='my-16 flex justify-center'>
-      <div className='w-full max-w-screen-md flex flex-col gap-8'>
+      <div className='w-full max-w-(--breakpoint-md) flex flex-col gap-8'>
         <h1 className='font-medium text-3xl'>Privacy Policy</h1>
         <p>
         This Privacy Policy (&apos;Policy&apos;) describes how Rabbit collects, uses, and shares information when you use Rabbit. By using Rabbit, you agree to the terms of this Policy.

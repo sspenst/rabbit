@@ -68,7 +68,7 @@ export function TrackInfo({ track }: TrackInfoProps) {
       <div className='grow flex flex-col gap-1 truncate text-left'>
         <div className='flex items-center gap-2'>
           {!track.preview && <>
-            <svg data-tooltip-content='Only playable on Spotify' data-tooltip-id={`warning-${track.id}`} className='text-yellow-500 w-5 h-5 focus:outline-none' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' style={{
+            <svg data-tooltip-content='Only playable on Spotify' data-tooltip-id={`warning-${track.id}`} className='text-yellow-500 w-5 h-5 focus:outline-hidden' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' style={{
               minWidth: 20,
             }}>
               <path strokeLinecap='round' strokeLinejoin='round' d='M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z' />
@@ -97,7 +97,7 @@ export function TrackInfo({ track }: TrackInfoProps) {
         </div>
         <span className='flex text-neutral-600 dark:text-neutral-400 text-sm items-center gap-2'>
           {track.explicit &&
-            <div className='bg-neutral-600 dark:bg-neutral-400 text-white dark:text-black text-[10px] rounded-sm w-4 h-4 flex items-center justify-center' style={{
+            <div className='bg-neutral-600 dark:bg-neutral-400 text-white dark:text-black text-[10px] rounded-xs w-4 h-4 flex items-center justify-center' style={{
               minHeight: 16,
               minWidth: 16,
             }}>
@@ -130,7 +130,7 @@ export default function TrackComponent({ track }: TrackComponentProps) {
         aria-label={track.saved ? 'remove from liked songs' : 'add to liked songs'}
         className={classNames('disabled:text-green-600', track.saved ?
           'text-green-500 hover:text-green-300' :
-          'text-neutral-500 hover:text-black hover:dark:text-white'
+          'text-neutral-500 hover:text-black dark:hover:text-white'
         )}
         disabled={savingTrackId === track.id}
         onClick={() => saveTrack(track)}
@@ -147,7 +147,7 @@ export default function TrackComponent({ track }: TrackComponentProps) {
       </button>
       <a
         aria-label='listen on Spotify'
-        className='font-bold text-lg w-fit hover:underline text-neutral-500 hover:text-black hover:dark:text-white'
+        className='font-bold text-lg w-fit hover:underline text-neutral-500 hover:text-black dark:hover:text-white'
         href={track.external_urls.spotify}
         rel='noreferrer'
         target='_blank'
