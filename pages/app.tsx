@@ -30,7 +30,9 @@ export default function App() {
   const router = useRouter();
   const [savingTrackId, setSavingTrackId] = useState<string>();
   const [search, setSearch] = useState('');
-  const searchLimit = 20;
+  // NB: 50 is the highest limit that works for all endpoints
+  // recommendations can go up to 100 but then we need to batch the requests to the user's liked songs API
+  const searchLimit = 50;
   const searchOffset = useRef(0);
   const [showMore, setShowMore] = useState(true);
 
