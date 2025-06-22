@@ -12,7 +12,6 @@ const nextConfig = {
     // to avoid hitting the image optimization limit on vercel's free tier
     unoptimized: true,
   },
-  swcMinify: true,
 };
 
 module.exports = nextConfig;

@@ -17,7 +17,7 @@ export interface AudioFeature {
 
 interface AudioFeatureInfo {
   description: string;
-  svg: JSX.Element;
+  svg: React.JSX.Element;
 }
 
 export const audioFeatureSvgMap: Record<string, AudioFeatureInfo> = {
