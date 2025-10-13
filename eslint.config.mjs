@@ -16,7 +16,15 @@ const compat = new FlatCompat({
   recommendedConfig: js.configs.recommended,
 });
 
-const eslintConfig = [...compat.extends(
+const eslintConfig = [{
+  ignores: [
+    '.next/**',
+    'build/**',
+    'next-env.d.ts',
+    'node_modules/**',
+    'out/**',
+  ],
+}, ...compat.extends(
   'eslint:recommended',
   'next/core-web-vitals',
   'plugin:react/recommended',
@@ -45,6 +53,7 @@ const eslintConfig = [...compat.extends(
     'simple-import-sort': simpleImportSort,
   },
   rules: {
+    '@stylistic/indent': ['warn', 2],
     '@stylistic/type-annotation-spacing': 'warn',
     '@typescript-eslint/no-unused-vars': 'warn',
     'arrow-spacing': 'warn',
@@ -53,7 +62,6 @@ const eslintConfig = [...compat.extends(
     'import/first': 'warn',
     'import/newline-after-import': 'warn',
     'import/no-duplicates': 'warn',
-    indent: ['warn', 2],
     'jsx-quotes': ['warn', 'prefer-single'],
     'key-spacing': ['warn', {
       beforeColon: false,
