@@ -9,7 +9,7 @@ Sentry.init({
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
   debug: false,
 
-  dsn: 'https://67e0517f91c832e8652b3dc729a889e8@o4507428763795456.ingest.us.sentry.io/4507431668219904',
+  dsn: 'https://67e0517f91c832e8652b3dc729a889e8@o4510184688910337.ingest.us.sentry.io/4507431668219904',
   enabled: process.env.NODE_ENV === 'production',
 
   // Adjust this value in production, or use tracesSampler for greater control

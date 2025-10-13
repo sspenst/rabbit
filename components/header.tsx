@@ -1,8 +1,8 @@
+import { LifebuoyIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import React, { useContext, useEffect } from 'react';
-import { LifebuoyIcon } from '@heroicons/react/24/outline';
 import { MainContext } from '../contexts/mainContext';
 import Rabbit from './icons/rabbit';
 import Profile from './profile';
