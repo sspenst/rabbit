@@ -382,9 +382,7 @@ export default function App() {
         </Head>
       }
       <div className='sm:sticky top-0 p-2 bg-white dark:bg-black flex justify-center'>
-        <div className='bg-neutral-100 dark:bg-neutral-900 rounded-md px-2 pt-2 pb-1 flex flex-col gap-1 max-w-full' style={{
-          width: 768,
-        }}>
+        <div className='bg-neutral-100 dark:bg-neutral-900 rounded-md px-2 pt-2 pb-1 flex flex-col gap-1 max-w-full w-5xl'>
           <div className='flex justify-center w-full'>
             {previewTrack === null ?
               <input
@@ -487,14 +485,14 @@ export default function App() {
       </div>
       <div className='flex justify-center mb-4'>
         {results === undefined ?
-          <div className='flex flex-col w-full max-w-3xl px-2' style={{
+          <div className='flex flex-col w-full max-w-5xl px-2' style={{
             zIndex: -1,
           }}>
             {Array.from({ length: 20 }, (_, index) => <SkeletonTrack key={`skeleton-track-${index}`} />)}
           </div>
           :
           results.length ?
-            <div className='flex flex-col items-center text-center w-full px-2 max-w-3xl'>
+            <div className='flex flex-col items-center text-center w-full px-2 max-w-5xl'>
               {results.map(track => (
                 <div className='w-full hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-[background-color] py-1 pr-4 pl-2 rounded-md' key={`track-${track.id}`}>
                   <TrackComponent track={track} />
