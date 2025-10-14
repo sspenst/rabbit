@@ -194,15 +194,15 @@ export default function App() {
       let state: AudioFeatureState;
 
       switch (router.query[audioFeature.property]) {
-      case 'up':
-        state = AudioFeatureState.UP;
-        break;
-      case 'down':
-        state = AudioFeatureState.DOWN;
-        break;
-      default:
-        state = AudioFeatureState.NONE;
-        break;
+        case 'up':
+          state = AudioFeatureState.UP;
+          break;
+        case 'down':
+          state = AudioFeatureState.DOWN;
+          break;
+        default:
+          state = AudioFeatureState.NONE;
+          break;
       }
 
       newAudioFeatures.push({
