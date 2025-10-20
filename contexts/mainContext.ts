@@ -1,4 +1,4 @@
-import { SpotifyApi, User } from '@spotify/web-api-ts-sdk';
+import { SpotifyApi, User } from '@sspenst/spotify-web-api';
 import { createContext } from 'react';
 
 interface MainContextInterface {

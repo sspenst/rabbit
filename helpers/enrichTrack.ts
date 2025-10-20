@@ -1,4 +1,4 @@
-import { AudioFeatures, SpotifyApi, Track } from '@spotify/web-api-ts-sdk';
+import { AudioFeatures, SpotifyApi, Track } from '@sspenst/spotify-web-api';
 
 export interface EnrichedTrack extends Track {
   audioFeatures: AudioFeatures | null;

@@ -1,5 +1,5 @@
 import '../styles/global.css';
-import { SpotifyApi, User } from '@spotify/web-api-ts-sdk';
+import { SpotifyApi, User } from '@sspenst/spotify-web-api';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import { useRouter } from 'next/router';

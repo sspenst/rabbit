@@ -1,4 +1,4 @@
-import { AudioFeatures } from '@spotify/web-api-ts-sdk';
+import { AudioFeatures } from '@sspenst/spotify-web-api';
 import classNames from 'classnames';
 import React from 'react';
 import { Tooltip } from 'react-tooltip';
