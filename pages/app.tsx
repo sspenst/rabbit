@@ -1,5 +1,4 @@
-import { AudioFeatures, SpotifyApi, Track } from '@sspenst/spotify-web-api';
-import { RecommendationsRequest } from '@sspenst/spotify-web-api/dist/mjs/endpoints/RecommendationsEndpoints';
+import { AudioFeatures, RecommendationsRequest, SpotifyApi, Track } from '@sspenst/spotify-web-api';
 import debounce from 'debounce';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
