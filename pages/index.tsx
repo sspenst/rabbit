@@ -28,9 +28,9 @@ export default function Index() {
             className='opacity-50 sm:opacity-80'
             fallback={resolvedTheme === 'dark' ? 'demo_black.png' : 'demo_white.png'}
             height={demoHeight}
+            preload
             src={resolvedTheme === 'dark' ? 'demo_black.webp' : 'demo_white.webp'}
             width={demoWidth}
-            priority
           />
         }
       </div>

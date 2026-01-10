@@ -26,6 +26,7 @@ export default function App({ Component, pageProps }: AppProps) {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
