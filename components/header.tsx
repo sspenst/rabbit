@@ -34,20 +34,30 @@ export default function Header() {
       </div>
       <div className='flex items-center mt-2 gap-4 h-10'>
         <a
-          className='w-7 h-7'
+          aria-label='Spotify Home'
+          className='flex items-center justify-center w-7 sm:w-22.5 h-7'
           href='https://open.spotify.com/'
           rel='noreferrer'
-          style={{
-            minHeight: 28,
-            minWidth: 28,
-          }}
           target='_blank'
         >
-          {!mounted ? null :
-            <Image alt='Spotify Home' src={resolvedTheme === 'dark' ? '/Spotify_Icon_RGB_White.png' : '/Spotify_Icon_RGB_Black.png'} width={512} height={512} priority className='w-7 h-7' style={{
-              minHeight: 28,
-              minWidth: 28,
-            }} />
+          {!mounted ? <span className='w-7 sm:w-22.5 h-7' /> : <>
+            <Image
+              alt=''
+              className='hidden sm:block w-22.5 h-auto'
+              height={708}
+              priority
+              src={resolvedTheme === 'dark' ? '/Spotify_Logo_RGB_White.png' : '/Spotify_Logo_RGB_Black.png'}
+              width={2362}
+            />
+            <Image
+              alt=''
+              className='block sm:hidden w-7 h-7'
+              height={512}
+              priority
+              src={resolvedTheme === 'dark' ? '/Spotify_Icon_RGB_White.png' : '/Spotify_Icon_RGB_Black.png'}
+              width={512}
+            />
+          </>
           }
         </a>
         <Profile />

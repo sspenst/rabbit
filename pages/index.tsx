@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import React, { useContext } from 'react';
@@ -39,13 +38,7 @@ export default function Index() {
       minHeight: 'inherit',
     }}>
       <h1 className='text-8xl font-semibold'>Rabbit</h1>
-      {!mounted ? <div className='h-12' /> :
-        <Image alt='Spotify Logo' src={resolvedTheme === 'dark' ? '/Spotify_Logo_RGB_White.png' : '/Spotify_Logo_RGB_Black.png'} width={2362} height={708} priority style={{
-          minWidth: 160,
-          width: 160,
-        }} />
-      }
-      <h2 className='text-3xl'>Discover new tracks using Spotify&apos;s audio features</h2>
+      <h2 className='text-3xl text-balance'>Discover new tracks using Spotify&apos;s audio features</h2>
       <Link className='px-8 py-2 rounded-full bg-green-500 hover:bg-green-300 transition text-black text-xl' href='/app'>
         Try it
       </Link>
