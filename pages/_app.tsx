@@ -6,7 +6,6 @@ import { useRouter } from 'next/router';
 import { ThemeProvider } from 'next-themes';
 import React, { useEffect, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
-import Footer from '../components/footer';
 import Header from '../components/header';
 import { MainContext } from '../contexts/mainContext';
 
@@ -62,7 +61,6 @@ export default function App({ Component, pageProps }: AppProps) {
         }}>
           <Component {...pageProps} />
         </main>
-        <Footer />
       </MainContext.Provider>
     </ThemeProvider>
   );
