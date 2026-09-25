@@ -12,7 +12,7 @@ export default function Profile() {
   const { logOut, setIsHelpModalOpen, user } = useContext(MainContext);
   const router = useRouter();
   const { setTheme, theme } = useTheme();
-  const size = 40;
+  const avatarSize = 36;
   const menuItemClassName = 'grid grid-cols-[1rem_minmax(0,1fr)_auto] items-center gap-3 w-full min-w-full box-border text-left truncate py-2 px-3 rounded-lg hover:bg-neutral-300 data-focus:bg-neutral-300 dark:hover:bg-neutral-700 dark:data-focus:bg-neutral-700 transition outline-hidden';
   const themeOptions = [
     { icon: Monitor, label: 'System', value: 'system' },
@@ -24,19 +24,19 @@ export default function Profile() {
     <Menu>
       <MenuButton
         aria-label={user ? 'Open account menu' : 'Open menu'}
-        className='inline-flex items-center justify-center rounded-full font-medium max-w-full hover:opacity-70 transition'
+        className='group inline-flex size-10 shrink-0 items-center justify-center rounded-full font-medium focus-visible:outline-2 focus-visible:outline-offset-2'
       >
         {user ?
           <Image
             alt={user.display_name}
-            className='rounded-full'
-            height={size}
+            className='rounded-full object-cover ring-2 ring-neutral-200 transition-shadow group-hover:ring-neutral-400 dark:ring-neutral-700 dark:group-hover:ring-neutral-500'
+            height={avatarSize}
             src={user.images[0]?.url ?? '/avatar_default.png'}
             style={{
-              minHeight: size,
-              minWidth: size,
+              minHeight: avatarSize,
+              minWidth: avatarSize,
             }}
-            width={size}
+            width={avatarSize}
           />
           :
           <EllipsisVertical className='w-6 h-6' />
@@ -44,7 +44,7 @@ export default function Profile() {
       </MenuButton>
       <MenuItems
         anchor='bottom end'
-        className='w-48 origin-top-right rounded-xl border border-neutral-300 dark:border-neutral-700 p-1 mt-1 text-sm transition duration-100 ease-out [--anchor-gap:var(--spacing-1)] focus:outline-hidden data-closed:scale-95 data-closed:opacity-0 bg-white dark:bg-black z-50'
+        className='w-max origin-top-right rounded-xl border border-neutral-300 dark:border-neutral-700 p-1 mt-1 text-sm transition duration-100 ease-out [--anchor-gap:var(--spacing-1)] focus:outline-hidden data-closed:scale-95 data-closed:opacity-0 bg-white dark:bg-black z-50'
         modal={false}
         transition
       >
