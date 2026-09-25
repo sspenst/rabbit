@@ -1,5 +1,4 @@
 import { AudioFeatures, RecommendationsRequest, SpotifyApi, Track } from '@sspenst/spotify-web-api';
-import debounce from 'debounce';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
@@ -12,6 +11,10 @@ import { AppContext } from '../contexts/appContext';
 import { MainContext } from '../contexts/mainContext';
 import { pauseTrack, playTrack } from '../helpers/audioControls';
 import { EnrichedTrack, enrichTracks } from '../helpers/enrichTrack';
+
+// 50 is the highest limit that works for all endpoints. Recommendations can go
+// up to 100, but then liked-song lookups would need to be batched.
+const searchLimit = 50;
 
 export default function App() {
   const [audioFeatures, setAudioFeatures] = useState<AudioFeature[]>([
@@ -29,53 +32,91 @@ export default function App() {
   const router = useRouter();
   const [savingTrackId, setSavingTrackId] = useState<string>();
   const [search, setSearch] = useState('');
-  // NB: 50 is the highest limit that works for all endpoints
-  // recommendations can go up to 100 but then we need to batch the requests to the user's liked songs API
-  const searchLimit = 50;
+  const [hasMore, setHasMore] = useState(true);
+  const isSearchingRef = useRef(false);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+  const searchDebounce = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const searchGeneration = useRef(0);
   const searchOffset = useRef(0);
-  const [showMore, setShowMore] = useState(true);
-
-  // get user's tracks or search for tracks with the current searchOffset
-  async function getRawTracks(q: string) {
-    if (!spotifyApi) {
-      return null;
-    }
-
-    if (!q) {
-      const tracks = await spotifyApi.currentUser.tracks.savedTracks(searchLimit, searchOffset.current);
-
-      return tracks?.items.map(i => i.track) as Track[];
-    } else {
-      const tracks = await spotifyApi.search(q, ['track'], undefined, searchLimit, searchOffset.current);
-
-      return tracks?.tracks.items as Track[];
-    }
-  }
 
   // search for tracks - only used on /app
-  async function searchTracks(q = '', append = false) {
+  const searchTracks = useCallback(async (q = '', append = false) => {
+    if (!spotifyApi || (append && isSearchingRef.current)) {
+      return;
+    }
+
+    const generation = append ? searchGeneration.current : ++searchGeneration.current;
+    const offset = append ? searchOffset.current : 0;
+
+    isSearchingRef.current = true;
     setIsSearching(true);
 
     if (!append) {
       searchOffset.current = 0;
     }
 
-    const tracks = await enrichTracks(await getRawTracks(q), spotifyApi);
+    try {
+      let rawTracks: Track[];
+      let moreTracksAvailable: boolean;
 
-    searchOffset.current += searchLimit;
+      if (!q) {
+        const page = await spotifyApi.currentUser.tracks.savedTracks(searchLimit, offset);
 
-    setResults(prevTracks => {
-      if (!append || !prevTracks) {
-        return tracks;
+        rawTracks = page.items.map(item => item.track) as Track[];
+        moreTracksAvailable = page.next !== null;
       } else {
-        return [...prevTracks].concat(tracks);
+        const response = await spotifyApi.search(q, ['track'], undefined, searchLimit, offset);
+        const page = response.tracks;
+
+        rawTracks = page.items as Track[];
+        moreTracksAvailable = page.next !== null;
       }
+
+      const tracks = await enrichTracks(rawTracks, spotifyApi);
+
+      // Ignore a response from a previous query if the user has searched again.
+      if (generation !== searchGeneration.current) {
+        return;
+      }
+
+      searchOffset.current = offset + searchLimit;
+
+      setResults(prevTracks => {
+        const mergedTracks = append && prevTracks ? [...prevTracks, ...tracks] : tracks;
+
+        return Array.from(new Map(mergedTracks.map(track => [track.id, track])).values());
+      });
+
+      setHasMore(moreTracksAvailable);
+    } finally {
+      if (generation === searchGeneration.current) {
+        isSearchingRef.current = false;
+        setIsSearching(false);
+      }
+    }
+  }, [spotifyApi]);
+
+  useEffect(() => {
+    const loadMoreElement = loadMoreRef.current;
+
+    if (!loadMoreElement || !hasMore || isSearching || results === undefined) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(entries => {
+      if (entries[0]?.isIntersecting) {
+        void searchTracks(search, true);
+      }
+    }, {
+      rootMargin: '400px 0px',
     });
 
-    // until we get no more tracks, we want to show the "more" button
-    setShowMore(tracks.length !== 0);
-    setIsSearching(false);
-  }
+    observer.observe(loadMoreElement);
+
+    return () => observer.disconnect();
+  }, [hasMore, isSearching, results, search, searchTracks]);
+
+  useEffect(() => () => clearTimeout(searchDebounce.current), []);
 
   function resetAudioFeatures() {
     setAudioFeatures(prevAudioFeatures => {
@@ -186,6 +227,12 @@ export default function App() {
   }, [previewTrack]);
 
   async function getRecommendations() {
+    // Prevent an in-flight search page from replacing these recommendations.
+    searchGeneration.current += 1;
+    isSearchingRef.current = true;
+    setHasMore(false);
+    setIsSearching(true);
+
     // ensure audio features are initialized (if arriving via direct link)
     const newAudioFeatures: AudioFeature[] = [];
 
@@ -272,7 +319,9 @@ export default function App() {
     newRecommendations.unshift({ ...track });
 
     setResults(newRecommendations);
-    setShowMore(false);
+    setHasMore(false);
+    isSearchingRef.current = false;
+    setIsSearching(false);
   }
 
   async function saveTrack(track: EnrichedTrack) {
@@ -319,11 +368,6 @@ export default function App() {
 
     setSavingTrackId(undefined);
   }
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const debounceSearch = useCallback(debounce(async (q: string) => {
-    await searchTracks(q);
-  }, 300), [spotifyApi]);
 
   if (spotifyApi === null) {
     return (
@@ -388,9 +432,13 @@ export default function App() {
                 autoFocus
                 className='w-full rounded-md h-14 bg-neutral-100 dark:bg-neutral-900 text-4xl px-3'
                 onChange={e => {
-                  setSearch(e.target.value);
+                  const q = e.target.value;
+
+                  searchGeneration.current += 1;
+                  setSearch(q);
                   setResults(undefined);
-                  debounceSearch(e.target.value);
+                  clearTimeout(searchDebounce.current);
+                  searchDebounce.current = setTimeout(() => void searchTracks(q), 300);
                 }}
                 placeholder='Search'
                 type='search'
@@ -497,14 +545,13 @@ export default function App() {
                   <TrackComponent track={track} />
                 </div>
               ))}
-              {showMore &&
-                <button
-                  className='px-8 py-2 rounded-full bg-green-500 transition dark:text-black text-xl mt-2 disabled:bg-neutral-500 disabled:opacity-40 enabled:hover:bg-green-300 font-medium'
-                  disabled={isSearching}
-                  onClick={async () => await searchTracks(search, true)}
-                >
-                  More
-                </button>
+              {isSearching &&
+                <div className='w-full' role='status' aria-label='Loading more tracks'>
+                  {Array.from({ length: 3 }, (_, index) => <SkeletonTrack key={`more-skeleton-track-${index}`} />)}
+                </div>
+              }
+              {hasMore &&
+                <div aria-hidden='true' className='h-px w-full' ref={loadMoreRef} />
               }
             </div>
             :
