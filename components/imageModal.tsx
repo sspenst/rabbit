@@ -18,11 +18,11 @@ export default function ImageModal({ isOpen, onClose, src }: ImageModalProps) {
     >
       <DialogBackdrop className='fixed inset-0 bg-black/50' />
       <div className='fixed inset-0 flex w-screen items-center justify-center p-4'>
-        <DialogPanel className='w-full max-w-fit my-8 overflow-hidden text-left align-middle transition-all transform shadow-xl'>
+        <DialogPanel className='w-full max-w-fit my-8 overflow-hidden text-left align-middle transition-all transform shadow-xl rounded-lg'>
           {src &&
             <Image
               alt='image preview'
-              // className='w-12 h-12'
+              className='rounded-lg'
               height={300}
               src={src}
               style={{
