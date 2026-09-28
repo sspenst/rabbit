@@ -8,6 +8,7 @@ interface MainContextInterface {
   setIsHelpModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setSpotifyApi: React.Dispatch<React.SetStateAction<SpotifyApi | null | undefined>>;
   setUser: React.Dispatch<React.SetStateAction<User | undefined>>;
+  signIn: () => void;
   spotifyApi: SpotifyApi | null | undefined;
   user: User | undefined;
 }
@@ -19,6 +20,7 @@ export const MainContext = createContext<MainContextInterface>({
   setIsHelpModalOpen: () => { return; },
   setSpotifyApi: () => { return; },
   setUser: () => { return; },
+  signIn: () => { return; },
   spotifyApi: null,
   user: undefined,
 });

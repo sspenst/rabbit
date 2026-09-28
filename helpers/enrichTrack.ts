@@ -6,6 +6,8 @@ export interface EnrichedTrack extends Track {
   saved: boolean;
 }
 
+export type EnrichedTrackData = Omit<EnrichedTrack, 'preview'>;
+
 function enrichTrack(track: Track, audioFeatures: AudioFeatures | null, saved: boolean) {
   let preview: HTMLAudioElement | null = null;
 
@@ -21,6 +23,24 @@ function enrichTrack(track: Track, audioFeatures: AudioFeatures | null, saved: b
     saved: saved,
     ...track,
   } as EnrichedTrack;
+}
+
+export function hydrateTracks(tracks: EnrichedTrackData[]): EnrichedTrack[] {
+  return tracks.map(track => enrichTrack(track, track.audioFeatures, track.saved));
+}
+
+export async function enrichPublicTracks(tracks: Track[] | null | undefined, spotifyApi: SpotifyApi): Promise<EnrichedTrackData[]> {
+  if (!tracks?.length) {
+    return [];
+  }
+
+  const audioFeatures = await spotifyApi.tracks.audioFeatures(tracks.map(track => track.id)) as (AudioFeatures | null)[];
+
+  return tracks.map((track, index) => ({
+    ...track,
+    audioFeatures: audioFeatures[index] ?? null,
+    saved: false,
+  }));
 }
 
 export async function enrichTracks(tracks: Track[] | null | undefined, spotifyApi: SpotifyApi | null | undefined): Promise<EnrichedTrack[]> {

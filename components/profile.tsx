@@ -56,7 +56,7 @@ export default function Profile() {
         modal={false}
         transition
       >
-        {router.pathname === '/app' &&
+        {router.pathname === '/' &&
           <>
             <MenuItem>
               <button

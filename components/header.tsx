@@ -7,7 +7,7 @@ import Rabbit from './icons/rabbit';
 import Profile from './profile';
 
 export default function Header() {
-  const { mounted } = useContext(MainContext);
+  const { mounted, signIn, spotifyApi } = useContext(MainContext);
   const { resolvedTheme } = useTheme();
 
   return (
@@ -60,6 +60,14 @@ export default function Header() {
           </>
           }
         </a>
+        {spotifyApi === null &&
+          <button
+            className='rounded-full bg-green-500 px-4 py-1.5 font-medium text-black transition hover:bg-green-300'
+            onClick={signIn}
+          >
+            Sign in
+          </button>
+        }
         <Profile />
       </div>
     </header>

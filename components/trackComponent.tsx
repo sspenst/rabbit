@@ -3,6 +3,7 @@ import Image from 'next/image';
 import React, { useContext, useState } from 'react';
 import { Tooltip } from 'react-tooltip';
 import { AppContext } from '../contexts/appContext';
+import { MainContext } from '../contexts/mainContext';
 import { pauseTrack, playTrack } from '../helpers/audioControls';
 import { EnrichedTrack } from '../helpers/enrichTrack';
 import ImageModal from './imageModal';
@@ -122,11 +123,12 @@ interface TrackComponentProps {
 
 export default function TrackComponent({ track }: TrackComponentProps) {
   const { saveTrack, savingTrackId } = useContext(AppContext);
+  const { spotifyApi } = useContext(MainContext);
 
   return (
     <div className='flex gap-4 grow items-center truncate'>
       <TrackInfo track={track} />
-      <button
+      {spotifyApi && <button
         aria-label={track.saved ? 'remove from liked songs' : 'add to liked songs'}
         className={classNames('disabled:text-green-600', track.saved ?
           'text-green-500 hover:text-green-300' :
@@ -145,7 +147,7 @@ export default function TrackComponent({ track }: TrackComponentProps) {
             <path d='M101.244 67.5C101.244 68.9918 100.651 70.4226 99.5966 71.4775C98.5417 72.5324 97.111 73.125 95.6191 73.125H73.1191V95.625C73.1191 97.1168 72.5265 98.5476 71.4716 99.6025C70.4167 100.657 68.986 101.25 67.4941 101.25C66.0023 101.25 64.5715 100.657 63.5167 99.6025C62.4618 98.5476 61.8691 97.1168 61.8691 95.625V73.125H39.3691C37.8773 73.125 36.4466 72.5324 35.3917 71.4775C34.3368 70.4226 33.7441 68.9918 33.7441 67.5C33.7441 66.0082 34.3368 64.5774 35.3917 63.5225C36.4466 62.4676 37.8773 61.875 39.3691 61.875H61.8691V39.375C61.8691 37.8832 62.4618 36.4524 63.5167 35.3975C64.5715 34.3426 66.0023 33.75 67.4941 33.75C68.986 33.75 70.4167 34.3426 71.4716 35.3975C72.5265 36.4524 73.1191 37.8832 73.1191 39.375V61.875H95.6191C97.111 61.875 98.5417 62.4676 99.5966 63.5225C100.651 64.5774 101.244 66.0082 101.244 67.5Z' fill='currentColor' />
           </svg>
         }
-      </button>
+      </button>}
       <a
         aria-label='listen on Spotify'
         className='font-bold text-lg w-fit hover:underline text-neutral-500 hover:text-black dark:hover:text-white'

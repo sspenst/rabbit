@@ -11,7 +11,8 @@ The app focuses on fast exploration:
 - Save or remove tracks from Spotify Liked Songs.
 
 ## Current Capabilities
-- Spotify OAuth login on `/app` (scopes: `user-library-read`, `user-library-modify`).
+- Anonymous Spotify catalog search and recommendations on `/`.
+- Spotify OAuth login on `/` for Liked Songs features (scopes: `user-library-read`, `user-library-modify`).
 - Search Spotify tracks with pagination (`More` button).
 - Default browse mode that loads the user’s saved tracks when search is empty.
 - Track enrichment pipeline that fetches:
@@ -24,7 +25,7 @@ The app focuses on fast exploration:
 - Recommendation flow driven by seed track + audio-feature constraints:
   - Uses seed track plus up to 4 seed artists.
   - Maps controls to Spotify recommendation params (`min_*`, `max_*`, `target_*`).
-  - Supports deep links via URL query params (e.g. `/app?id=...&tempo=up`).
+- Supports deep links via URL query params (e.g. `/?id=...&tempo=up`).
 - Liked Songs management:
   - Add/remove track from Spotify library.
   - UI state updates immediately after API response.
@@ -40,7 +41,7 @@ The app focuses on fast exploration:
   - Header with help modal, Spotify shortcut, and user profile menu.
   - Footer with legal pages (End User Agreement, Privacy Policy).
   - Skeleton loaders while fetching.
-  - Landing page with themed demo media and CTA.
+  - Signed-out state with catalog search and a Spotify sign-in CTA.
 - Observability + production readiness:
   - Sentry configured for client, server, and edge runtimes.
   - Sentry capture in custom `_error` page.
