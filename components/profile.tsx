@@ -1,5 +1,5 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
-import { CircleHelp, EllipsisVertical, FileText, LogOut, Monitor, Moon, Shield, Sun, User } from 'lucide-react';
+import { CircleHelp, EllipsisVertical, FileText, LogOut, Monitor, Moon, Shield, Sun } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -8,12 +8,20 @@ import React, { useContext } from 'react';
 import { MainContext } from '../contexts/mainContext';
 import SS from './icons/ss';
 
+function ExternalLinkIcon() {
+  return (
+    <svg aria-hidden='true' className='w-4 h-4' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' xmlns='http://www.w3.org/2000/svg'>
+      <path strokeLinecap='round' strokeLinejoin='round' d='M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25' />
+    </svg>
+  );
+}
+
 export default function Profile() {
   const { logOut, setIsHelpModalOpen, user } = useContext(MainContext);
   const router = useRouter();
   const { setTheme, theme } = useTheme();
   const avatarSize = 36;
-  const menuItemClassName = 'grid grid-cols-[1rem_minmax(0,1fr)_auto] items-center gap-3 w-full min-w-full box-border text-left truncate py-2 px-3 rounded-lg hover:bg-neutral-300 data-focus:bg-neutral-300 dark:hover:bg-neutral-700 dark:data-focus:bg-neutral-700 transition outline-hidden';
+  const menuItemClassName = 'grid grid-cols-[1rem_minmax(0,1fr)_auto] items-center gap-3 w-full min-w-full box-border text-left truncate py-2 px-3 rounded-lg hover:bg-neutral-300 data-focus:bg-neutral-300 dark:hover:bg-neutral-700 dark:data-focus:bg-neutral-700 outline-hidden';
   const themeOptions = [
     { icon: Monitor, label: 'System', value: 'system' },
     { icon: Sun, label: 'Light', value: 'light' },
@@ -24,7 +32,7 @@ export default function Profile() {
     <Menu>
       <MenuButton
         aria-label={user ? 'Open account menu' : 'Open menu'}
-        className='group inline-flex size-10 shrink-0 items-center justify-center rounded-full font-medium focus-visible:outline-2 focus-visible:outline-offset-2'
+        className='group inline-flex size-10 shrink-0 items-center justify-center rounded-full font-medium focus:outline-none'
       >
         {user ?
           <Image
@@ -48,32 +56,19 @@ export default function Profile() {
         modal={false}
         transition
       >
-        {user &&
-          <MenuItem>
-            <a
-              className={menuItemClassName}
-              href={user.external_urls.spotify}
-              rel='noreferrer'
-              target='_blank'
-            >
-              <User className='w-4 h-4' />
-              <span>Profile</span>
-            </a>
-          </MenuItem>
-        }
         {router.pathname === '/app' &&
-          <MenuItem>
-            <button
-              className={menuItemClassName}
-              onClick={() => setIsHelpModalOpen(true)}
-            >
-              <CircleHelp className='w-4 h-4' />
-              <span>Help</span>
-            </button>
-          </MenuItem>
-        }
-        {(user !== undefined || router.pathname === '/app') &&
-          <div className='h-px bg-neutral-200 dark:bg-neutral-800 my-1' />
+          <>
+            <MenuItem>
+              <button
+                className={menuItemClassName}
+                onClick={() => setIsHelpModalOpen(true)}
+              >
+                <CircleHelp className='w-4 h-4' />
+                <span>Help</span>
+              </button>
+            </MenuItem>
+            <div className='h-px bg-neutral-200 dark:bg-neutral-800 my-1' />
+          </>
         }
         {themeOptions.map(({ icon: Icon, label, value }) => (
           <MenuItem key={value}>
@@ -89,6 +84,40 @@ export default function Profile() {
           </MenuItem>
         ))}
         <div className='h-px bg-neutral-200 dark:bg-neutral-800 my-1' />
+        {user &&
+          <MenuItem>
+            <a
+              className={menuItemClassName}
+              href={user.external_urls.spotify}
+              rel='noreferrer'
+              target='_blank'
+            >
+              <Image
+                alt=''
+                className='w-4 h-4 dark:invert'
+                height={16}
+                src='/Spotify_Icon_RGB_Black.png'
+                width={16}
+              />
+              <span>Profile</span>
+              <ExternalLinkIcon />
+            </a>
+          </MenuItem>
+        }
+        <MenuItem>
+          <a
+            className={menuItemClassName}
+            href='https://sspenst.com'
+            rel='noreferrer'
+            target='_blank'
+          >
+            <span className='w-4 h-4 text-black dark:text-white'>
+              <SS />
+            </span>
+            <span>Spencer Spenst</span>
+            <ExternalLinkIcon />
+          </a>
+        </MenuItem>
         <MenuItem>
           <Link className={menuItemClassName} href='/privacy-policy'>
             <Shield className='w-4 h-4' />
@@ -100,19 +129,6 @@ export default function Profile() {
             <FileText className='w-4 h-4' />
             <span>End User Agreement</span>
           </Link>
-        </MenuItem>
-        <MenuItem>
-          <a
-            className={menuItemClassName}
-            href='https://sspenst.com'
-            rel='noreferrer'
-            target='_blank'
-          >
-            <span className='w-4 h-4 text-black dark:text-white'>
-              <SS />
-            </span>
-            <span>© 2026</span>
-          </a>
         </MenuItem>
         {user && <>
           <div className='h-px bg-neutral-200 dark:bg-neutral-800 my-1' />
