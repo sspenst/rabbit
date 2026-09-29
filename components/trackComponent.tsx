@@ -121,13 +121,12 @@ interface TrackComponentProps {
   track: EnrichedTrack;
 }
 
-export default function TrackComponent({ track }: TrackComponentProps) {
+export function TrackActions({ track }: TrackComponentProps) {
   const { saveTrack, savingTrackId } = useContext(AppContext);
   const { spotifyApi } = useContext(MainContext);
 
   return (
-    <div className='flex gap-4 grow items-center truncate'>
-      <TrackInfo track={track} />
+    <>
       {spotifyApi && <button
         aria-label={track.saved ? 'remove from liked songs' : 'add to liked songs'}
         className={classNames('disabled:text-green-600', track.saved ?
@@ -159,6 +158,15 @@ export default function TrackComponent({ track }: TrackComponentProps) {
           <path strokeLinecap='round' strokeLinejoin='round' d='M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25' />
         </svg>
       </a>
+    </>
+  );
+}
+
+export default function TrackComponent({ track }: TrackComponentProps) {
+  return (
+    <div className='flex gap-4 grow items-center truncate'>
+      <TrackInfo track={track} />
+      <TrackActions track={track} />
     </div>
   );
 }

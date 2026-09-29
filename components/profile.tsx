@@ -1,16 +1,14 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
-import { CircleHelp, EllipsisVertical, FileText, LogOut, Monitor, Moon, Shield, Sun } from 'lucide-react';
+import { EllipsisVertical, FileText, LogOut, Monitor, Moon, Shield, Sun } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 import { useTheme } from 'next-themes';
 import React, { useContext } from 'react';
 import { MainContext } from '../contexts/mainContext';
 import SS from './icons/ss';
 
 export default function Profile() {
-  const { logOut, setIsHelpModalOpen, user } = useContext(MainContext);
-  const router = useRouter();
+  const { logOut, user } = useContext(MainContext);
   const { setTheme, theme } = useTheme();
   const avatarSize = 36;
   const menuItemClassName = 'grid grid-cols-[1rem_minmax(0,1fr)_auto] items-center gap-3 w-full min-w-full box-border text-left truncate py-2 px-3 rounded-lg hover:bg-neutral-300 data-focus:bg-neutral-300 dark:hover:bg-neutral-700 dark:data-focus:bg-neutral-700 outline-hidden';
@@ -48,17 +46,6 @@ export default function Profile() {
         modal={false}
         transition
       >
-        {router.pathname === '/' &&
-          <MenuItem>
-            <button
-              className={menuItemClassName}
-              onClick={() => setIsHelpModalOpen(true)}
-            >
-              <CircleHelp className='w-4 h-4' />
-              <span>Help</span>
-            </button>
-          </MenuItem>
-        }
         {user &&
           <MenuItem>
             <a
@@ -87,7 +74,7 @@ export default function Profile() {
             </button>
           </MenuItem>
         }
-        {(router.pathname === '/' || user) &&
+        {user &&
           <div className='h-px bg-neutral-200 dark:bg-neutral-800 my-1' />
         }
         {themeOptions.map(({ icon: Icon, label, value }) => (

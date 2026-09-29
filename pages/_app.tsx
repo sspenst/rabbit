@@ -13,7 +13,6 @@ const spotifyClientId = 'a16d23f0a5e34c73b8719bd006b90464';
 const spotifyScopes = ['user-library-read', 'user-library-modify'];
 
 export default function App({ Component, pageProps }: AppProps) {
-  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const spotifyAuthApi = useRef<SpotifyApi | undefined>(undefined);
@@ -88,10 +87,8 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <ThemeProvider attribute='class' enableSystem>
       <MainContext.Provider value={{
-        isHelpModalOpen: isHelpModalOpen,
         logOut: logOut,
         mounted: mounted,
-        setIsHelpModalOpen: setIsHelpModalOpen,
         setSpotifyApi: setSpotifyApi,
         setUser: setUser,
         signIn: signIn,
@@ -112,8 +109,8 @@ export default function App({ Component, pageProps }: AppProps) {
             paddingRight: '20px',
           },
         }} />
-        <Header />
-        <main style={{ minHeight: router.pathname === '/' ? 'calc(100svh - 48px)' : undefined }}>
+        {router.pathname !== '/' && <Header />}
+        <main>
           <Component {...pageProps} />
         </main>
       </MainContext.Provider>
