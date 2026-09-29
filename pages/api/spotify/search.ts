@@ -35,7 +35,7 @@ export default async function handler(
 
   try {
     const spotifyApi = getSpotifyServerApi();
-    const results = await spotifyApi.search(query, ['track'], undefined, 50, offset);
+    const results = await spotifyApi.search(query, ['track'], undefined, 10, offset);
     const tracks = await enrichPublicTracks(results.tracks.items as Track[], spotifyApi);
 
     response.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');

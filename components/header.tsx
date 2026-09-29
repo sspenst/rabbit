@@ -34,7 +34,7 @@ export default function Header({
 
   return (
     <header className='sticky top-0 z-30 bg-white dark:bg-black'>
-      <div className='mx-4 flex flex-wrap items-center justify-between md:grid md:min-h-14 md:grid-cols-[15.5rem_minmax(0,1fr)]'>
+      <div className='mx-4 flex flex-wrap items-center justify-between md:grid md:min-h-14 md:grid-cols-[15rem_minmax(0,1fr)]'>
         <div className='flex h-14 items-center gap-2'>
           {hasContext &&
             <button aria-label='Open sources' className='rounded-lg p-1.5 md:hidden' onClick={onOpenNavigation}>
@@ -60,9 +60,9 @@ export default function Header({
         </div>
 
         {hasContext &&
-          <div className='order-last flex h-10 w-full items-center justify-center md:order-none md:col-start-2 md:row-start-1 md:mx-auto md:w-[min(28rem,calc(100%-21rem))]'>
+          <div className='order-last flex h-10 w-full items-center justify-center md:order-none md:col-start-2 md:row-start-1 md:ml-4 md:w-[calc(100%-12rem)] md:justify-start'>
             {searchOpen ?
-              <div className='flex h-9 w-full items-center gap-2 rounded-lg bg-neutral-100 px-2 dark:bg-neutral-900'>
+              <div className='flex h-9 w-full max-w-md items-center gap-2 rounded-lg bg-neutral-100 px-2 dark:bg-neutral-900'>
                 <button aria-label='Back to previous view' className='shrink-0 rounded p-1' onClick={onCloseSearch}>
                   <ArrowLeft size={18} />
                 </button>

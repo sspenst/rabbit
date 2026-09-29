@@ -16,9 +16,9 @@ import { MainContext } from '../contexts/mainContext';
 import { pauseTrack, playTrack } from '../helpers/audioControls';
 import { EnrichedTrack, EnrichedTrackData, enrichTracks, hydrateRecommendations, hydrateTracks } from '../helpers/enrichTrack';
 
-// 50 is the highest limit that works for all endpoints. Recommendations can go
-// up to 100, but then liked-song lookups would need to be batched.
-const searchLimit = 50;
+// Development-mode Spotify apps can request at most 10 search results per page.
+const searchLimit = 10;
+const savedTracksLimit = 50;
 
 interface DiscoverySession { albumArt: string; key: string; title: string; tracks: EnrichedTrack[] }
 interface ViewState { key: string; kind: 'discovery' | 'liked' | 'search'; title: string }
@@ -106,7 +106,7 @@ export default function Home() {
           return;
         }
 
-        const page = await spotifyApi.currentUser.tracks.savedTracks(searchLimit, offset);
+        const page = await spotifyApi.currentUser.tracks.savedTracks(savedTracksLimit, offset);
         const rawTracks = page.items.map(item => item.track) as Track[];
 
         tracks = await enrichTracks(rawTracks, spotifyApi);
@@ -140,7 +140,7 @@ export default function Home() {
         return;
       }
 
-      searchOffset.current = offset + searchLimit;
+      searchOffset.current = offset + (q ? searchLimit : savedTracksLimit);
 
       setResults(prevTracks => {
         const mergedTracks = append && prevTracks ? [...prevTracks, ...tracks] : tracks;
@@ -153,7 +153,11 @@ export default function Home() {
       if (generation === searchGeneration.current) {
         setResults([]);
         setHasMore(false);
-        setSearchError(error instanceof Error ? error.message : 'Spotify search is temporarily unavailable.');
+        const message = error instanceof Error ? error.message : '';
+
+        setSearchError(message.includes('Unrecognised response code: 502') ?
+          'Spotify search is temporarily unavailable. Please try again later.' :
+          message || 'Spotify search is temporarily unavailable.');
       }
     } finally {
       if (generation === searchGeneration.current) {
@@ -641,7 +645,7 @@ export default function Home() {
 
         <div className='min-w-0 flex-1 pb-36 md:pb-32'>
           <h1 className='sr-only'>{view.title}</h1>
-          <div className='mx-auto max-w-3xl px-2 py-2'>
+          <div className='px-2 py-2 md:mx-4 md:px-0'>
             {results === undefined ? <div role='status' aria-label='Loading tracks'>{Array.from({ length: 12 }, (_, index) => <SkeletonTrack key={index} />)}</div> :
               searchError ? <p className='px-3 py-8 text-red-500'>{searchError}</p> :
                 results.length ? <>
