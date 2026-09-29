@@ -356,8 +356,14 @@ export default function Home() {
       return;
     }
 
+    let cancelled = false;
+
     if (spotifyApi && user === undefined) {
-      void spotifyApi.currentUser.profile().then(user => setUser(user));
+      void spotifyApi.currentUser.profile().then(profile => {
+        if (!cancelled) {
+          setUser(profile);
+        }
+      });
     }
 
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -371,6 +377,10 @@ export default function Home() {
       setPreviewTrack(null);
       void searchTracks();
     }
+
+    return () => {
+      cancelled = true;
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router, spotifyApi]);
 

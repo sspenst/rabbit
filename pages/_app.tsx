@@ -17,15 +17,18 @@ export default function App({ Component, pageProps }: AppProps) {
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const spotifyAuthApi = useRef<SpotifyApi | undefined>(undefined);
+  const authGeneration = useRef(0);
   const [spotifyApi, setSpotifyApi] = useState<SpotifyApi | null>();
   const [user, setUser] = useState<User>();
 
   function logOut() {
-    router.push('/').then(() => {
-      spotifyAuthApi.current?.logOut();
-      setSpotifyApi(null);
-      setUser(undefined);
-    });
+    // Clear credentials before navigating, since route changes restore a saved session.
+    authGeneration.current += 1;
+    spotifyAuthApi.current?.logOut();
+    sessionStorage.removeItem('rabbit:sign-in-return');
+    setSpotifyApi(null);
+    setUser(undefined);
+    void router.replace('/', undefined, { shallow: true });
   }
 
   function signIn() {
@@ -47,6 +50,7 @@ export default function App({ Component, pageProps }: AppProps) {
     const api = SpotifyApi.withUserAuthorization(spotifyClientId, redirectUri, spotifyScopes);
 
     spotifyAuthApi.current = api;
+    const generation = ++authGeneration.current;
 
     async function restoreSession() {
       try {
@@ -54,6 +58,10 @@ export default function App({ Component, pageProps }: AppProps) {
         const accessToken = isAuthorizationCallback ?
           (await api.authenticate()).accessToken :
           await api.getAccessToken();
+
+        if (generation !== authGeneration.current) {
+          return;
+        }
 
         setSpotifyApi(accessToken ? api : null);
 
@@ -67,8 +75,10 @@ export default function App({ Component, pageProps }: AppProps) {
           }
         }
       } catch (error) {
-        console.error('Spotify authentication failed', error);
-        setSpotifyApi(null);
+        if (generation === authGeneration.current) {
+          console.error('Spotify authentication failed', error);
+          setSpotifyApi(null);
+        }
       }
     }
 
