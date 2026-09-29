@@ -8,14 +8,6 @@ import React, { useContext } from 'react';
 import { MainContext } from '../contexts/mainContext';
 import SS from './icons/ss';
 
-function ExternalLinkIcon() {
-  return (
-    <svg aria-hidden='true' className='w-4 h-4' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' xmlns='http://www.w3.org/2000/svg'>
-      <path strokeLinecap='round' strokeLinejoin='round' d='M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25' />
-    </svg>
-  );
-}
-
 export default function Profile() {
   const { logOut, setIsHelpModalOpen, user } = useContext(MainContext);
   const router = useRouter();
@@ -57,18 +49,46 @@ export default function Profile() {
         transition
       >
         {router.pathname === '/' &&
-          <>
-            <MenuItem>
-              <button
-                className={menuItemClassName}
-                onClick={() => setIsHelpModalOpen(true)}
-              >
-                <CircleHelp className='w-4 h-4' />
-                <span>Help</span>
-              </button>
-            </MenuItem>
-            <div className='h-px bg-neutral-200 dark:bg-neutral-800 my-1' />
-          </>
+          <MenuItem>
+            <button
+              className={menuItemClassName}
+              onClick={() => setIsHelpModalOpen(true)}
+            >
+              <CircleHelp className='w-4 h-4' />
+              <span>Help</span>
+            </button>
+          </MenuItem>
+        }
+        {user &&
+          <MenuItem>
+            <a
+              className={menuItemClassName}
+              href={user.external_urls.spotify}
+            >
+              <Image
+                alt=''
+                className='w-4 h-4 dark:invert'
+                height={16}
+                src='/Spotify_Icon_RGB_Black.png'
+                width={16}
+              />
+              <span>Profile</span>
+            </a>
+          </MenuItem>
+        }
+        {user &&
+          <MenuItem>
+            <button
+              className={menuItemClassName}
+              onClick={logOut}
+            >
+              <LogOut className='w-4 h-4' />
+              <span>Logout</span>
+            </button>
+          </MenuItem>
+        }
+        {(router.pathname === '/' || user) &&
+          <div className='h-px bg-neutral-200 dark:bg-neutral-800 my-1' />
         }
         {themeOptions.map(({ icon: Icon, label, value }) => (
           <MenuItem key={value}>
@@ -84,38 +104,15 @@ export default function Profile() {
           </MenuItem>
         ))}
         <div className='h-px bg-neutral-200 dark:bg-neutral-800 my-1' />
-        {user &&
-          <MenuItem>
-            <a
-              className={menuItemClassName}
-              href={user.external_urls.spotify}
-              rel='noreferrer'
-              target='_blank'
-            >
-              <Image
-                alt=''
-                className='w-4 h-4 dark:invert'
-                height={16}
-                src='/Spotify_Icon_RGB_Black.png'
-                width={16}
-              />
-              <span>Profile</span>
-              <ExternalLinkIcon />
-            </a>
-          </MenuItem>
-        }
         <MenuItem>
           <a
             className={menuItemClassName}
             href='https://sspenst.com'
-            rel='noreferrer'
-            target='_blank'
           >
             <span className='w-4 h-4 text-black dark:text-white'>
               <SS />
             </span>
             <span>Spencer Spenst</span>
-            <ExternalLinkIcon />
           </a>
         </MenuItem>
         <MenuItem>
@@ -130,18 +127,6 @@ export default function Profile() {
             <span>End User Agreement</span>
           </Link>
         </MenuItem>
-        {user && <>
-          <div className='h-px bg-neutral-200 dark:bg-neutral-800 my-1' />
-          <MenuItem>
-            <button
-              className={menuItemClassName}
-              onClick={logOut}
-            >
-              <LogOut className='w-4 h-4' />
-              <span>Logout</span>
-            </button>
-          </MenuItem>
-        </>}
       </MenuItems>
     </Menu>
   );
