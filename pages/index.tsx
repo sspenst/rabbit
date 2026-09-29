@@ -1,13 +1,12 @@
 import { AudioFeatures, RecommendationsRequest, Track } from '@sspenst/spotify-web-api';
-import { ChevronDown, ChevronUp, Heart, Pause, Play, Search, X } from 'lucide-react';
+import { ChevronDown, ChevronUp, Heart, Info, Pause, Play, Search, X } from 'lucide-react';
 import Head from 'next/head';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { AudioFeature, AudioFeatureState } from '../components/audioFeature';
+import { AudioFeature, audioFeatureDescriptions, AudioFeatureState } from '../components/audioFeature';
 import Header from '../components/header';
-import HelpModal from '../components/helpModal';
 import ImageModal from '../components/imageModal';
 import SkeletonTrack from '../components/skeletonTrack';
 import TrackComponent, { TrackActions } from '../components/trackComponent';
@@ -50,7 +49,7 @@ export default function Home() {
     { property: 'valence', state: AudioFeatureState.NONE },
   ]);
   const [isSearching, setIsSearching] = useState(true);
-  const { isHelpModalOpen, setIsHelpModalOpen, setUser, signIn, spotifyApi, user } = useContext(MainContext);
+  const { setUser, signIn, spotifyApi, user } = useContext(MainContext);
   const [previewTrack, setPreviewTrack] = useState<EnrichedTrack | null>();
   const [results, setResults] = useState<EnrichedTrack[]>();
   const [view, setView] = useState<ViewState>({ key: '', kind: 'liked', title: 'Liked Songs' });
@@ -63,6 +62,7 @@ export default function Home() {
   const playerRef = useRef(previewTrack);
   const [navigationOpen, setNavigationOpen] = useState(false);
   const [playerExpanded, setPlayerExpanded] = useState(false);
+  const [showFeatureDescriptions, setShowFeatureDescriptions] = useState(false);
   const [playerImageOpen, setPlayerImageOpen] = useState(false);
   const router = useRouter();
   const [savingTrackId, setSavingTrackId] = useState<string>();
@@ -667,10 +667,18 @@ export default function Home() {
       </div>
 
       {playerExpanded && <button aria-label='Close player controls' className='fixed inset-0 z-40 bg-black/50 md:hidden' onClick={() => setPlayerExpanded(false)} />}
-      <section aria-label='Active track player' className={`fixed inset-x-0 bottom-0 z-50 border-t border-neutral-200 bg-white shadow-[0_-12px_35px_rgba(0,0,0,0.08)] dark:border-neutral-800 dark:bg-neutral-950 ${playerExpanded ? 'rounded-t-2xl md:rounded-none' : ''}`}>
-        {playerExpanded && <div className='mx-auto max-w-6xl border-b border-neutral-200 px-4 pb-5 pt-5 dark:border-neutral-800 sm:px-6'>
+      <section aria-label='Active track player' className={`fixed inset-x-0 bottom-0 z-50 flex max-h-svh flex-col border-t border-neutral-200 bg-white shadow-[0_-12px_35px_rgba(0,0,0,0.08)] dark:border-neutral-800 dark:bg-neutral-950 ${playerExpanded ? 'rounded-t-2xl md:rounded-none' : ''}`}>
+        {playerExpanded && <div className='mx-auto min-h-0 w-full max-w-6xl overflow-y-auto border-b border-neutral-200 px-4 pb-5 pt-5 dark:border-neutral-800 sm:px-6'>
           <div className='mb-4 flex items-center justify-between'>
-            <h2 className='font-semibold'>Audio features</h2>
+            <div className='flex items-center gap-1.5'>
+              <h2 className='font-semibold'>Audio features</h2>
+              <button
+                aria-expanded={showFeatureDescriptions}
+                aria-label={showFeatureDescriptions ? 'Hide audio feature descriptions' : 'Show audio feature descriptions'}
+                className='rounded-full p-1 text-neutral-500 hover:bg-neutral-100 hover:text-black dark:hover:bg-neutral-800 dark:hover:text-white'
+                onClick={() => setShowFeatureDescriptions(!showFeatureDescriptions)}
+              ><Info size={16} /></button>
+            </div>
             <button aria-label='Collapse feature controls' className='rounded-lg p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800' onClick={() => setPlayerExpanded(false)}><ChevronDown size={20} /></button>
           </div>
           {previewTrack ? <div className='grid grid-cols-2 gap-x-5 gap-y-3 sm:grid-cols-3 lg:grid-cols-6'>
@@ -695,9 +703,15 @@ export default function Home() {
                 </div>
               </div>
             ))}
-          </div> : <p className='text-sm text-neutral-500'>Choose a track to tune its sound.</p>}
+          </div> : null}
+          {showFeatureDescriptions && <dl className='mt-5 grid gap-x-6 gap-y-3 border-t border-neutral-200 pt-4 text-sm dark:border-neutral-800 sm:grid-cols-2 lg:grid-cols-3'>
+            {audioFeatures.map(feature => <div key={feature.property}>
+              <dt className='font-medium capitalize'>{feature.property}</dt>
+              <dd className='text-neutral-500 dark:text-neutral-400'>{audioFeatureDescriptions[feature.property]}</dd>
+            </div>)}
+          </dl>}
         </div>}
-        <div className='mx-auto grid h-17 max-w-6xl grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-3 sm:h-18 sm:gap-4 sm:px-6'>
+        <div className='mx-auto grid h-17 w-full max-w-6xl shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-3 sm:h-18 sm:gap-4 sm:px-6'>
           <div className='flex min-w-0 max-w-96 items-center gap-2 sm:gap-3'>
             {previewTrack ? <>
               <button aria-label={`View album art for ${previewTrack.name}`} className='shrink-0 rounded-md' onClick={() => setPlayerImageOpen(true)}>
@@ -727,7 +741,6 @@ export default function Home() {
         </div>
       </section>
       <ImageModal isOpen={playerImageOpen && Boolean(previewTrack)} onClose={() => setPlayerImageOpen(false)} src={playerArt} />
-      <HelpModal audioFeatures={audioFeatures} isOpen={isHelpModalOpen} onClose={() => setIsHelpModalOpen(false)} track={previewTrack ?? results?.at(0)} />
     </AppContext.Provider>
   );
 }

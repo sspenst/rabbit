@@ -60,7 +60,7 @@ export default function Header({
         </div>
 
         {hasContext &&
-          <div className='order-last flex h-10 w-full items-center justify-center md:order-none md:col-start-2 md:row-start-1 md:ml-4 md:w-[calc(100%-12rem)] md:justify-start'>
+          <div className='order-last flex h-10 w-full items-center justify-center md:order-0 md:col-start-2 md:row-start-1 md:ml-4 md:w-[calc(100%-12rem)] md:justify-start'>
             {searchOpen ?
               <div className='flex h-9 w-full max-w-md items-center gap-2 rounded-lg bg-neutral-100 px-2 dark:bg-neutral-900'>
                 <button aria-label='Back to previous view' className='shrink-0 rounded p-1' onClick={onCloseSearch}>
