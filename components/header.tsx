@@ -1,5 +1,7 @@
+import { Search } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { useTheme } from 'next-themes';
 import React, { useContext } from 'react';
 import { MainContext } from '../contexts/mainContext';
@@ -7,12 +9,13 @@ import Rabbit from './icons/rabbit';
 import Profile from './profile';
 
 export default function Header() {
-  const { mounted, signIn, spotifyApi } = useContext(MainContext);
+  const { mounted, search, setSearch, signIn, spotifyApi } = useContext(MainContext);
+  const router = useRouter();
   const { resolvedTheme } = useTheme();
 
   return (
-    <header className='flex justify-between mx-4'>
-      <div className='flex items-center mt-2 gap-3 h-10'>
+    <header className='mx-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-2 sm:mx-6'>
+      <div className='flex h-10 items-center gap-3'>
         <Link
           aria-label='Rabbit Home'
           className='flex items-center gap-3 hover:opacity-50 transition-opacity'
@@ -32,7 +35,20 @@ export default function Header() {
           </span>
         </Link>
       </div>
-      <div className='flex items-center mt-2 gap-4 h-10'>
+      {router.pathname === '/' &&
+        <div className='order-last flex w-full items-center gap-2 rounded-lg bg-neutral-100 px-3 dark:bg-neutral-900 md:order-none md:mx-auto md:w-auto md:max-w-md md:flex-1'>
+          <Search aria-hidden='true' className='shrink-0 text-neutral-500' size={17} />
+          <input
+            aria-label='Search Spotify tracks'
+            className='h-9 min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-neutral-500'
+            onChange={event => setSearch(event.target.value)}
+            placeholder='Search Spotify'
+            type='search'
+            value={search}
+          />
+        </div>
+      }
+      <div className='flex h-10 items-center gap-4'>
         <a
           aria-label='Spotify Home'
           className='flex items-center justify-center w-7 sm:w-22.5 h-7'

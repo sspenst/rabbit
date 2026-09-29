@@ -14,6 +14,7 @@ const spotifyScopes = ['user-library-read', 'user-library-modify'];
 
 export default function App({ Component, pageProps }: AppProps) {
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
+  const [search, setSearch] = useState('');
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const spotifyAuthApi = useRef<SpotifyApi | undefined>(undefined);
@@ -91,7 +92,9 @@ export default function App({ Component, pageProps }: AppProps) {
         isHelpModalOpen: isHelpModalOpen,
         logOut: logOut,
         mounted: mounted,
+        search: search,
         setIsHelpModalOpen: setIsHelpModalOpen,
+        setSearch: setSearch,
         setSpotifyApi: setSpotifyApi,
         setUser: setUser,
         signIn: signIn,

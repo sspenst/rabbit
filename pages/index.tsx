@@ -1,9 +1,11 @@
 import { AudioFeatures, RecommendationsRequest, Track } from '@sspenst/spotify-web-api';
+import { ChevronDown, ChevronUp, Heart, Menu, Pause, Play, X } from 'lucide-react';
 import Head from 'next/head';
+import Image from 'next/image';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import AudioFeatureComponent, { AudioFeature, AudioFeatureState } from '../components/audioFeature';
+import { AudioFeature, AudioFeatureState } from '../components/audioFeature';
 import HelpModal from '../components/helpModal';
 import SkeletonTrack from '../components/skeletonTrack';
 import TrackComponent from '../components/trackComponent';
@@ -16,6 +18,18 @@ import { EnrichedTrack, EnrichedTrackData, enrichTracks, hydrateRecommendations,
 // up to 100, but then liked-song lookups would need to be batched.
 const searchLimit = 50;
 
+interface DiscoverySession { albumArt: string; key: string; title: string; tracks: EnrichedTrack[] }
+
+function featureValue(track: EnrichedTrack, property: string) {
+  const value = track.audioFeatures?.[property as keyof AudioFeatures];
+
+  if (typeof value !== 'number') return '—';
+  if (property === 'tempo') return `${Math.round(value)} BPM`;
+  if (property === 'loudness') return `${Math.round(value)} dB`;
+
+  return `${Math.round(value * 100)}%`;
+}
+
 export default function Home() {
   const [audioFeatures, setAudioFeatures] = useState<AudioFeature[]>([
     { property: 'tempo', state: AudioFeatureState.NONE },
@@ -26,12 +40,20 @@ export default function Home() {
     { property: 'valence', state: AudioFeatureState.NONE },
   ]);
   const [isSearching, setIsSearching] = useState(true);
-  const { isHelpModalOpen, setIsHelpModalOpen, setUser, signIn, spotifyApi, user } = useContext(MainContext);
+  const { isHelpModalOpen, search, setIsHelpModalOpen, setSearch, setUser, signIn, spotifyApi, user } = useContext(MainContext);
   const [previewTrack, setPreviewTrack] = useState<EnrichedTrack | null>();
   const [results, setResults] = useState<EnrichedTrack[]>();
+  const [view, setView] = useState({ key: '', kind: 'liked', title: 'Liked Songs' });
+  const [history, setHistory] = useState<DiscoverySession[]>([]);
+  const historyRef = useRef<DiscoverySession[]>([]);
+  const resultsRef = useRef(results);
+  const playerRef = useRef(previewTrack);
+  const [navigationOpen, setNavigationOpen] = useState(false);
+  const [playerExpanded, setPlayerExpanded] = useState(false);
   const router = useRouter();
   const [savingTrackId, setSavingTrackId] = useState<string>();
-  const [search, setSearch] = useState('');
+  const previousSearchRef = useRef(search);
+  const suppressSearchResetRef = useRef(false);
   const [searchError, setSearchError] = useState<string>();
   const [hasMore, setHasMore] = useState(true);
   const isSearchingRef = useRef(false);
@@ -39,6 +61,9 @@ export default function Home() {
   const searchDebounce = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const searchGeneration = useRef(0);
   const searchOffset = useRef(0);
+
+  useEffect(() => { resultsRef.current = results; }, [results]);
+  useEffect(() => { playerRef.current = previewTrack; }, [previewTrack]);
 
   const searchTracks = useCallback(async (q = '', append = false) => {
     if (spotifyApi === undefined || (append && isSearchingRef.current)) {
@@ -128,7 +153,7 @@ export default function Home() {
   useEffect(() => {
     const loadMoreElement = loadMoreRef.current;
 
-    if (!loadMoreElement || !hasMore || isSearching || results === undefined) {
+    if (!loadMoreElement || !hasMore || isSearching || results === undefined || view.kind === 'discovery') {
       return;
     }
 
@@ -143,52 +168,29 @@ export default function Home() {
     observer.observe(loadMoreElement);
 
     return () => observer.disconnect();
-  }, [hasMore, isSearching, results, search, searchTracks]);
+  }, [hasMore, isSearching, results, search, searchTracks, view.kind]);
 
   useEffect(() => () => clearTimeout(searchDebounce.current), []);
 
   function resetAudioFeatures() {
-    setAudioFeatures(prevAudioFeatures => {
-      const newAudioFeatures = [...prevAudioFeatures];
-
-      newAudioFeatures.forEach(f => f.state = AudioFeatureState.NONE);
-
-      return newAudioFeatures;
-    });
+    setAudioFeatures(previous => previous.map(feature => ({ ...feature, state: AudioFeatureState.NONE })));
   }
 
-  // ensure audio is paused when leaving the page
   useEffect(() => {
-    function getRouteId(route: string) {
-      if (!route.includes('?')) {
-        return null;
-      }
+    // A newly selected track starts with neutral directions.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    resetAudioFeatures();
+  }, [previewTrack?.id]);
 
-      const params = new URLSearchParams(route.split('?')[1]);
-
-      return params.get('id');
-    }
-
-    function pausePreviewTrack(route: string) {
-      // if the preview track changes, we must pause the audio
-      if (previewTrack?.preview && getRouteId(route) !== previewTrack.id) {
-        pauseTrack(previewTrack, setPreviewTrack);
-      }
-    }
-
-    router.events.on('routeChangeStart', pausePreviewTrack);
-
-    return () => {
-      router.events.off('routeChangeStart', pausePreviewTrack);
-    };
-  }, [previewTrack, router]);
-
-  // pause/play preview track with P
+  // Space toggles the active preview unless focus is in an interactive control.
   useEffect(() => {
     function pause(event: KeyboardEvent) {
       const { code } = event;
 
-      if (code === 'Space' && previewTrack?.preview) {
+      if (code === 'Space' && previewTrack?.preview &&
+        !(event.target instanceof HTMLInputElement) &&
+        !(event.target instanceof HTMLButtonElement) &&
+        !(event.target instanceof HTMLTextAreaElement)) {
         event.preventDefault();
 
         if (previewTrack.preview.paused) {
@@ -239,9 +241,18 @@ export default function Home() {
       });
     }
 
-    setAudioFeatures(newAudioFeatures);
-
     const id = router.query.id as string;
+    const key = router.asPath;
+    const cached = historyRef.current.find(session => session.key === key);
+
+    if (cached) {
+      setResults(cached.tracks);
+      setView({ key, kind: 'discovery', title: `Recommendations from ${cached.title}` });
+      setIsSearching(false);
+      isSearchingRef.current = false;
+
+      return;
+    }
 
     try {
       if (!spotifyApi) {
@@ -270,19 +281,21 @@ export default function Home() {
         }
 
         // Keep the seed's Audio instance so its playing preview stays owned.
-        const newRecommendations = hydrateRecommendations(body.tracks, previewTrack);
+        const newRecommendations = hydrateRecommendations(body.tracks, playerRef.current);
 
-        setPreviewTrack(newRecommendations[0]);
         setResults(newRecommendations);
+        recordDiscovery(key, newRecommendations[0]?.name ?? 'track', newRecommendations);
 
         return;
       }
 
       let track: EnrichedTrack;
 
-      if (previewTrack?.id !== id) {
-        setPreviewTrack(undefined);
-
+      if (playerRef.current?.id === id) {
+        track = playerRef.current;
+      } else if (resultsRef.current?.some(result => result.id === id)) {
+        track = resultsRef.current.find(result => result.id === id)!;
+      } else {
         const trackById = await spotifyApi.tracks.get(id);
 
         if (!trackById) {
@@ -292,9 +305,6 @@ export default function Home() {
         }
 
         track = (await enrichTracks([trackById], spotifyApi))[0];
-        setPreviewTrack(track);
-      } else {
-        track = previewTrack;
       }
 
       const audioFeatureParams: Record<string, number> = {};
@@ -336,6 +346,7 @@ export default function Home() {
 
       newRecommendations.unshift({ ...track });
       setResults(newRecommendations);
+      recordDiscovery(key, track.name, newRecommendations);
     } catch (error) {
       if (generation === searchGeneration.current) {
         setResults([]);
@@ -348,6 +359,14 @@ export default function Home() {
         setIsSearching(false);
       }
     }
+  }
+
+  function recordDiscovery(key: string, title: string, tracks: EnrichedTrack[]) {
+    const albumArt = tracks[0]?.album.images?.at(-2)?.url ?? tracks[0]?.album.images?.at(-1)?.url ?? '/music.svg';
+
+    historyRef.current = [{ albumArt, key, title, tracks }, ...historyRef.current.filter(session => session.key !== key)].slice(0, 12);
+    setHistory(historyRef.current);
+    setView({ key, kind: 'discovery', title: `Recommendations from ${title}` });
   }
 
   // Initialize the page after both the route and optional user session are known.
@@ -366,15 +385,15 @@ export default function Home() {
       });
     }
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    suppressSearchResetRef.current = Boolean(search);
     setSearch('');
-    setResults(undefined);
 
     if (router.query.id) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       void getRecommendations();
     } else {
-      resetAudioFeatures();
-      setPreviewTrack(null);
+      setView({ key: '', kind: 'liked', title: 'Liked Songs' });
+      setResults(undefined);
       void searchTracks();
     }
 
@@ -382,7 +401,24 @@ export default function Home() {
       cancelled = true;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router, spotifyApi]);
+  }, [router.isReady, router.asPath, spotifyApi]);
+
+  useEffect(() => {
+    if (!router.isReady || spotifyApi === undefined) return;
+
+    if (suppressSearchResetRef.current) {
+      previousSearchRef.current = search;
+      if (!search) suppressSearchResetRef.current = false;
+
+      return;
+    }
+
+    if (search === previousSearchRef.current) return;
+
+    previousSearchRef.current = search;
+    searchCatalog(search);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, router.isReady, spotifyApi]);
 
   async function saveTrack(track: EnrichedTrack) {
     if (!spotifyApi) {
@@ -435,177 +471,149 @@ export default function Home() {
     setSavingTrackId(undefined);
   }
 
+  function searchCatalog(q: string) {
+    setView({ key: '', kind: q ? 'search' : 'liked', title: q ? 'Search results' : 'Liked Songs' });
+    setResults(undefined);
+    searchGeneration.current += 1;
+    clearTimeout(searchDebounce.current);
+    searchDebounce.current = setTimeout(() => void searchTracks(q), 300);
+  }
+
+  function openLikedSongs() {
+    setNavigationOpen(false);
+    clearTimeout(searchDebounce.current);
+
+    if (router.asPath !== '/') void router.push('/', undefined, { shallow: true });
+    else {
+      previousSearchRef.current = '';
+      setSearch('');
+      searchCatalog('');
+    }
+  }
+
+  function discover() {
+    if (!previewTrack) return;
+    const params = new URLSearchParams({ id: previewTrack.id });
+
+    audioFeatures.forEach(feature => {
+      if (feature.state === AudioFeatureState.UP) params.set(feature.property, 'up');
+      if (feature.state === AudioFeatureState.DOWN) params.set(feature.property, 'down');
+    });
+    setPlayerExpanded(false);
+    const key = `/?${params}`;
+
+    if (router.asPath === key) void getRecommendations();
+    else void router.push(key, undefined, { shallow: true });
+  }
+
+  const isPlaying = Boolean(previewTrack?.preview && !previewTrack.preview.paused);
+  const playerArt = previewTrack?.album.images?.at(-2)?.url ?? previewTrack?.album.images?.at(-1)?.url ?? '/music.svg';
+
   return (
-    <AppContext.Provider value={{
-      previewTrack: previewTrack,
-      saveTrack: saveTrack,
-      savingTrackId: savingTrackId,
-      setPreviewTrack: setPreviewTrack,
-    }}>
-      {previewTrack?.preview && !previewTrack.preview.paused &&
-        <Head>
-          <title>{previewTrack.name} by {previewTrack.artists.map(a => a.name).join(', ')}</title>
-        </Head>
-      }
-      <div className='sm:sticky top-0 p-2 bg-white dark:bg-black flex justify-center'>
-        <div className='bg-neutral-100 dark:bg-neutral-900 rounded-md px-2 pt-2 pb-1 flex flex-col gap-1 max-w-full w-3xl'>
-          <div className='flex justify-center w-full'>
-            {previewTrack === null ?
-              <input
-                autoFocus
-                className='w-full rounded-md h-14 bg-neutral-100 dark:bg-neutral-900 text-4xl px-3'
-                onChange={e => {
-                  const q = e.target.value;
-
-                  searchGeneration.current += 1;
-                  setSearch(q);
-                  setResults(undefined);
-                  clearTimeout(searchDebounce.current);
-                  searchDebounce.current = setTimeout(() => void searchTracks(q), 300);
-                }}
-                placeholder='Search'
-                type='search'
-                value={search}
-              />
-              :
-              <>
-                {previewTrack ?
-                  <div className='flex items-center w-full hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-[background-color] py-1 pr-4 pl-2 gap-4 rounded-md h-14'>
-                    <TrackComponent track={previewTrack} />
-                    <button
-                      aria-label='clear'
-                      onClick={async () => {
-                        previewTrack.preview?.pause();
-                        setPreviewTrack(null);
-                        resetAudioFeatures();
-
-                        if (router.query.id) {
-                          router.push('/', undefined, { shallow: true });
-                        } else if (search) {
-                          setSearch('');
-                          setResults(undefined);
-                          await searchTracks();
-                        }
-                      }}
-                    >
-                      <svg className='text-neutral-500 hover:text-black dark:hover:text-white w-6 h-6 -mx-1 cursor-pointer' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor'>
-                        <path strokeLinecap='round' strokeLinejoin='round' d='M6 18L18 6M6 6l12 12' />
-                      </svg>
-                    </button>
-                  </div>
-                  :
-                  <SkeletonTrack />
-                }
-              </>
-            }
+    <AppContext.Provider value={{ previewTrack, saveTrack, savingTrackId, setPreviewTrack }}>
+      <Head><title>{view.title} · Rabbit</title></Head>
+      <div className='min-h-[calc(100svh-48px)] md:flex'>
+        {navigationOpen && <button aria-label='Close navigation' className='fixed inset-0 z-30 bg-black/55 md:hidden' onClick={() => setNavigationOpen(false)} />}
+        <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-white px-4 pb-28 pt-6 transition-transform dark:bg-black md:sticky md:top-0 md:h-[calc(100svh-48px)] md:shrink-0 md:translate-x-0 ${navigationOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+          <div className='mb-7 flex items-center justify-between md:hidden'>
+            <span className='font-semibold'>Sources</span>
+            <button aria-label='Close navigation' onClick={() => setNavigationOpen(false)}><X size={20} /></button>
           </div>
-          <div className='flex w-full gap-3 px-1 items-center'>
-            <div className='flex gap-1 flex-wrap grow'>
-              {audioFeatures.map(audioFeature => (
-                <AudioFeatureComponent
-                  audioFeature={audioFeature}
-                  disabled={!previewTrack}
-                  key={audioFeature.property}
-                  onClick={() => setAudioFeatures(prevAudioFeatures => {
-                    const newAudioFeatures = [...prevAudioFeatures];
-                    const audioFeatureToRotate = newAudioFeatures.find(f => f.property === audioFeature.property);
-
-                    if (audioFeatureToRotate) {
-                      audioFeatureToRotate.state = (audioFeatureToRotate.state + 1) % 3;
-                    }
-
-                    return newAudioFeatures;
-                  })}
-                  track={previewTrack}
-                />
-              ))}
-            </div>
+          <p className='mb-2 px-3 text-sm font-medium text-neutral-500'>Your Library</p>
+          <button aria-current={view.kind === 'liked' ? 'page' : undefined} className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm ${view.kind === 'liked' ? 'bg-neutral-100 font-semibold dark:bg-neutral-800' : 'hover:bg-neutral-100 dark:hover:bg-neutral-900'}`} onClick={openLikedSongs}>
+            <Heart size={18} /> Liked Songs
+          </button>
+          <p className='mb-2 mt-9 px-3 text-sm font-medium text-neutral-500'>Discovery</p>
+          {history.length ? history.map(session => (
             <button
-              aria-label='discover'
-              className='bg-green-500 disabled:bg-neutral-500 disabled:opacity-40 text-black p-3 rounded-full enabled:hover:bg-green-300 transition flex gap-2 font-medium'
-              disabled={!previewTrack || !results}
+              aria-current={view.key === session.key ? 'page' : undefined}
+              className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm ${view.key === session.key ? 'bg-neutral-100 font-semibold dark:bg-neutral-800' : 'hover:bg-neutral-100 dark:hover:bg-neutral-900'}`}
+              key={session.key}
               onClick={() => {
-                if (!previewTrack) {
-                  return;
-                }
-
-                const audioFeatureParams: Record<string, string> = {};
-
-                audioFeatures.forEach(f => {
-                  if (f.state === AudioFeatureState.UP) {
-                    audioFeatureParams[f.property] = 'up';
-                  } else if (f.state === AudioFeatureState.DOWN) {
-                    audioFeatureParams[f.property] = 'down';
-                  }
-                });
-
-                router.push(`/?${new URLSearchParams({
-                  id: previewTrack.id,
-                  ...audioFeatureParams,
-                })}`, undefined, { shallow: true });
+                setNavigationOpen(false);
+                if (router.asPath === session.key) void getRecommendations();
+                else void router.push(session.key, undefined, { shallow: true });
               }}
             >
-              <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={2} stroke='currentColor' className='w-6 h-6'>
-                <path strokeLinecap='round' strokeLinejoin='round' d='M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z' />
-              </svg>
-              <span className='hidden md:block mr-1'>Discover</span>
+              <Image alt='' className='size-8 shrink-0 rounded object-cover' height={32} src={session.albumArt} width={32} /><span className='truncate'>From {session.title}</span>
             </button>
+          )) : <p className='px-3 pt-3 text-xs leading-5 text-neutral-500'>Your discoveries will appear here.</p>}
+        </aside>
+
+        <div className='min-w-0 flex-1 pb-36 md:pb-32'>
+          <div className='sticky top-0 z-20 bg-white/95 px-4 py-3 backdrop-blur dark:bg-black/95 sm:px-6'>
+            <div className='mx-auto flex max-w-3xl items-center gap-3'>
+              <button aria-label='Open sources' className='rounded-lg p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 md:hidden' onClick={() => setNavigationOpen(true)}><Menu size={21} /></button>
+              <h1 className='min-w-0 flex-1 truncate text-xl font-semibold'>{view.title}</h1>
+            </div>
+          </div>
+          <div className='mx-auto max-w-3xl px-2 py-2'>
+            {results === undefined ? <div role='status' aria-label='Loading tracks'>{Array.from({ length: 12 }, (_, index) => <SkeletonTrack key={index} />)}</div> :
+              searchError ? <p className='px-3 py-8 text-red-500'>{searchError}</p> :
+                results.length ? <>
+                  <div className='flex flex-col'>
+                    {results.map(track => <div className='rounded-md py-1 pr-4 pl-2 transition-colors hover:bg-neutral-300 dark:hover:bg-neutral-700' key={track.id}><TrackComponent track={track} /></div>)}
+                  </div>
+                  {isSearching && <div role='status' aria-label='Loading more tracks'>{Array.from({ length: 3 }, (_, index) => <SkeletonTrack key={index} />)}</div>}
+                  {hasMore && <div aria-hidden='true' className='h-px' ref={loadMoreRef} />}
+                </> : spotifyApi === null && !search ? <div className='mx-auto flex max-w-md flex-col items-center gap-4 px-6 py-14 text-center'>
+                  <Heart size={28} className='text-neutral-400' />
+                  <p className='font-medium'>Your Liked Songs live here</p>
+                  <p className='text-sm text-neutral-500'>Sign in to browse your library, or search Spotify above to start exploring.</p>
+                  <button className='rounded-full bg-green-500 px-6 py-2 font-semibold text-black hover:bg-green-400' onClick={signIn}>Sign in with Spotify</button>
+                </div> : <p className='px-3 py-8 text-neutral-500'>No tracks found</p>}
           </div>
         </div>
       </div>
-      <div className='flex justify-center mb-4'>
-        {results === undefined ?
-          <div className='flex flex-col w-full max-w-3xl px-2' style={{
-            zIndex: -1,
-          }}>
-            {Array.from({ length: 20 }, (_, index) => <SkeletonTrack key={`skeleton-track-${index}`} />)}
+
+      {playerExpanded && <button aria-label='Close player controls' className='fixed inset-0 z-40 bg-black/50 md:hidden' onClick={() => setPlayerExpanded(false)} />}
+      <section aria-label='Active track player' className={`fixed inset-x-0 bottom-0 z-50 border-t border-neutral-200 bg-white shadow-[0_-12px_35px_rgba(0,0,0,0.08)] dark:border-neutral-800 dark:bg-neutral-950 ${playerExpanded ? 'rounded-t-2xl md:rounded-none' : ''}`}>
+        {playerExpanded && <div className='mx-auto max-w-6xl border-b border-neutral-200 px-4 pb-5 pt-5 dark:border-neutral-800 sm:px-6'>
+          <div className='mb-4 flex items-center justify-between'>
+            <h2 className='font-semibold'>Audio features</h2>
+            <button aria-label='Collapse feature controls' className='rounded-lg p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800' onClick={() => setPlayerExpanded(false)}><ChevronDown size={20} /></button>
           </div>
-          :
-          searchError ?
-            <div className='flex h-12 items-center px-4 text-center text-red-500'>
-              {searchError}
-            </div>
-            : results.length ?
-              <div className='flex flex-col items-center text-center w-full px-2 max-w-3xl'>
-                {results.map(track => (
-                  <div className='w-full hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-[background-color] py-1 pr-4 pl-2 rounded-md' key={`track-${track.id}`}>
-                    <TrackComponent track={track} />
-                  </div>
-                ))}
-                {isSearching &&
-                <div className='w-full' role='status' aria-label='Loading more tracks'>
-                  {Array.from({ length: 3 }, (_, index) => <SkeletonTrack key={`more-skeleton-track-${index}`} />)}
+          {previewTrack ? <div className='grid grid-cols-2 gap-x-5 gap-y-3 sm:grid-cols-3 lg:grid-cols-6'>
+            {audioFeatures.map(feature => (
+              <div className='min-w-0' key={feature.property}>
+                <div className='mb-1.5 flex items-baseline justify-between gap-1'>
+                  <span className='truncate text-xs font-medium capitalize'>{feature.property}</span>
+                  <span className='shrink-0 text-[11px] tabular-nums text-neutral-500 dark:text-neutral-400'>{featureValue(previewTrack, feature.property)}</span>
                 </div>
-                }
-                {hasMore &&
-                <div aria-hidden='true' className='h-px w-full' ref={loadMoreRef} />
-                }
+                <div aria-label={`${feature.property} direction`} className='flex rounded-lg bg-neutral-200 p-0.5 dark:bg-neutral-800'>
+                  {(['down', 'same', 'up'] as const).map((label, index) => {
+                    const state = [AudioFeatureState.DOWN, AudioFeatureState.NONE, AudioFeatureState.UP][index];
+
+                    return <button
+                      aria-label={`${feature.property} ${label}`}
+                      aria-pressed={feature.state === state}
+                      className={`min-w-0 flex-1 rounded-md px-1 py-1.5 text-[11px] font-medium capitalize ${feature.state === state ? 'bg-white text-black shadow-sm dark:bg-neutral-600 dark:text-white' : 'text-neutral-500 dark:text-neutral-400'}`}
+                      key={label}
+                      onClick={() => setAudioFeatures(previous => previous.map(item => item.property === feature.property ? { ...item, state } : item))}
+                    >{label}</button>;
+                  })}
+                </div>
               </div>
-              :
-              spotifyApi === null && !search ?
-                <div className='flex flex-col items-center gap-4 px-8 py-14 text-center'>
-                  <p className='text-neutral-600 dark:text-neutral-400'>
-                    Sign in to browse your Liked Songs and save new discoveries to Spotify.
-                  </p>
-                  <button
-                    className='rounded-full bg-green-500 px-6 py-2 font-medium text-black transition hover:bg-green-300'
-                    onClick={signIn}
-                  >
-                    Sign in with Spotify
-                  </button>
-                </div>
-                :
-                <div className='flex h-12 items-center'>
-                  No tracks found
-                </div>
-        }
-      </div>
-      <HelpModal
-        audioFeatures={audioFeatures}
-        isOpen={isHelpModalOpen}
-        onClose={() => setIsHelpModalOpen(false)}
-        track={previewTrack ?? results?.at(0)}
-      />
+            ))}
+          </div> : <p className='text-sm text-neutral-500'>Choose a track to tune its sound.</p>}
+        </div>}
+        <div className='mx-auto grid h-17 max-w-6xl grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-3 sm:h-18 sm:gap-4 sm:px-6'>
+          <div className='flex min-w-0 items-center gap-2 sm:gap-3'>
+            {previewTrack ? <>
+              <Image alt='' className='size-10 shrink-0 rounded-md object-cover sm:size-12' height={48} src={playerArt} width={48} />
+              <div className='min-w-0'><p className='truncate text-sm font-semibold'>{previewTrack.name}</p><p className='truncate text-xs text-neutral-500'>{previewTrack.artists.map(artist => artist.name).join(', ')}</p></div>
+            </> : <><div className='flex size-10 shrink-0 items-center justify-center rounded-md bg-neutral-100 text-neutral-400 dark:bg-neutral-800'><Play size={18} /></div><p className='truncate text-sm text-neutral-500'>Choose a track</p></>}
+          </div>
+          <button aria-label={isPlaying ? 'Pause preview' : 'Play preview'} className='flex size-10 items-center justify-center rounded-full bg-black text-white disabled:opacity-30 dark:bg-white dark:text-black' disabled={!previewTrack?.preview} onClick={() => previewTrack && (isPlaying ? pauseTrack(previewTrack, setPreviewTrack) : playTrack(previewTrack, setPreviewTrack))}>{isPlaying ? <Pause size={18} fill='currentColor' /> : <Play size={18} fill='currentColor' />}</button>
+          <div className='flex min-w-0 items-center justify-end gap-1 sm:gap-2'>
+            {previewTrack && <>
+              <button aria-expanded={playerExpanded} aria-label={playerExpanded ? 'Hide audio features' : 'Show audio features'} className='flex items-center gap-1 rounded-lg px-1 py-2 text-xs font-medium hover:bg-neutral-100 dark:hover:bg-neutral-800 sm:px-2' onClick={() => setPlayerExpanded(!playerExpanded)}><span className='hidden sm:inline'>Features</span>{playerExpanded ? <ChevronDown size={18} /> : <ChevronUp size={18} />}</button>
+              <button className='rounded-full bg-green-500 px-2.5 py-2 text-xs font-semibold text-black hover:bg-green-400 sm:px-4 sm:text-sm' onClick={discover}>Discover</button>
+            </>}
+          </div>
+        </div>
+      </section>
+      <HelpModal audioFeatures={audioFeatures} isOpen={isHelpModalOpen} onClose={() => setIsHelpModalOpen(false)} track={previewTrack ?? results?.at(0)} />
     </AppContext.Provider>
   );
 }
