@@ -10,7 +10,7 @@ import TrackComponent from '../components/trackComponent';
 import { AppContext } from '../contexts/appContext';
 import { MainContext } from '../contexts/mainContext';
 import { pauseTrack, playTrack } from '../helpers/audioControls';
-import { EnrichedTrack, EnrichedTrackData, enrichTracks, hydrateTracks } from '../helpers/enrichTrack';
+import { EnrichedTrack, EnrichedTrackData, enrichTracks, hydrateRecommendations, hydrateTracks } from '../helpers/enrichTrack';
 
 // 50 is the highest limit that works for all endpoints. Recommendations can go
 // up to 100, but then liked-song lookups would need to be batched.
@@ -208,7 +208,8 @@ export default function Home() {
 
   async function getRecommendations() {
     // Prevent an in-flight search page from replacing these recommendations.
-    searchGeneration.current += 1;
+    const generation = ++searchGeneration.current;
+
     isSearchingRef.current = true;
     setHasMore(false);
     setIsSearching(true);
@@ -263,7 +264,13 @@ export default function Home() {
         }
 
         const body = await response.json() as { tracks: EnrichedTrackData[] };
-        const newRecommendations = hydrateTracks(body.tracks);
+
+        if (generation !== searchGeneration.current) {
+          return;
+        }
+
+        // Keep the seed's Audio instance so its playing preview stays owned.
+        const newRecommendations = hydrateRecommendations(body.tracks, previewTrack);
 
         setPreviewTrack(newRecommendations[0]);
         setResults(newRecommendations);
@@ -316,6 +323,11 @@ export default function Home() {
       } as RecommendationsRequest);
 
       const newRecommendations = await enrichTracks(recommendations.tracks as Track[], spotifyApi);
+
+      if (generation !== searchGeneration.current) {
+        return;
+      }
+
       const index = newRecommendations.findIndex(recommendation => recommendation.id === track.id);
 
       if (index !== -1) {
@@ -325,12 +337,16 @@ export default function Home() {
       newRecommendations.unshift({ ...track });
       setResults(newRecommendations);
     } catch (error) {
-      setResults([]);
-      setSearchError(error instanceof Error ? error.message : 'Spotify recommendations are temporarily unavailable.');
+      if (generation === searchGeneration.current) {
+        setResults([]);
+        setSearchError(error instanceof Error ? error.message : 'Spotify recommendations are temporarily unavailable.');
+      }
     } finally {
-      setHasMore(false);
-      isSearchingRef.current = false;
-      setIsSearching(false);
+      if (generation === searchGeneration.current) {
+        setHasMore(false);
+        isSearchingRef.current = false;
+        setIsSearching(false);
+      }
     }
   }
 
@@ -557,8 +573,7 @@ export default function Home() {
               </div>
               :
               spotifyApi === null && !search ?
-                <div className='flex max-w-xl flex-col items-center gap-4 px-8 py-14 text-center'>
-                  <div className='text-xl font-medium'>Make Rabbit yours</div>
+                <div className='flex flex-col items-center gap-4 px-8 py-14 text-center'>
                   <p className='text-neutral-600 dark:text-neutral-400'>
                     Sign in to browse your Liked Songs and save new discoveries to Spotify.
                   </p>

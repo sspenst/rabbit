@@ -21,6 +21,7 @@
   },
   "include": [
     "**.config.*js",
+    "tests/**/*.mjs",
     "**/*.ts",
     "**/*.tsx"
   ],

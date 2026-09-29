@@ -1,4 +1,4 @@
-import { AudioFeatures, SpotifyApi, Track } from '@sspenst/spotify-web-api';
+import type { AudioFeatures, SpotifyApi, Track } from '@sspenst/spotify-web-api';
 
 export interface EnrichedTrack extends Track {
   audioFeatures: AudioFeatures | null;
@@ -27,6 +27,14 @@ function enrichTrack(track: Track, audioFeatures: AudioFeatures | null, saved: b
 
 export function hydrateTracks(tracks: EnrichedTrackData[]): EnrichedTrack[] {
   return tracks.map(track => enrichTrack(track, track.audioFeatures, track.saved));
+}
+
+export function hydrateRecommendations(tracks: EnrichedTrackData[], seedTrack: EnrichedTrack | null | undefined): EnrichedTrack[] {
+  if (seedTrack?.id === tracks[0]?.id) {
+    return [seedTrack, ...hydrateTracks(tracks.slice(1))];
+  }
+
+  return hydrateTracks(tracks);
 }
 
 export async function enrichPublicTracks(tracks: Track[] | null | undefined, spotifyApi: SpotifyApi): Promise<EnrichedTrackData[]> {
