@@ -1,14 +1,16 @@
 import { AudioFeatures, RecommendationsRequest, Track } from '@sspenst/spotify-web-api';
-import { ChevronDown, ChevronUp, Heart, Menu, Pause, Play, X } from 'lucide-react';
+import { ChevronDown, ChevronUp, Heart, Pause, Play, Search, X } from 'lucide-react';
 import Head from 'next/head';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { AudioFeature, AudioFeatureState } from '../components/audioFeature';
+import Header from '../components/header';
 import HelpModal from '../components/helpModal';
+import ImageModal from '../components/imageModal';
 import SkeletonTrack from '../components/skeletonTrack';
-import TrackComponent from '../components/trackComponent';
+import TrackComponent, { TrackActions } from '../components/trackComponent';
 import { AppContext } from '../contexts/appContext';
 import { MainContext } from '../contexts/mainContext';
 import { pauseTrack, playTrack } from '../helpers/audioControls';
@@ -19,6 +21,14 @@ import { EnrichedTrack, EnrichedTrackData, enrichTracks, hydrateRecommendations,
 const searchLimit = 50;
 
 interface DiscoverySession { albumArt: string; key: string; title: string; tracks: EnrichedTrack[] }
+interface ViewState { key: string; kind: 'discovery' | 'liked' | 'search'; title: string }
+interface SearchReturnState {
+  error: string | undefined;
+  hasMore: boolean;
+  offset: number;
+  results: EnrichedTrack[] | undefined;
+  view: ViewState;
+}
 
 function featureValue(track: EnrichedTrack, property: string) {
   const value = track.audioFeatures?.[property as keyof AudioFeatures];
@@ -40,20 +50,22 @@ export default function Home() {
     { property: 'valence', state: AudioFeatureState.NONE },
   ]);
   const [isSearching, setIsSearching] = useState(true);
-  const { isHelpModalOpen, search, setIsHelpModalOpen, setSearch, setUser, signIn, spotifyApi, user } = useContext(MainContext);
+  const { isHelpModalOpen, setIsHelpModalOpen, setUser, signIn, spotifyApi, user } = useContext(MainContext);
   const [previewTrack, setPreviewTrack] = useState<EnrichedTrack | null>();
   const [results, setResults] = useState<EnrichedTrack[]>();
-  const [view, setView] = useState({ key: '', kind: 'liked', title: 'Liked Songs' });
+  const [view, setView] = useState<ViewState>({ key: '', kind: 'liked', title: 'Liked Songs' });
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const searchReturnRef = useRef<SearchReturnState | null>(null);
   const [history, setHistory] = useState<DiscoverySession[]>([]);
   const historyRef = useRef<DiscoverySession[]>([]);
   const resultsRef = useRef(results);
   const playerRef = useRef(previewTrack);
   const [navigationOpen, setNavigationOpen] = useState(false);
   const [playerExpanded, setPlayerExpanded] = useState(false);
+  const [playerImageOpen, setPlayerImageOpen] = useState(false);
   const router = useRouter();
   const [savingTrackId, setSavingTrackId] = useState<string>();
-  const previousSearchRef = useRef(search);
-  const suppressSearchResetRef = useRef(false);
   const [searchError, setSearchError] = useState<string>();
   const [hasMore, setHasMore] = useState(true);
   const isSearchingRef = useRef(false);
@@ -61,6 +73,7 @@ export default function Home() {
   const searchDebounce = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const searchGeneration = useRef(0);
   const searchOffset = useRef(0);
+  const loadedRouteRef = useRef<string | undefined>(undefined);
 
   useEffect(() => { resultsRef.current = results; }, [results]);
   useEffect(() => { playerRef.current = previewTrack; }, [previewTrack]);
@@ -254,6 +267,12 @@ export default function Home() {
       return;
     }
 
+    const seedName = playerRef.current?.id === id ? playerRef.current.name :
+      resultsRef.current?.find(result => result.id === id)?.name;
+
+    setView({ key, kind: 'discovery', title: seedName ? `Recommendations from ${seedName}` : 'Recommendations' });
+    setResults(undefined);
+
     try {
       if (!spotifyApi) {
         const params = new URLSearchParams({ id });
@@ -376,6 +395,9 @@ export default function Home() {
     }
 
     let cancelled = false;
+    const routeChanged = loadedRouteRef.current !== router.asPath;
+
+    loadedRouteRef.current = router.asPath;
 
     if (spotifyApi && user === undefined) {
       void spotifyApi.currentUser.profile().then(profile => {
@@ -385,11 +407,22 @@ export default function Home() {
       });
     }
 
-    suppressSearchResetRef.current = Boolean(search);
-    setSearch('');
+    if (routeChanged) {
+      setSearchOpen(false);
+      searchReturnRef.current = null;
+      setSearch('');
+      clearTimeout(searchDebounce.current);
+    } else if (searchOpen) {
+      if (search) {
+        clearTimeout(searchDebounce.current);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        void searchTracks(search);
+      }
+
+      return () => { cancelled = true; };
+    }
 
     if (router.query.id) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       void getRecommendations();
     } else {
       setView({ key: '', kind: 'liked', title: 'Liked Songs' });
@@ -402,23 +435,6 @@ export default function Home() {
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.isReady, router.asPath, spotifyApi]);
-
-  useEffect(() => {
-    if (!router.isReady || spotifyApi === undefined) return;
-
-    if (suppressSearchResetRef.current) {
-      previousSearchRef.current = search;
-      if (!search) suppressSearchResetRef.current = false;
-
-      return;
-    }
-
-    if (search === previousSearchRef.current) return;
-
-    previousSearchRef.current = search;
-    searchCatalog(search);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, router.isReady, spotifyApi]);
 
   async function saveTrack(track: EnrichedTrack) {
     if (!spotifyApi) {
@@ -437,6 +453,7 @@ export default function Home() {
 
     toast.dismiss();
     toast.success(track.saved ? 'Removed from Liked Songs' : 'Added to Liked Songs');
+    const saved = !track.saved;
 
     setPreviewTrack(prevTrack => {
       if (track.id !== prevTrack?.id) {
@@ -445,7 +462,7 @@ export default function Home() {
 
       const newTrack = { ...prevTrack } as EnrichedTrack;
 
-      newTrack.saved = !newTrack.saved;
+      newTrack.saved = saved;
 
       return newTrack;
     });
@@ -455,39 +472,100 @@ export default function Home() {
         return prevTracks;
       }
 
-      const index = prevTracks.findIndex(t => t.id === track.id);
-
-      if (index === -1) {
-        return prevTracks;
-      }
-
-      const newTracks = [...prevTracks];
-
-      newTracks[index].saved = !newTracks[index].saved;
-
-      return newTracks;
+      return prevTracks.map(item => item.id === track.id ? { ...item, saved } : item);
     });
+
+    if (searchReturnRef.current) {
+      const previous = searchReturnRef.current;
+
+      searchReturnRef.current = {
+        ...previous,
+        results: previous.results?.map(item => item.id === track.id ? { ...item, saved } : item),
+      };
+    }
+
+    historyRef.current = historyRef.current.map(session => ({
+      ...session,
+      tracks: session.tracks.map(item => item.id === track.id ? { ...item, saved } : item),
+    }));
+    setHistory(historyRef.current);
 
     setSavingTrackId(undefined);
   }
 
-  function searchCatalog(q: string) {
-    setView({ key: '', kind: q ? 'search' : 'liked', title: q ? 'Search results' : 'Liked Songs' });
-    setResults(undefined);
+  function openSearch() {
+    setNavigationOpen(false);
+    if (searchOpen) return;
+
+    searchReturnRef.current = { error: searchError, hasMore, offset: searchOffset.current, results, view };
     searchGeneration.current += 1;
+    isSearchingRef.current = false;
     clearTimeout(searchDebounce.current);
+    setSearchOpen(true);
+    setSearch('');
+    setView({ key: '', kind: 'search', title: 'Search' });
+    setResults([]);
+    setHasMore(false);
+    setSearchError(undefined);
+    setIsSearching(false);
+  }
+
+  function closeSearch() {
+    searchGeneration.current += 1;
+    isSearchingRef.current = false;
+    clearTimeout(searchDebounce.current);
+    setSearchOpen(false);
+    setSearch('');
+    const previous = searchReturnRef.current;
+
+    searchReturnRef.current = null;
+    if (!previous) return;
+
+    setView(previous.view);
+    setResults(previous.results);
+    setHasMore(previous.hasMore);
+    setSearchError(previous.error);
+    setIsSearching(false);
+    searchOffset.current = previous.offset;
+
+    if (previous.results === undefined) {
+      if (previous.view.kind === 'discovery') void getRecommendations();
+      else void searchTracks();
+    }
+  }
+
+  function searchCatalog(q: string) {
+    setSearch(q);
+    searchGeneration.current += 1;
+    isSearchingRef.current = false;
+    clearTimeout(searchDebounce.current);
+    setSearchError(undefined);
+
+    if (!q) {
+      setResults([]);
+      setHasMore(false);
+      setIsSearching(false);
+
+      return;
+    }
+
+    setResults(undefined);
+    setIsSearching(true);
     searchDebounce.current = setTimeout(() => void searchTracks(q), 300);
   }
 
   function openLikedSongs() {
     setNavigationOpen(false);
     clearTimeout(searchDebounce.current);
+    searchReturnRef.current = null;
+    setSearchOpen(false);
+    setSearch('');
 
     if (router.asPath !== '/') void router.push('/', undefined, { shallow: true });
     else {
-      previousSearchRef.current = '';
-      setSearch('');
-      searchCatalog('');
+      setView({ key: '', kind: 'liked', title: 'Liked Songs' });
+      setResults(undefined);
+      void searchTracks();
     }
   }
 
@@ -500,6 +578,10 @@ export default function Home() {
       if (feature.state === AudioFeatureState.DOWN) params.set(feature.property, 'down');
     });
     setPlayerExpanded(false);
+    clearTimeout(searchDebounce.current);
+    searchReturnRef.current = null;
+    setSearchOpen(false);
+    setSearch('');
     const key = `/?${params}`;
 
     if (router.asPath === key) void getRecommendations();
@@ -512,41 +594,53 @@ export default function Home() {
   return (
     <AppContext.Provider value={{ previewTrack, saveTrack, savingTrackId, setPreviewTrack }}>
       <Head><title>{view.title} · Rabbit</title></Head>
-      <div className='min-h-[calc(100svh-48px)] md:flex'>
-        {navigationOpen && <button aria-label='Close navigation' className='fixed inset-0 z-30 bg-black/55 md:hidden' onClick={() => setNavigationOpen(false)} />}
-        <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-white px-4 pb-28 pt-6 transition-transform dark:bg-black md:sticky md:top-0 md:h-[calc(100svh-48px)] md:shrink-0 md:translate-x-0 ${navigationOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <Header
+        onCloseSearch={closeSearch}
+        onGoHome={openLikedSongs}
+        onOpenNavigation={() => setNavigationOpen(true)}
+        onOpenSearch={openSearch}
+        onSearchChange={searchCatalog}
+        search={search}
+        searchOpen={searchOpen}
+        title={view.title}
+      />
+      <div className='min-h-[calc(100svh-3.5rem)] md:flex'>
+        {navigationOpen && <button aria-label='Close navigation' className='fixed inset-x-0 bottom-0 top-24 z-40 bg-black/55 md:hidden' onClick={() => setNavigationOpen(false)} />}
+        <aside className={`fixed bottom-0 left-0 top-24 z-50 w-64 overflow-y-auto bg-white px-2 pb-24 pt-3 transition-transform dark:bg-black md:sticky md:bottom-auto md:top-14 md:h-[calc(100svh-3.5rem)] md:shrink-0 md:translate-x-0 ${navigationOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <div className='mb-7 flex items-center justify-between md:hidden'>
             <span className='font-semibold'>Sources</span>
             <button aria-label='Close navigation' onClick={() => setNavigationOpen(false)}><X size={20} /></button>
           </div>
-          <p className='mb-2 px-3 text-sm font-medium text-neutral-500'>Your Library</p>
-          <button aria-current={view.kind === 'liked' ? 'page' : undefined} className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm ${view.kind === 'liked' ? 'bg-neutral-100 font-semibold dark:bg-neutral-800' : 'hover:bg-neutral-100 dark:hover:bg-neutral-900'}`} onClick={openLikedSongs}>
+          <button aria-current={searchOpen ? 'page' : undefined} className={`flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left text-sm ${searchOpen ? 'bg-neutral-100 font-semibold dark:bg-neutral-800' : 'hover:bg-neutral-100 dark:hover:bg-neutral-900'}`} onClick={openSearch}>
+            <Search size={18} /> Search
+          </button>
+          <p className='mb-2 mt-5 px-2 text-sm font-medium text-neutral-500'>Your Library</p>
+          <button aria-current={!searchOpen && view.kind === 'liked' ? 'page' : undefined} className={`flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left text-sm ${!searchOpen && view.kind === 'liked' ? 'bg-neutral-100 font-semibold dark:bg-neutral-800' : 'hover:bg-neutral-100 dark:hover:bg-neutral-900'}`} onClick={openLikedSongs}>
             <Heart size={18} /> Liked Songs
           </button>
-          <p className='mb-2 mt-9 px-3 text-sm font-medium text-neutral-500'>Discovery</p>
+          <p className='mb-2 mt-5 px-2 text-sm font-medium text-neutral-500'>Discovery</p>
           {history.length ? history.map(session => (
             <button
-              aria-current={view.key === session.key ? 'page' : undefined}
-              className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm ${view.key === session.key ? 'bg-neutral-100 font-semibold dark:bg-neutral-800' : 'hover:bg-neutral-100 dark:hover:bg-neutral-900'}`}
+              aria-current={!searchOpen && view.key === session.key ? 'page' : undefined}
+              className={`flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left text-sm ${!searchOpen && view.key === session.key ? 'bg-neutral-100 font-semibold dark:bg-neutral-800' : 'hover:bg-neutral-100 dark:hover:bg-neutral-900'}`}
               key={session.key}
               onClick={() => {
                 setNavigationOpen(false);
+                clearTimeout(searchDebounce.current);
+                searchReturnRef.current = null;
+                setSearchOpen(false);
+                setSearch('');
                 if (router.asPath === session.key) void getRecommendations();
                 else void router.push(session.key, undefined, { shallow: true });
               }}
             >
               <Image alt='' className='size-8 shrink-0 rounded object-cover' height={32} src={session.albumArt} width={32} /><span className='truncate'>From {session.title}</span>
             </button>
-          )) : <p className='px-3 pt-3 text-xs leading-5 text-neutral-500'>Your discoveries will appear here.</p>}
+          )) : <p className='px-2 pt-2 text-xs leading-5 text-neutral-500'>Your discoveries will appear here.</p>}
         </aside>
 
         <div className='min-w-0 flex-1 pb-36 md:pb-32'>
-          <div className='sticky top-0 z-20 bg-white/95 px-4 py-3 backdrop-blur dark:bg-black/95 sm:px-6'>
-            <div className='mx-auto flex max-w-3xl items-center gap-3'>
-              <button aria-label='Open sources' className='rounded-lg p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 md:hidden' onClick={() => setNavigationOpen(true)}><Menu size={21} /></button>
-              <h1 className='min-w-0 flex-1 truncate text-xl font-semibold'>{view.title}</h1>
-            </div>
-          </div>
+          <h1 className='sr-only'>{view.title}</h1>
           <div className='mx-auto max-w-3xl px-2 py-2'>
             {results === undefined ? <div role='status' aria-label='Loading tracks'>{Array.from({ length: 12 }, (_, index) => <SkeletonTrack key={index} />)}</div> :
               searchError ? <p className='px-3 py-8 text-red-500'>{searchError}</p> :
@@ -556,12 +650,14 @@ export default function Home() {
                   </div>
                   {isSearching && <div role='status' aria-label='Loading more tracks'>{Array.from({ length: 3 }, (_, index) => <SkeletonTrack key={index} />)}</div>}
                   {hasMore && <div aria-hidden='true' className='h-px' ref={loadMoreRef} />}
-                </> : spotifyApi === null && !search ? <div className='mx-auto flex max-w-md flex-col items-center gap-4 px-6 py-14 text-center'>
-                  <Heart size={28} className='text-neutral-400' />
-                  <p className='font-medium'>Your Liked Songs live here</p>
-                  <p className='text-sm text-neutral-500'>Sign in to browse your library, or search Spotify above to start exploring.</p>
-                  <button className='rounded-full bg-green-500 px-6 py-2 font-semibold text-black hover:bg-green-400' onClick={signIn}>Sign in with Spotify</button>
-                </div> : <p className='px-3 py-8 text-neutral-500'>No tracks found</p>}
+                </> : view.kind === 'search' && !search ?
+                  <p className='px-3 py-8 text-neutral-500'>Search Spotify to find tracks.</p> :
+                  spotifyApi === null && view.kind === 'liked' ? <div className='mx-auto flex max-w-md flex-col items-center gap-4 px-6 py-14 text-center'>
+                    <Heart size={28} className='text-neutral-400' />
+                    <p className='font-medium'>Your Liked Songs live here</p>
+                    <p className='text-sm text-neutral-500'>Sign in to browse your library, or use Search to explore Spotify.</p>
+                    <button className='rounded-full bg-green-500 px-6 py-2 font-semibold text-black hover:bg-green-400' onClick={signIn}>Sign in with Spotify</button>
+                  </div> : <p className='px-3 py-8 text-neutral-500'>No tracks found</p>}
           </div>
         </div>
       </div>
@@ -598,21 +694,35 @@ export default function Home() {
           </div> : <p className='text-sm text-neutral-500'>Choose a track to tune its sound.</p>}
         </div>}
         <div className='mx-auto grid h-17 max-w-6xl grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-3 sm:h-18 sm:gap-4 sm:px-6'>
-          <div className='flex min-w-0 items-center gap-2 sm:gap-3'>
+          <div className='flex min-w-0 max-w-96 items-center gap-2 sm:gap-3'>
             {previewTrack ? <>
-              <Image alt='' className='size-10 shrink-0 rounded-md object-cover sm:size-12' height={48} src={playerArt} width={48} />
-              <div className='min-w-0'><p className='truncate text-sm font-semibold'>{previewTrack.name}</p><p className='truncate text-xs text-neutral-500'>{previewTrack.artists.map(artist => artist.name).join(', ')}</p></div>
+              <button aria-label={`View album art for ${previewTrack.name}`} className='shrink-0 rounded-md' onClick={() => setPlayerImageOpen(true)}>
+                <Image alt='' className='size-10 rounded-md object-cover sm:size-12' height={48} src={playerArt} width={48} />
+              </button>
+              <div className='flex min-w-0 w-fit max-w-80 flex-[0_1_auto] items-center gap-3'>
+                <div className='min-w-0 w-fit max-w-56 flex-[0_1_auto]'>
+                  <p className='truncate text-sm font-semibold'>{previewTrack.name}</p>
+                  <p className='truncate text-xs text-neutral-500'>{previewTrack.artists.map(artist => artist.name).join(', ')}</p>
+                </div>
+                <div className='hidden shrink-0 items-center gap-2 sm:flex'>
+                  <TrackActions track={previewTrack} />
+                </div>
+              </div>
             </> : <><div className='flex size-10 shrink-0 items-center justify-center rounded-md bg-neutral-100 text-neutral-400 dark:bg-neutral-800'><Play size={18} /></div><p className='truncate text-sm text-neutral-500'>Choose a track</p></>}
           </div>
           <button aria-label={isPlaying ? 'Pause preview' : 'Play preview'} className='flex size-10 items-center justify-center rounded-full bg-black text-white disabled:opacity-30 dark:bg-white dark:text-black' disabled={!previewTrack?.preview} onClick={() => previewTrack && (isPlaying ? pauseTrack(previewTrack, setPreviewTrack) : playTrack(previewTrack, setPreviewTrack))}>{isPlaying ? <Pause size={18} fill='currentColor' /> : <Play size={18} fill='currentColor' />}</button>
-          <div className='flex min-w-0 items-center justify-end gap-1 sm:gap-2'>
+          <div className='flex min-w-0 items-center justify-end gap-0.5 sm:gap-2'>
             {previewTrack && <>
+              <div className='flex shrink-0 items-center gap-1 sm:hidden'>
+                <TrackActions track={previewTrack} />
+              </div>
               <button aria-expanded={playerExpanded} aria-label={playerExpanded ? 'Hide audio features' : 'Show audio features'} className='flex items-center gap-1 rounded-lg px-1 py-2 text-xs font-medium hover:bg-neutral-100 dark:hover:bg-neutral-800 sm:px-2' onClick={() => setPlayerExpanded(!playerExpanded)}><span className='hidden sm:inline'>Features</span>{playerExpanded ? <ChevronDown size={18} /> : <ChevronUp size={18} />}</button>
-              <button className='rounded-full bg-green-500 px-2.5 py-2 text-xs font-semibold text-black hover:bg-green-400 sm:px-4 sm:text-sm' onClick={discover}>Discover</button>
+              <button aria-label='Discover' className='flex items-center justify-center rounded-full bg-green-500 px-2.5 py-2 text-xs font-semibold text-black hover:bg-green-400 max-[360px]:px-1.5 sm:px-4 sm:text-sm' onClick={discover}><Search className='min-[390px]:hidden' size={16} /><span className='max-[389px]:hidden'>Discover</span></button>
             </>}
           </div>
         </div>
       </section>
+      <ImageModal isOpen={playerImageOpen && Boolean(previewTrack)} onClose={() => setPlayerImageOpen(false)} src={playerArt} />
       <HelpModal audioFeatures={audioFeatures} isOpen={isHelpModalOpen} onClose={() => setIsHelpModalOpen(false)} track={previewTrack ?? results?.at(0)} />
     </AppContext.Provider>
   );
