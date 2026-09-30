@@ -34,7 +34,7 @@ export default function Header({
 
   return (
     <header className='sticky top-0 z-30 bg-white dark:bg-black'>
-      <div className='mx-4 flex flex-wrap items-center justify-between md:grid md:min-h-14 md:grid-cols-[15rem_minmax(0,1fr)]'>
+      <div className='mx-4 flex flex-wrap items-center justify-between md:grid md:min-h-14 md:grid-cols-[19rem_minmax(0,1fr)]'>
         <div className='flex h-14 items-center gap-2'>
           {hasContext &&
             <button aria-label='Open sources' className='rounded-lg p-1.5 md:hidden' onClick={onOpenNavigation}>

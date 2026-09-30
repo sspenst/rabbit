@@ -32,6 +32,8 @@ export default function App({ Component, pageProps }: AppProps) {
   }
 
   function signIn() {
+    // Explicit sign-in also lets existing users grant newly added scopes.
+    spotifyAuthApi.current?.logOut();
     sessionStorage.setItem('rabbit:sign-in-return', router.asPath);
     void spotifyAuthApi.current?.authenticate();
   }

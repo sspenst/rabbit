@@ -28,7 +28,7 @@ export default function PrivacyPolicy() {
             <p>When you use Rabbit without connecting Spotify, Rabbit processes your searches, selected tracks, recommendation settings, and the Spotify catalog information needed to return results.</p>
             <p>When you connect your Spotify account, Rabbit requests permission to:</p>
             <ul className='list-disc space-y-2 pl-6'>
-              <li>read your Liked Songs and whether displayed tracks are saved;</li>
+              <li>read your Liked Songs, playlists, playlist tracks, and whether displayed tracks are saved;</li>
               <li>add tracks to, or remove tracks from, your Liked Songs when you request that action; and</li>
               <li>read basic Spotify profile information, such as your display name, profile image, and Spotify profile link, to display your connected account.</li>
             </ul>
@@ -44,7 +44,7 @@ export default function PrivacyPolicy() {
 
           <section className={sectionClassName}>
             <h2 className='text-xl font-medium'>How information is used</h2>
-            <p>Rabbit uses information only to provide the features you request, authenticate your Spotify connection, show and manage Liked Songs, generate recommendations, remember preferences, keep the service secure, and diagnose or improve reliability. Rabbit does not sell your personal information or use Spotify data for advertising.</p>
+            <p>Rabbit uses information only to provide the features you request, authenticate your Spotify connection, show your playlists, show and manage Liked Songs, generate recommendations, remember preferences, keep the service secure, and diagnose or improve reliability. Rabbit does not sell your personal information or use Spotify data for advertising.</p>
           </section>
 
           <section className={sectionClassName}>

@@ -1,4 +1,4 @@
-import { AudioFeatures, RecommendationsRequest, Track } from '@sspenst/spotify-web-api';
+import { AudioFeatures, RecommendationsRequest, SimplifiedPlaylist, Track } from '@sspenst/spotify-web-api';
 import { ChevronDown, ChevronUp, Heart, Info, Pause, Play, Search, X } from 'lucide-react';
 import Head from 'next/head';
 import Image from 'next/image';
@@ -8,19 +8,21 @@ import { toast } from 'react-hot-toast';
 import { AudioFeature, audioFeatureDescriptions, AudioFeatureState } from '../components/audioFeature';
 import Header from '../components/header';
 import ImageModal from '../components/imageModal';
+import LibraryNavigation from '../components/libraryNavigation';
 import SkeletonTrack from '../components/skeletonTrack';
 import TrackComponent, { TrackActions } from '../components/trackComponent';
 import { AppContext } from '../contexts/appContext';
 import { MainContext } from '../contexts/mainContext';
 import { pauseTrack, playTrack } from '../helpers/audioControls';
 import { EnrichedTrack, EnrichedTrackData, enrichTracks, hydrateRecommendations, hydrateTracks } from '../helpers/enrichTrack';
+import { playlistTracks } from '../helpers/playlistTracks';
 
 // Development-mode Spotify apps can request at most 10 search results per page.
 const searchLimit = 10;
 const savedTracksLimit = 50;
 
 interface DiscoverySession { albumArt: string; key: string; title: string; tracks: EnrichedTrack[] }
-interface ViewState { key: string; kind: 'discovery' | 'liked' | 'search'; title: string }
+interface ViewState { key: string; kind: 'discovery' | 'liked' | 'playlist' | 'search'; title: string }
 interface SearchReturnState {
   error: string | undefined;
   hasMore: boolean;
@@ -78,7 +80,7 @@ export default function Home() {
   useEffect(() => { resultsRef.current = results; }, [results]);
   useEffect(() => { playerRef.current = previewTrack; }, [previewTrack]);
 
-  const searchTracks = useCallback(async (q = '', append = false) => {
+  const searchTracks = useCallback(async (q = '', append = false, playlistId?: string) => {
     if (spotifyApi === undefined || (append && isSearchingRef.current)) {
       return;
     }
@@ -98,7 +100,24 @@ export default function Home() {
       let tracks: EnrichedTrack[];
       let moreTracksAvailable: boolean;
 
-      if (!q) {
+      if (playlistId) {
+        if (!spotifyApi) {
+          setResults([]);
+          setHasMore(false);
+
+          return;
+        }
+
+        const [page, playlist] = await Promise.all([
+          spotifyApi.playlists.getPlaylistItems(playlistId, undefined, undefined, savedTracksLimit, offset),
+          append ? Promise.resolve(null) : spotifyApi.playlists.getPlaylist(playlistId),
+        ]);
+
+        if (generation !== searchGeneration.current) return;
+        if (playlist) setView({ key: `/?playlist=${encodeURIComponent(playlistId)}`, kind: 'playlist', title: playlist.name });
+        tracks = await enrichTracks(playlistTracks(page.items), spotifyApi);
+        moreTracksAvailable = Boolean(page.next);
+      } else if (!q) {
         if (!spotifyApi) {
           setResults([]);
           setHasMore(false);
@@ -157,7 +176,8 @@ export default function Home() {
 
         setSearchError(message.includes('Unrecognised response code: 502') ?
           'Spotify search is temporarily unavailable. Please try again later.' :
-          message || 'Spotify search is temporarily unavailable.');
+          playlistId ? 'This playlist could not be loaded. Spotify allows access to playlists you own or collaborate on. You may also need to reconnect Spotify for playlist permissions.' :
+            message || 'Spotify search is temporarily unavailable.');
       }
     } finally {
       if (generation === searchGeneration.current) {
@@ -176,7 +196,7 @@ export default function Home() {
 
     const observer = new IntersectionObserver(entries => {
       if (entries[0]?.isIntersecting) {
-        void searchTracks(search, true);
+        void searchTracks(search, true, view.kind === 'playlist' ? new URLSearchParams(view.key.split('?')[1]).get('playlist') ?? undefined : undefined);
       }
     }, {
       rootMargin: '400px 0px',
@@ -185,7 +205,7 @@ export default function Home() {
     observer.observe(loadMoreElement);
 
     return () => observer.disconnect();
-  }, [hasMore, isSearching, results, search, searchTracks, view.kind]);
+  }, [hasMore, isSearching, results, search, searchTracks, view.kind, view.key]);
 
   useEffect(() => () => clearTimeout(searchDebounce.current), []);
 
@@ -428,6 +448,10 @@ export default function Home() {
 
     if (router.query.id) {
       void getRecommendations();
+    } else if (typeof router.query.playlist === 'string') {
+      setView({ key: router.asPath, kind: 'playlist', title: 'Playlist' });
+      setResults(undefined);
+      void searchTracks('', false, router.query.playlist);
     } else {
       setView({ key: '', kind: 'liked', title: 'Liked Songs' });
       setResults(undefined);
@@ -534,7 +558,7 @@ export default function Home() {
 
     if (previous.results === undefined) {
       if (previous.view.kind === 'discovery') void getRecommendations();
-      else void searchTracks();
+      else void searchTracks('', false, previous.view.kind === 'playlist' ? new URLSearchParams(previous.view.key.split('?')[1]).get('playlist') ?? undefined : undefined);
     }
   }
 
@@ -571,6 +595,21 @@ export default function Home() {
       setResults(undefined);
       void searchTracks();
     }
+  }
+
+  function openPlaylist(playlist: SimplifiedPlaylist) {
+    setNavigationOpen(false);
+    clearTimeout(searchDebounce.current);
+    searchReturnRef.current = null;
+    setSearchOpen(false);
+    setSearch('');
+    const key = `/?playlist=${encodeURIComponent(playlist.id)}`;
+
+    if (router.asPath === key) {
+      setView({ key, kind: 'playlist', title: playlist.name });
+      setResults(undefined);
+      void searchTracks('', false, playlist.id);
+    } else void router.push(key, undefined, { shallow: true });
   }
 
   function discover() {
@@ -610,7 +649,7 @@ export default function Home() {
       />
       <div className='min-h-[calc(100svh-3.5rem)] md:flex'>
         {navigationOpen && <button aria-label='Close navigation' className='fixed inset-x-0 bottom-0 top-24 z-40 bg-black/55 md:hidden' onClick={() => setNavigationOpen(false)} />}
-        <aside className={`fixed bottom-0 left-0 top-24 z-50 w-64 overflow-y-auto bg-white px-2 pb-24 pt-3 transition-transform dark:bg-black md:sticky md:bottom-auto md:top-14 md:h-[calc(100svh-3.5rem)] md:shrink-0 md:translate-x-0 ${navigationOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <aside className={`fixed bottom-0 left-0 top-24 z-50 w-80 max-w-[calc(100vw-2rem)] overflow-y-auto bg-white px-2 pb-24 pt-3 transition-transform dark:bg-black md:sticky md:bottom-auto md:top-14 md:h-[calc(100svh-3.5rem)] md:shrink-0 md:translate-x-0 ${navigationOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <div className='mb-7 flex items-center justify-between md:hidden'>
             <span className='font-semibold'>Sources</span>
             <button aria-label='Close navigation' onClick={() => setNavigationOpen(false)}><X size={20} /></button>
@@ -618,34 +657,44 @@ export default function Home() {
           <button aria-current={searchOpen ? 'page' : undefined} className={`flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left text-sm ${searchOpen ? 'bg-neutral-100 font-semibold dark:bg-neutral-800' : 'hover:bg-neutral-100 dark:hover:bg-neutral-900'}`} onClick={openSearch}>
             <Search size={18} /> Search
           </button>
-          <p className='mb-2 mt-5 px-2 text-sm font-medium text-neutral-500'>Your Library</p>
-          <button aria-current={!searchOpen && view.kind === 'liked' ? 'page' : undefined} className={`flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left text-sm ${!searchOpen && view.kind === 'liked' ? 'bg-neutral-100 font-semibold dark:bg-neutral-800' : 'hover:bg-neutral-100 dark:hover:bg-neutral-900'}`} onClick={openLikedSongs}>
-            <Heart size={18} /> Liked Songs
-          </button>
-          <p className='mb-2 mt-5 px-2 text-sm font-medium text-neutral-500'>Discovery</p>
-          {history.length ? history.map(session => (
-            <button
-              aria-current={!searchOpen && view.key === session.key ? 'page' : undefined}
-              className={`flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left text-sm ${!searchOpen && view.key === session.key ? 'bg-neutral-100 font-semibold dark:bg-neutral-800' : 'hover:bg-neutral-100 dark:hover:bg-neutral-900'}`}
-              key={session.key}
-              onClick={() => {
-                setNavigationOpen(false);
-                clearTimeout(searchDebounce.current);
-                searchReturnRef.current = null;
-                setSearchOpen(false);
-                setSearch('');
-                if (router.asPath === session.key) void getRecommendations();
-                else void router.push(session.key, undefined, { shallow: true });
-              }}
-            >
-              <Image alt='' className='size-8 shrink-0 rounded object-cover' height={32} src={session.albumArt} width={32} /><span className='truncate'>From {session.title}</span>
-            </button>
-          )) : <p className='px-2 pt-2 text-xs leading-5 text-neutral-500'>Your discoveries will appear here.</p>}
+          {history.length > 0 && <section aria-label='Discovery'>
+            <h2 className='mb-2 mt-5 px-2 text-sm font-medium text-neutral-500'>Discovery</h2>
+            {history.map(session => (
+              <button
+                aria-current={!searchOpen && view.key === session.key ? 'page' : undefined}
+                className={`flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left text-sm ${!searchOpen && view.key === session.key ? 'bg-neutral-100 font-semibold dark:bg-neutral-800' : 'hover:bg-neutral-100 dark:hover:bg-neutral-900'}`}
+                key={session.key}
+                onClick={() => {
+                  setNavigationOpen(false);
+                  clearTimeout(searchDebounce.current);
+                  searchReturnRef.current = null;
+                  setSearchOpen(false);
+                  setSearch('');
+                  if (router.asPath === session.key) void getRecommendations();
+                  else void router.push(session.key, undefined, { shallow: true });
+                }}
+              >
+                <Image alt='' className='size-8 shrink-0 rounded object-cover' height={32} src={session.albumArt} width={32} /><span className='truncate'>From {session.title}</span>
+              </button>
+            ))}
+          </section>}
+          <LibraryNavigation
+            activePlaylistId={!searchOpen && view.kind === 'playlist' && typeof router.query.playlist === 'string' ? router.query.playlist : undefined}
+            likedActive={!searchOpen && view.kind === 'liked'}
+            onLikedSongs={openLikedSongs}
+            onPlaylist={openPlaylist}
+            signIn={signIn}
+            spotifyApi={spotifyApi}
+          />
         </aside>
 
         <div className='min-w-0 flex-1 pb-36 md:pb-32'>
           <h1 className='sr-only'>{view.title}</h1>
           <div className='px-2 py-2 md:mx-4 md:px-0'>
+            {view.kind === 'playlist' && <div className='flex flex-wrap items-center justify-between gap-3 px-3 py-3 text-sm'>
+              <p className='text-neutral-500'>Pick a track from this playlist to discover more.</p>
+              <a className='font-medium text-green-600 hover:underline dark:text-green-400' href={`https://open.spotify.com/playlist/${encodeURIComponent(typeof router.query.playlist === 'string' ? router.query.playlist : '')}`} rel='noreferrer' target='_blank'>Open in Spotify</a>
+            </div>}
             {results === undefined ? <div role='status' aria-label='Loading tracks'>{Array.from({ length: 12 }, (_, index) => <SkeletonTrack key={index} />)}</div> :
               searchError ? <p className='px-3 py-8 text-red-500'>{searchError}</p> :
                 results.length ? <>
@@ -653,15 +702,17 @@ export default function Home() {
                     {results.map(track => <div className='rounded-md py-1 pr-4 pl-2 transition-colors hover:bg-neutral-300 dark:hover:bg-neutral-700' key={track.id}><TrackComponent track={track} /></div>)}
                   </div>
                   {isSearching && <div role='status' aria-label='Loading more tracks'>{Array.from({ length: 3 }, (_, index) => <SkeletonTrack key={index} />)}</div>}
-                  {hasMore && <div aria-hidden='true' className='h-px' ref={loadMoreRef} />}
+
                 </> : view.kind === 'search' && !search ?
                   <p className='px-3 py-8 text-neutral-500'>Search Spotify to find tracks.</p> :
-                  spotifyApi === null && view.kind === 'liked' ? <div className='mx-auto flex max-w-md flex-col items-center gap-4 px-6 py-14 text-center'>
+                  spotifyApi === null && (view.kind === 'liked' || view.kind === 'playlist') ? <div className='mx-auto flex max-w-md flex-col items-center gap-4 px-6 py-14 text-center'>
                     <Heart size={28} className='text-neutral-400' />
-                    <p className='font-medium'>Your Liked Songs live here</p>
+                    <p className='font-medium'>{view.kind === 'playlist' ? 'Your playlist tracks live here' : 'Your Liked Songs live here'}</p>
                     <p className='text-sm text-neutral-500'>Sign in to browse your library, or use Search to explore Spotify.</p>
                     <button className='rounded-full bg-green-500 px-6 py-2 font-semibold text-black hover:bg-green-400' onClick={signIn}>Sign in with Spotify</button>
-                  </div> : <p className='px-3 py-8 text-neutral-500'>No tracks found</p>}
+                  </div> : <p className='px-3 py-8 text-neutral-500'>{view.kind === 'playlist' ? 'No available music tracks in this playlist.' : 'No tracks found'}</p>}
+            {hasMore && !isSearching && results !== undefined && <div aria-hidden='true' className='h-px' ref={loadMoreRef} />}
+            {view.kind === 'playlist' && searchError && spotifyApi && <button className='px-3 py-2 text-sm font-medium text-green-600 hover:underline dark:text-green-400' onClick={signIn}>Reconnect Spotify</button>}
           </div>
         </div>
       </div>
