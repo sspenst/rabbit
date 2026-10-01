@@ -1,5 +1,5 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
-import { EllipsisVertical, FileText, LogOut, Monitor, Moon, Shield, Sun } from 'lucide-react';
+import { EllipsisVertical, FileText, LogOut, Mail, Monitor, Moon, Shield, Sun } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
@@ -100,6 +100,12 @@ export default function Profile() {
               <SS />
             </span>
             <span>Spencer Spenst</span>
+          </a>
+        </MenuItem>
+        <MenuItem>
+          <a className={menuItemClassName} href='mailto:spencerspenst@gmail.com'>
+            <Mail aria-hidden='true' className='w-4 h-4' />
+            <span>Contact</span>
           </a>
         </MenuItem>
         <MenuItem>

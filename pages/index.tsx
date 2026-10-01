@@ -597,7 +597,7 @@ export default function Home() {
 
   return (
     <AppContext.Provider value={{ previewTrack, saveTrack, savingTrackId, setPreviewTrack }}>
-      <Head><title>{view.title} · Rabbit</title></Head>
+      <Head><title>{`${view.title} · Rabbit`}</title></Head>
       <Header
         onCloseSearch={closeSearch}
         onGoHome={openLikedSongs}
