@@ -114,6 +114,7 @@ export default function Home() {
         ]);
 
         if (generation !== searchGeneration.current) return;
+        if (!page) throw new Error('Spotify returned no playlist response.');
         if (playlist) setView({ key: `/?playlist=${encodeURIComponent(playlistId)}`, kind: 'playlist', title: playlist.name });
         tracks = await enrichTracks(playlistTracks(page.items), spotifyApi);
         moreTracksAvailable = Boolean(page.next);
@@ -126,12 +127,18 @@ export default function Home() {
         }
 
         const page = await spotifyApi.currentUser.tracks.savedTracks(savedTracksLimit, offset);
+
+        if (!page) throw new Error('Spotify returned no saved tracks response.');
+
         const rawTracks = page.items.map(item => item.track) as Track[];
 
         tracks = await enrichTracks(rawTracks, spotifyApi);
         moreTracksAvailable = page.next !== null;
       } else if (spotifyApi) {
         const response = await spotifyApi.search(q, ['track'], undefined, searchLimit, offset);
+
+        if (!response) throw new Error('Spotify returned no search response.');
+
         const rawTracks = response.tracks.items as Track[];
 
         tracks = await enrichTracks(rawTracks, spotifyApi);
@@ -375,6 +382,8 @@ export default function Home() {
         ...audioFeatureParams,
       } as RecommendationsRequest);
 
+      if (!recommendations) throw new Error('Spotify returned no recommendations response.');
+
       const newRecommendations = await enrichTracks(recommendations.tracks as Track[], spotifyApi);
 
       if (generation !== searchGeneration.current) {
@@ -426,7 +435,7 @@ export default function Home() {
     if (spotifyApi && user === undefined) {
       void spotifyApi.currentUser.profile().then(profile => {
         if (!cancelled) {
-          setUser(profile);
+          setUser(profile ?? undefined);
         }
       });
     }

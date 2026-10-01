@@ -42,10 +42,15 @@ export default async function handler(
   try {
     const spotifyApi = getSpotifyServerApi();
     const track = await spotifyApi.tracks.get(id);
+
+    if (!track) throw new Error('Spotify returned no seed track.');
+
     const features = await spotifyApi.tracks.audioFeatures(id);
     const featureParams: Record<string, number> = {};
 
     audioFeatureProperties.forEach(property => {
+      if (!features) return;
+
       const value = features[property as keyof AudioFeatures] as number;
       const direction = request.query[property];
 
@@ -64,6 +69,8 @@ export default async function handler(
       seed_tracks: [track.id],
       ...featureParams,
     } as RecommendationsRequest);
+
+    if (!recommendations) throw new Error('Spotify returned no recommendations response.');
 
     const recommendedTracks = recommendations.tracks.filter(recommendation => recommendation.id !== track.id) as Track[];
 

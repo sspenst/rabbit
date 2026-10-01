@@ -42,11 +42,11 @@ export async function enrichPublicTracks(tracks: Track[] | null | undefined, spo
     return [];
   }
 
-  const audioFeatures = await spotifyApi.tracks.audioFeatures(tracks.map(track => track.id)) as (AudioFeatures | null)[];
+  const audioFeatures = await spotifyApi.tracks.audioFeatures(tracks.map(track => track.id));
 
   return tracks.map((track, index) => ({
     ...track,
-    audioFeatures: audioFeatures[index] ?? null,
+    audioFeatures: audioFeatures?.[index] ?? null,
     saved: false,
   }));
 }
@@ -57,9 +57,9 @@ export async function enrichTracks(tracks: Track[] | null | undefined, spotifyAp
   }
 
   const [audioFeatures, saved] = await Promise.all([
-    spotifyApi.tracks.audioFeatures(tracks.map(t => t.id)) as Promise<(AudioFeatures | null)[]>,
-    spotifyApi.currentUser.tracks.hasSavedTracks(tracks.map(t => t.id)) as Promise<boolean[] | null>,
+    spotifyApi.tracks.audioFeatures(tracks.map(t => t.id)),
+    spotifyApi.currentUser.tracks.hasSavedTracks(tracks.map(t => t.id)),
   ]);
 
-  return tracks.map((t, i) => enrichTrack(t, audioFeatures[i], saved?.at(i) ?? false));
+  return tracks.map((t, i) => enrichTrack(t, audioFeatures?.[i] ?? null, saved?.at(i) ?? false));
 }

@@ -41,6 +41,7 @@ export default function LibraryNavigation({ activePlaylistId, likedActive, onLik
       const page = await api.currentUser.playlists.playlists(50, append ? offset.current : 0);
 
       if (generation.current !== currentGeneration) return;
+      if (!page) throw new Error('Spotify returned no playlists.');
       const items = page.items.filter(playlist => playlist?.id);
 
       offset.current = page.offset + page.items.length;
