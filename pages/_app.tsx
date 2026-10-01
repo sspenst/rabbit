@@ -1,5 +1,6 @@
 import '../styles/global.css';
 import { SpotifyApi, User } from '@sspenst/spotify-web-api';
+import { Analytics } from '@vercel/analytics/next';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -114,6 +115,7 @@ export default function App({ Component, pageProps }: AppProps) {
           <Component {...pageProps} />
         </main>
       </MainContext.Provider>
+      <Analytics />
     </ThemeProvider>
   );
 }
